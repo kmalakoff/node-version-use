@@ -1,0 +1,55 @@
+{
+  "name": "node-version-use",
+  "version": "0.3.0",
+  "description": "Cross-platform solution for running commands on a specific version of node",
+  "keywords": [
+    "node",
+    "version",
+    "use",
+    "versions",
+    "compatability",
+    "cross",
+    "platform",
+    "platforms"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:kmalakoff/node-version-use.git"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "bin": {
+    "nvu": "./bin/node-version-use"
+  },
+  "scripts": {
+    "compat": "nvs --engines -- mocha-compat test/spec/**/*.test.js  --timeout=10000",
+    "format": "prettier --write '**/*.js'",
+    "lint": "eslint .",
+    "test": "mocha-compat test/spec/**/*.test.js --timeout=10000"
+  },
+  "dependencies": {
+    "command-exists": "^1.2.9",
+    "cross-spawn-cb": "^0.2.2",
+    "mkdirp": "^0.5.5",
+    "nave": "^3.2.1",
+    "osenv": "^0.1.5",
+    "single-line-log": "^1.1.2",
+    "string-argv": "^0.3.1",
+    "uuid": "^3.4.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.0.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "mocha-compat": "^3.5.5",
+    "prettier": "^2.0.5"
+  },
+  "engines": {
+    "node": ">=0.8"
+  }
+}
