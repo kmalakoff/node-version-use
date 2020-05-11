@@ -22,10 +22,10 @@
     "nvu": "./bin/node-version-use"
   },
   "scripts": {
-    "compat": "nvs --engines -- mocha-compat test/spec/**/*.test.js  --timeout=10000",
+    "compat": "nvs --engines -- mocha-compat test/spec/**/*.test.js  --timeout=9999999",
     "format": "prettier --write '**/*.js'",
     "lint": "eslint .",
-    "test": "mocha-compat test/spec/**/*.test.js --timeout=10000"
+    "test": "mocha-compat test/spec/**/*.test.js --timeout=9999999"
   },
   "dependencies": {
     "command-exists": "^1.2.9",

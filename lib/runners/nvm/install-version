@@ -1,10 +1,5 @@
 #!/bin/sh
-export NVM_DIR="$HOME/.nvm"
-\. "$NVM_DIR/nvm.sh"
-nvm use $1 &> /dev/null
-if [ $? -eq 0 ]
-then 
-  exit 0
-else 
+if [ ! -d "$HOME/.nvm/versions/node/$1" ]; then
+  \. "$HOME/.nvm/nvm.sh"
   nvm install $1
 fi
