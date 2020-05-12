@@ -1,19 +1,14 @@
 #!/usr/bin/env node
 
-var program = require('commander');
-
-program.option('c, --cache', 'use the cache rather than http for looking up versions');
-program.parse(process.argv);
-
-var args = Array.prototype.slice.call(program.args, 0);
-if (args.length < 2) {
+var args = Array.prototype.slice.call(process.argv, 2);
+if (args.length <= 0) {
   console.log('Missing command. Example usage: nvu version [command]');
   return process.exit(-1);
 }
 
 var nvu = require('..');
 
-nvu(args[0], args[1], args.slice(2), program, function (err) {
+nvu(args[0], args[1], args.slice(2), { stdio: 'inherit' }, function (err) {
   if (err) {
     console.log(err.message);
     return process.exit(err.code || -1);

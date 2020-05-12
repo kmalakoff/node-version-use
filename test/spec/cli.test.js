@@ -5,20 +5,19 @@ var crossSpawn = require('cross-spawn-cb');
 describe('cli', function () {
   describe('happy path', function () {
     it('one version', function (done) {
-      crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), ['14', '--cache', 'npm', 'whoami'], { stdio: 'inherit' }, function (err, res) {
+      crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), ['14', 'npm', 'whoami'], { stdout: 'string' }, function (err, res) {
         assert.ok(!err);
         assert.equal(res.code, 0);
+        assert.ok(res.stdout.split('\n')[0].length > 0);
         done();
       });
     });
 
     it('one version with options', function (done) {
-      crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), ['14', '--cache', '--', 'node', '--version'], { stdio: 'inherit' }, function (
-        err,
-        res
-      ) {
+      crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), ['lts/argon', 'node', '--version'], { stdout: 'string' }, function (err, res) {
         assert.ok(!err);
         assert.equal(res.code, 0);
+        assert.equal(res.stdout.split('\n')[0], 'v4.9.1');
         done();
       });
     });
@@ -26,7 +25,7 @@ describe('cli', function () {
 
   describe('unhappy path', function () {
     it('missing version (undefined)', function (done) {
-      crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), [undefined, '--cache'], { stdio: 'inherit' }, function (err, res) {
+      crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), [undefined], { stdout: 'string' }, function (err, res) {
         assert.ok(!err);
         assert.ok(res.code !== 0);
         done();
@@ -34,10 +33,7 @@ describe('cli', function () {
     });
 
     it('missing version (null)', function (done) {
-      crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), [null, '--cache', '--', 'node', '--version'], { stdio: 'inherit' }, function (
-        err,
-        res
-      ) {
+      crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), [null, 'node', '--version'], { stdout: 'string' }, function (err, res) {
         assert.ok(!err);
         assert.ok(res.code !== 0);
         done();
@@ -45,10 +41,7 @@ describe('cli', function () {
     });
 
     it('invalid versions', function (done) {
-      crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), ['junk', '--cache', '--', 'node', '--version'], { stdio: 'inherit' }, function (
-        err,
-        res
-      ) {
+      crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), ['junk', 'node', '--version'], { stdout: 'string' }, function (err, res) {
         assert.ok(!err);
         assert.ok(res.code !== 0);
         done();
