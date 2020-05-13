@@ -29,8 +29,11 @@
   },
   "dependencies": {
     "arch": "^2.1.2",
+    "call-once-fn": "^1.0.0",
     "cross-spawn-cb": "^0.2.2",
     "get-remote": "^0.2.0",
+    "lodash.find": "^4.6.0",
+    "mkdirp": "^0.5.5",
     "nave": "^3.2.1",
     "node-semvers": "^0.4.0",
     "object.assign": "^4.1.0",
