@@ -2,7 +2,7 @@ var assert = require('assert');
 var path = require('path');
 var crossSpawn = require('cross-spawn-cb');
 
-describe('cli', function () {
+describe.skip('cli', function () {
   describe('happy path', function () {
     it('one version', function (done) {
       crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), ['14', 'npm', 'whoami'], { stdout: 'string' }, function (err, res) {
@@ -24,7 +24,7 @@ describe('cli', function () {
   });
 
   describe('unhappy path', function () {
-    it('missing version (undefined)', function (done) {
+    it('err version (undefined)', function (done) {
       crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), [undefined], { stdout: 'string' }, function (err, res) {
         assert.ok(!err);
         assert.ok(res.code !== 0);
@@ -32,7 +32,7 @@ describe('cli', function () {
       });
     });
 
-    it('missing version (null)', function (done) {
+    it('err version (null)', function (done) {
       crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), [null, 'node', '--version'], { stdout: 'string' }, function (err, res) {
         assert.ok(!err);
         assert.ok(res.code !== 0);
