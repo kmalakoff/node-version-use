@@ -28,8 +28,11 @@
     "test": "mocha-compat test/spec/**/*.test.js --timeout=9999999"
   },
   "dependencies": {
+    "call-once-fn": "^1.0.0",
     "cross-spawn-cb": "^0.2.2",
+    "mkdirp": "^0.5.5",
     "nave": "^3.2.1",
+    "node-powershell": "^4.0.0",
     "node-semvers": "^0.3.2",
     "object.assign": "^4.1.0",
     "osenv": "^0.1.5"
