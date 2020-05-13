@@ -30,6 +30,7 @@
   "dependencies": {
     "arch": "^2.1.2",
     "cross-spawn-cb": "^0.2.2",
+    "get-remote": "^0.2.0",
     "nave": "^3.2.1",
     "node-semvers": "^0.4.0",
     "object.assign": "^4.1.0",
