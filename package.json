@@ -1,6 +1,6 @@
 {
   "name": "node-version-use",
-  "version": "0.3.0",
+  "version": "0.1.0",
   "description": "Cross-platform solution for running commands on a specific version of node",
   "keywords": [
     "node",
@@ -29,13 +29,10 @@
   },
   "dependencies": {
     "arch": "^2.1.2",
-    "call-once-fn": "^1.0.0",
     "cross-spawn-cb": "^0.2.2",
     "get-remote": "^0.2.1",
-    "lodash.find": "^4.6.0",
     "lodash.keys": "^4.2.0",
     "mkdirp": "^0.5.5",
-    "nave": "^3.2.1",
     "node-semvers": "^0.4.1",
     "object.assign": "^4.1.0",
     "osenv": "^0.1.5"
