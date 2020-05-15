@@ -6,7 +6,7 @@ var NODE = process.platform === 'win32' ? 'node.exe' : 'node';
 var EOL = /\r\n|\r|\n/;
 var now = new Date(Date.parse('2020-05-10T03:23:29.347Z'));
 
-describe('versions', function () {
+describe.only('versions', function () {
   describe('happy path', function () {
     it('npm whoami', function (done) {
       nvu('12', 'npm', ['whoami'], { stdout: 'string', now: now }, function (err, res) {
