@@ -33,6 +33,7 @@
     "cross-spawn-cb": "^0.2.2",
     "get-remote": "^0.2.0",
     "lodash.find": "^4.6.0",
+    "lodash.keys": "^4.2.0",
     "mkdirp": "^0.5.5",
     "nave": "^3.2.1",
     "node-semvers": "^0.4.0",
