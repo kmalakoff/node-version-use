@@ -1,0 +1,440 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'C:\\ProgramData\\nvm\\nodejs\\v4.9.1\\node.exe',
+1 verbose cli   'C:\\ProgramData\\nvm\\nodejs\\v4.9.1\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'install',
+1 verbose cli   'rimraf@0' ]
+2 info using npm@2.15.11
+3 info using node@v4.9.1
+4 verbose install initial load of C:\Users\Kevin\Dev\node-version-use\package.json
+5 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\abbrev\package.json
+6 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\acorn\package.json
+7 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\acorn-jsx\package.json
+8 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\ajv\package.json
+9 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\ansi-escapes\package.json
+10 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\ansi-regex\package.json
+11 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\ansi-styles\package.json
+12 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\arch\package.json
+13 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\argparse\package.json
+14 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\array-includes\package.json
+15 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\array.prototype.flat\package.json
+16 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\astral-regex\package.json
+17 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\babel-eslint\package.json
+18 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\balanced-match\package.json
+19 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\base64-js\package.json
+20 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\binary\package.json
+21 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\bl\package.json
+22 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\brace-expansion\package.json
+23 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\browser-stdout\package.json
+24 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\buffer\package.json
+25 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\buffer-alloc\package.json
+26 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\buffer-alloc-unsafe\package.json
+27 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\buffer-crc32\package.json
+28 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\buffer-fill\package.json
+29 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\buffers\package.json
+30 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\call-once-fn\package.json
+31 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\callsites\package.json
+32 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\chainsaw\package.json
+33 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\chalk\package.json
+34 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\chardet\package.json
+35 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\cli-cursor\package.json
+36 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\cli-width\package.json
+37 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\color-convert\package.json
+38 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\color-name\package.json
+39 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\commander\package.json
+40 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\concat-map\package.json
+41 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\contains-path\package.json
+42 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\core-util-is\package.json
+43 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\cross-spawn\package.json
+44 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\cross-spawn-cb\package.json
+45 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\debug\package.json
+46 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\decompress\package.json
+47 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\decompress-tar\package.json
+48 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\decompress-tarbz2\package.json
+49 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\decompress-targz\package.json
+50 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\decompress-unzip\package.json
+51 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\decompress-zip\package.json
+52 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\deep-is\package.json
+53 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\define-properties\package.json
+54 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\diff\package.json
+55 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\doctrine\package.json
+56 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\emoji-regex\package.json
+57 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\end-of-stream\package.json
+58 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\error-ex\package.json
+59 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\es-abstract\package.json
+60 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\es-to-primitive\package.json
+61 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\escape-string-regexp\package.json
+62 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint\package.json
+63 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint-config-prettier\package.json
+64 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint-config-standard\package.json
+65 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint-import-resolver-node\package.json
+66 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint-module-utils\package.json
+67 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint-plugin-es\package.json
+68 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint-plugin-import\package.json
+69 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint-plugin-node\package.json
+70 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint-plugin-promise\package.json
+71 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint-plugin-standard\package.json
+72 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint-scope\package.json
+73 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint-utils\package.json
+74 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\eslint-visitor-keys\package.json
+75 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\espree\package.json
+76 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\esprima\package.json
+77 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\esquery\package.json
+78 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\esrecurse\package.json
+79 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\estraverse\package.json
+80 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\esutils\package.json
+81 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\external-editor\package.json
+82 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\fast-deep-equal\package.json
+83 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\fast-json-stable-stringify\package.json
+84 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\fast-levenshtein\package.json
+85 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\fd-slicer\package.json
+86 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\fifo\package.json
+87 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\figures\package.json
+88 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\file-entry-cache\package.json
+89 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\file-type\package.json
+90 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\find-up\package.json
+91 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\flat-cache\package.json
+92 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\flatted\package.json
+93 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\fs-constants\package.json
+94 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\fs.realpath\package.json
+95 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\function-bind\package.json
+96 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\functional-red-black-tree\package.json
+97 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\get-remote\package.json
+98 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\get-stdin\package.json
+99 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\get-stream\package.json
+100 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\glob\package.json
+101 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\glob-parent\package.json
+102 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\globals\package.json
+103 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\graceful-fs\package.json
+104 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\graceful-readlink\package.json
+105 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\growl\package.json
+106 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\has\package.json
+107 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\has-flag\package.json
+108 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\has-symbols\package.json
+109 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\he\package.json
+110 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\hosted-git-info\package.json
+111 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\iconv-lite\package.json
+112 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\ieee754\package.json
+113 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\ignore\package.json
+114 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\import-fresh\package.json
+115 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\imurmurhash\package.json
+116 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\inflight\package.json
+117 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\inherits\package.json
+118 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\inquirer\package.json
+119 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\is-arrayish\package.json
+120 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\is-callable\package.json
+121 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\is-date-object\package.json
+122 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\is-extglob\package.json
+123 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\is-fullwidth-code-point\package.json
+124 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\is-glob\package.json
+125 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\is-natural-number\package.json
+126 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\is-regex\package.json
+127 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\is-stream\package.json
+128 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\is-string\package.json
+129 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\is-symbol\package.json
+130 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\isarray\package.json
+131 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\isexe\package.json
+132 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\js-tokens\package.json
+133 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\js-yaml\package.json
+134 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\jsesc\package.json
+135 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\json-schema-traverse\package.json
+136 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\json-stable-stringify-without-jsonify\package.json
+137 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\json3\package.json
+138 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\levn\package.json
+139 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\load-json-file\package.json
+140 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\locate-path\package.json
+141 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash\package.json
+142 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash._baseassign\package.json
+143 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash._basecopy\package.json
+144 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash._basecreate\package.json
+145 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash._getnative\package.json
+146 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash._isiterateecall\package.json
+147 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash.create\package.json
+148 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash.filter\package.json
+149 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash.find\package.json
+150 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash.isarguments\package.json
+151 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash.isarray\package.json
+152 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash.isnan\package.json
+153 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash.isobject\package.json
+154 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lodash.keys\package.json
+155 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\lru-cache\package.json
+156 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\make-dir\package.json
+157 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\mimic-fn\package.json
+158 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\minimatch\package.json
+159 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\minimist\package.json
+160 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\mkdirp\package.json
+161 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\mkpath\package.json
+162 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\mocha-compat\package.json
+163 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\ms\package.json
+164 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\mute-stream\package.json
+165 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\nanoid\package.json
+166 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\natural-compare\package.json
+167 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\nave\package.json
+168 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\node-powershell\package.json
+169 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\node-semvers\package.json
+170 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\nopt\package.json
+171 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\normalize-package-data\package.json
+172 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\nvs\package.json
+173 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\object-assign\package.json
+174 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\object-inspect\package.json
+175 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\object-keys\package.json
+176 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\object.assign\package.json
+177 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\object.values\package.json
+178 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\once\package.json
+179 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\onetime\package.json
+180 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\optionator\package.json
+181 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\os-homedir\package.json
+182 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\os-tmpdir\package.json
+183 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\osenv\package.json
+184 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\p-limit\package.json
+185 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\p-locate\package.json
+186 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\p-try\package.json
+187 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\parent-module\package.json
+188 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\parse-json\package.json
+189 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\path-exists\package.json
+190 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\path-is-absolute\package.json
+191 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\path-key\package.json
+192 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\path-parse\package.json
+193 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\path-type\package.json
+194 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\pend\package.json
+195 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\pify\package.json
+196 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\pinkie\package.json
+197 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\pinkie-promise\package.json
+198 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\pkg-dir\package.json
+199 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\prelude-ls\package.json
+200 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\prettier\package.json
+201 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\process-nextick-args\package.json
+202 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\progress\package.json
+203 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\pseudomap\package.json
+204 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\punycode\package.json
+205 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\q\package.json
+206 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\queue-cb\package.json
+207 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\read-pkg\package.json
+208 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\read-pkg-up\package.json
+209 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\readable-stream\package.json
+210 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\regexpp\package.json
+211 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\resolve\package.json
+212 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\resolve-from\package.json
+213 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\restore-cursor\package.json
+214 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\rimraf\package.json
+215 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\run-async\package.json
+216 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\rxjs\package.json
+217 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\safe-buffer\package.json
+218 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\safer-buffer\package.json
+219 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\seek-bzip\package.json
+220 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\semver\package.json
+221 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\shebang-command\package.json
+222 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\shebang-regex\package.json
+223 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\shortid\package.json
+224 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\signal-exit\package.json
+225 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\slice-ansi\package.json
+226 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\source-map\package.json
+227 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\spdx-correct\package.json
+228 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\spdx-exceptions\package.json
+229 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\spdx-expression-parse\package.json
+230 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\spdx-license-ids\package.json
+231 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\sprintf-js\package.json
+232 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\string-width\package.json
+233 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\string.prototype.trimend\package.json
+234 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\string.prototype.trimleft\package.json
+235 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\string.prototype.trimright\package.json
+236 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\string.prototype.trimstart\package.json
+237 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\string_decoder\package.json
+238 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\strip-ansi\package.json
+239 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\strip-bom\package.json
+240 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\strip-dirs\package.json
+241 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\strip-json-comments\package.json
+242 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\supports-color\package.json
+243 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\table\package.json
+244 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\tar-stream\package.json
+245 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\text-table\package.json
+246 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\through\package.json
+247 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\tmp\package.json
+248 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\to-buffer\package.json
+249 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\to-fast-properties\package.json
+250 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\touch\package.json
+251 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\traverse\package.json
+252 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\tslib\package.json
+253 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\type-check\package.json
+254 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\type-fest\package.json
+255 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\unbzip2-stream\package.json
+256 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\uri-js\package.json
+257 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\util-deprecate\package.json
+258 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\uuid\package.json
+259 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\v8-compile-cache\package.json
+260 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\validate-npm-package-license\package.json
+261 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\which\package.json
+262 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\word-wrap\package.json
+263 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\wrappy\package.json
+264 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\write\package.json
+265 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\xtend\package.json
+266 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\yallist\package.json
+267 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\yauzl\package.json
+268 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@babel\code-frame\package.json
+269 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@babel\generator\package.json
+270 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@babel\helper-function-name\package.json
+271 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@babel\helper-get-function-arity\package.json
+272 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@babel\helper-split-export-declaration\package.json
+273 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@babel\helper-validator-identifier\package.json
+274 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@babel\highlight\package.json
+275 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@babel\parser\package.json
+276 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@babel\template\package.json
+277 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@babel\traverse\package.json
+278 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@babel\types\package.json
+279 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@types\color-name\package.json
+280 verbose installManyTop reading scoped package data from C:\Users\Kevin\Dev\node-version-use\node_modules\@jchip\nvm\package.json
+281 info package.json eslint-module-utils@2.6.0 No README data
+282 info package.json buffer@5.6.0 buffer is also the name of a node core module.
+283 info package.json buffers@0.1.1 No license field.
+284 info package.json chainsaw@0.1.0 license should be a valid SPDX license expression
+285 info package.json deep-is@0.1.3 license should be a valid SPDX license expression
+286 info package.json nave@3.2.1 No repository field.
+287 info package.json punycode@2.1.1 punycode is also the name of a node core module.
+288 info package.json string_decoder@0.10.31 string_decoder is also the name of a node core module.
+289 info package.json traverse@0.3.9 license should be a valid SPDX license expression
+290 verbose readDependencies loading dependencies from C:\Users\Kevin\Dev\node-version-use\package.json
+291 silly cache add args [ 'rimraf@0', null ]
+292 verbose cache add spec rimraf@0
+293 silly cache add parsed spec Result {
+293 silly cache add   raw: 'rimraf@0',
+293 silly cache add   scope: null,
+293 silly cache add   name: 'rimraf',
+293 silly cache add   rawSpec: '0',
+293 silly cache add   spec: '>=0.0.0 <1.0.0',
+293 silly cache add   type: 'range' }
+294 silly addNamed rimraf@>=0.0.0 <1.0.0
+295 verbose addNamed ">=0.0.0 <1.0.0" is a valid semver range for rimraf
+296 silly addNameRange { name: 'rimraf', range: '>=0.0.0 <1.0.0', hasData: false }
+297 silly mapToRegistry name rimraf
+298 silly mapToRegistry using default registry
+299 silly mapToRegistry registry https://registry.npmjs.org/
+300 silly mapToRegistry data Result {
+300 silly mapToRegistry   raw: 'rimraf',
+300 silly mapToRegistry   scope: null,
+300 silly mapToRegistry   name: 'rimraf',
+300 silly mapToRegistry   rawSpec: '',
+300 silly mapToRegistry   spec: 'latest',
+300 silly mapToRegistry   type: 'tag' }
+301 silly mapToRegistry uri https://registry.npmjs.org/rimraf
+302 verbose addNameRange registry:https://registry.npmjs.org/rimraf not in flight; fetching
+303 verbose request uri https://registry.npmjs.org/rimraf
+304 verbose request no auth needed
+305 info attempt registry request try #1 at 8:01:33 AM
+306 verbose request using bearer token for auth
+307 verbose request id 92e56b10ac9831da
+308 http request GET https://registry.npmjs.org/rimraf
+309 http 200 https://registry.npmjs.org/rimraf
+310 verbose headers { date: 'Sat, 16 May 2020 15:01:33 GMT',
+310 verbose headers   'content-type': 'application/json',
+310 verbose headers   'transfer-encoding': 'chunked',
+310 verbose headers   connection: 'keep-alive',
+310 verbose headers   'set-cookie': [ '__cfduid=d1a18405f7372bfd6f88156235b3286981589641293; expires=Mon, 15-Jun-20 15:01:33 GMT; path=/; domain=.npmjs.org; HttpOnly; SameSite=Lax' ],
+310 verbose headers   'cf-ray': '5945f981d939f4aa-YVR',
+310 verbose headers   'cache-control': 'public, max-age=300',
+310 verbose headers   etag: 'W/"a965d56367ab538fdf9c006898ee078b"',
+310 verbose headers   'last-modified': 'Sun, 09 Feb 2020 06:18:41 GMT',
+310 verbose headers   vary: 'accept-encoding, accept',
+310 verbose headers   'cf-cache-status': 'HIT',
+310 verbose headers   'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+310 verbose headers   server: 'cloudflare',
+310 verbose headers   'content-encoding': 'gzip',
+310 verbose headers   'cf-request-id': '02bf9a45230000f4aa4714c200000001' }
+311 silly get cb [ 200,
+311 silly get   { date: 'Sat, 16 May 2020 15:01:33 GMT',
+311 silly get     'content-type': 'application/json',
+311 silly get     'transfer-encoding': 'chunked',
+311 silly get     connection: 'keep-alive',
+311 silly get     'set-cookie': [ '__cfduid=d1a18405f7372bfd6f88156235b3286981589641293; expires=Mon, 15-Jun-20 15:01:33 GMT; path=/; domain=.npmjs.org; HttpOnly; SameSite=Lax' ],
+311 silly get     'cf-ray': '5945f981d939f4aa-YVR',
+311 silly get     'cache-control': 'public, max-age=300',
+311 silly get     etag: 'W/"a965d56367ab538fdf9c006898ee078b"',
+311 silly get     'last-modified': 'Sun, 09 Feb 2020 06:18:41 GMT',
+311 silly get     vary: 'accept-encoding, accept',
+311 silly get     'cf-cache-status': 'HIT',
+311 silly get     'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+311 silly get     server: 'cloudflare',
+311 silly get     'content-encoding': 'gzip',
+311 silly get     'cf-request-id': '02bf9a45230000f4aa4714c200000001' } ]
+312 verbose get saving rimraf to C:\Users\Kevin\AppData\Roaming\npm-cache\registry.npmjs.org\rimraf\.cache.json
+313 verbose correctMkdir C:\Users\Kevin\AppData\Roaming\npm-cache correctMkdir not in flight; initializing
+314 silly addNameRange number 2 { name: 'rimraf', range: '>=0.0.0 <1.0.0', hasData: true }
+315 silly addNameRange versions [ 'rimraf',
+315 silly addNameRange   [ '1.0.0',
+315 silly addNameRange     '1.0.1',
+315 silly addNameRange     '1.0.2',
+315 silly addNameRange     '1.0.4',
+315 silly addNameRange     '1.0.5',
+315 silly addNameRange     '1.0.6',
+315 silly addNameRange     '1.0.7',
+315 silly addNameRange     '1.0.8',
+315 silly addNameRange     '1.0.9',
+315 silly addNameRange     '2.0.0',
+315 silly addNameRange     '2.0.1',
+315 silly addNameRange     '2.0.2',
+315 silly addNameRange     '2.0.3',
+315 silly addNameRange     '2.1.0',
+315 silly addNameRange     '2.1.1',
+315 silly addNameRange     '2.1.2',
+315 silly addNameRange     '2.1.3',
+315 silly addNameRange     '2.1.4',
+315 silly addNameRange     '2.2.0',
+315 silly addNameRange     '2.2.1',
+315 silly addNameRange     '2.2.2',
+315 silly addNameRange     '2.2.3',
+315 silly addNameRange     '2.2.4',
+315 silly addNameRange     '2.2.5',
+315 silly addNameRange     '2.2.6',
+315 silly addNameRange     '2.2.8',
+315 silly addNameRange     '2.3.0',
+315 silly addNameRange     '2.3.1',
+315 silly addNameRange     '2.3.2',
+315 silly addNameRange     '2.3.3',
+315 silly addNameRange     '2.3.4',
+315 silly addNameRange     '2.4.0',
+315 silly addNameRange     '2.4.1',
+315 silly addNameRange     '2.4.2',
+315 silly addNameRange     '2.4.3',
+315 silly addNameRange     '2.4.4',
+315 silly addNameRange     '2.4.5',
+315 silly addNameRange     '2.5.0',
+315 silly addNameRange     '2.5.1',
+315 silly addNameRange     '2.5.2',
+315 silly addNameRange     '2.5.3',
+315 silly addNameRange     '2.5.4',
+315 silly addNameRange     '2.6.0',
+315 silly addNameRange     '2.6.1',
+315 silly addNameRange     '2.6.2',
+315 silly addNameRange     '2.6.3',
+315 silly addNameRange     '2.7.0',
+315 silly addNameRange     '2.7.1',
+315 silly addNameRange     '3.0.0',
+315 silly addNameRange     '3.0.1',
+315 silly addNameRange     '3.0.2' ] ]
+316 verbose stack Error: No compatible version found: rimraf@'>=0.0.0 <1.0.0'
+316 verbose stack Valid install targets:
+316 verbose stack ["1.0.0","1.0.1","1.0.2","1.0.4","1.0.5","1.0.6","1.0.7","1.0.8","1.0.9","2.0.0","2.0.1","2.0.2","2.0.3","2.1.0","2.1.1","2.1.2","2.1.3","2.1.4","2.2.0","2.2.1","2.2.2","2.2.3","2.2.4","2.2.5","2.2.6","2.2.8","2.3.0","2.3.1","2.3.2","2.3.3","2.3.4","2.4.0","2.4.1","2.4.2","2.4.3","2.4.4","2.4.5","2.5.0","2.5.1","2.5.2","2.5.3","2.5.4","2.6.0","2.6.1","2.6.2","2.6.3","2.7.0","2.7.1","3.0.0","3.0.1","3.0.2"]
+316 verbose stack
+316 verbose stack     at installTargetsError (C:\ProgramData\nvm\nodejs\v4.9.1\node_modules\npm\lib\cache\add-named.js:284:12)
+316 verbose stack     at next (C:\ProgramData\nvm\nodejs\v4.9.1\node_modules\npm\lib\cache\add-named.js:262:19)
+316 verbose stack     at setData (C:\ProgramData\nvm\nodejs\v4.9.1\node_modules\npm\lib\cache\add-named.js:236:5)
+316 verbose stack     at RES (C:\ProgramData\nvm\nodejs\v4.9.1\node_modules\npm\node_modules\inflight\inflight.js:23:14)
+316 verbose stack     at f (C:\ProgramData\nvm\nodejs\v4.9.1\node_modules\npm\node_modules\once\once.js:25:25)
+316 verbose stack     at fixName (C:\ProgramData\nvm\nodejs\v4.9.1\node_modules\npm\lib\cache\add-named.js:29:5)
+316 verbose stack     at saved (C:\ProgramData\nvm\nodejs\v4.9.1\node_modules\npm\lib\cache\caching-client.js:173:7)
+316 verbose stack     at C:\ProgramData\nvm\nodejs\v4.9.1\node_modules\npm\node_modules\graceful-fs\polyfills.js:233:18
+316 verbose stack     at FSReqWrap.oncomplete (fs.js:82:15)
+317 verbose cwd C:\Users\Kevin\Dev\node-version-use
+318 error Windows_NT 6.1.7601
+319 error argv "C:\\ProgramData\\nvm\\nodejs\\v4.9.1\\node.exe" "C:\\ProgramData\\nvm\\nodejs\\v4.9.1\\node_modules\\npm\\bin\\npm-cli.js" "install" "rimraf@0"
+320 error node v4.9.1
+321 error npm  v2.15.11
+322 error code ETARGET
+323 error notarget No compatible version found: rimraf@'>=0.0.0 <1.0.0'
+323 error notarget Valid install targets:
+323 error notarget ["1.0.0","1.0.1","1.0.2","1.0.4","1.0.5","1.0.6","1.0.7","1.0.8","1.0.9","2.0.0","2.0.1","2.0.2","2.0.3","2.1.0","2.1.1","2.1.2","2.1.3","2.1.4","2.2.0","2.2.1","2.2.2","2.2.3","2.2.4","2.2.5","2.2.6","2.2.8","2.3.0","2.3.1","2.3.2","2.3.3","2.3.4","2.4.0","2.4.1","2.4.2","2.4.3","2.4.4","2.4.5","2.5.0","2.5.1","2.5.2","2.5.3","2.5.4","2.6.0","2.6.1","2.6.2","2.6.3","2.7.0","2.7.1","3.0.0","3.0.1","3.0.2"]
+323 error notarget
+323 error notarget This is most likely not a problem with npm itself.
+323 error notarget In most cases you or one of your dependencies are requesting
+323 error notarget a package version that doesn't exist.
+323 error notarget
+323 error notarget It was specified as a dependency of 'node-version-use'
+324 verbose exit [ 1, true ]
