@@ -11,7 +11,8 @@ describe('versions', function () {
     it('npm whoami', function (done) {
       nvu('12', 'npm', ['whoami'], { stdout: 'string', now: now }, function (err, res) {
         assert.ok(!err);
-        assert.ok(res.stdout.split(EOL).slice(-2, 1)[0].length > 1);
+        assert.equal(res.code, 0);
+        assert.ok(res.stdout.split(EOL).slice(-2, -1)[0].length > 1);
         done();
       });
     });
@@ -19,7 +20,8 @@ describe('versions', function () {
     it('12', function (done) {
       nvu('12', NODE, ['--version'], { stdout: 'string', now: now }, function (err, res) {
         assert.ok(!err);
-        assert.equal(res.stdout.split(EOL).slice(-2, 1)[0], 'v12.16.3');
+        assert.equal(res.code, 0);
+        assert.equal(res.stdout.split(EOL).slice(-2, -1)[0], 'v12.16.3');
         done();
       });
     });
@@ -27,7 +29,8 @@ describe('versions', function () {
     it('latest version', function (done) {
       nvu('latest', NODE, ['--version'], { stdout: 'string', now: now }, function (err, res) {
         assert.ok(!err);
-        assert.equal(res.stdout.split(EOL).slice(-2, 1)[0], 'v13.14.0');
+        assert.equal(res.code, 0);
+        assert.equal(res.stdout.split(EOL).slice(-2, -1)[0], 'v13.14.0');
         done();
       });
     });
@@ -35,7 +38,8 @@ describe('versions', function () {
     it('lts version', function (done) {
       nvu('lts/erbium', NODE, ['--version'], { stdout: 'string', now: now }, function (err, res) {
         assert.ok(!err);
-        assert.equal(res.stdout.split(EOL).slice(-2, 1)[0], 'v12.16.3');
+        assert.equal(res.code, 0);
+        assert.equal(res.stdout.split(EOL).slice(-2, -1)[0], 'v12.16.3');
         done();
       });
     });
@@ -43,7 +47,8 @@ describe('versions', function () {
     it('lts/argon version', function (done) {
       nvu('lts/argon', NODE, ['--version'], { stdout: 'string', now: now }, function (err, res) {
         assert.ok(!err);
-        assert.equal(res.stdout.split(EOL).slice(-2, 1)[0], 'v4.9.1');
+        assert.equal(res.code, 0);
+        assert.equal(res.stdout.split(EOL).slice(-2, -1)[0], 'v4.9.1');
         done();
       });
     });
