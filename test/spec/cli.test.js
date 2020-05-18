@@ -1,11 +1,23 @@
 var assert = require('assert');
 var path = require('path');
+var rimraf = require('rimraf');
 var crossSpawn = require('cross-spawn-cb');
 
 var NODE = process.platform === 'win32' ? 'node.exe' : 'node';
 var EOL = /\r\n|\r|\n/;
+// var TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
+// var OPTIONS = {
+//   cacheDirectory: path.join(TMP_DIR, 'cache'),
+//   installedDirectory: path.join(TMP_DIR, 'installed'),
+// };
 
 describe('cli', function () {
+  // before(function (callback) {
+  //   rimraf(OPTIONS.cacheDirectory, function () {
+  //     rimraf(OPTIONS.cacheDirectory, callback.bind(null, null));
+  //   });
+  // });
+
   describe('happy path', function () {
     it('npm whoami', function (done) {
       crossSpawn(path.join(__dirname, '..', '..', 'bin', 'node-version-use'), ['12', 'npm', 'whoami'], { stdout: 'string' }, function (err, res) {
