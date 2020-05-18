@@ -1,6 +1,6 @@
 {
   "name": "node-version-use",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Cross-platform solution for running commands on a specific version of node",
   "keywords": [
     "node",
