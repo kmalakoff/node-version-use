@@ -22,10 +22,10 @@
     "nvu": "./bin/node-version-use"
   },
   "scripts": {
-    "compat": "nvs --engines -- mocha-compat test/spec/**/*.test.js  --timeout=9999999",
+    "compat": "nvs --engines -- mocha-compat test/spec/**/*.test.js  --no-timeouts",
     "format": "prettier --write '**/*.js'",
     "lint": "eslint .",
-    "test": "mocha-compat test/spec/**/*.test.js --timeout=9999999"
+    "test": "mocha-compat test/spec/**/*.test.js --no-timeouts"
   },
   "dependencies": {
     "arch": "^2.1.2",
@@ -34,6 +34,7 @@
     "get-remote": "^0.2.1",
     "lodash.keys": "^4.2.0",
     "mkdirp": "^0.5.5",
+    "node-install-release": "^0.1.0",
     "node-semvers": "^0.4.1",
     "object.assign": "^4.1.0",
     "osenv": "^0.1.5"
