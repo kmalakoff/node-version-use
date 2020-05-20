@@ -34,7 +34,7 @@
     "getopts-compat": "^2.2.5",
     "lodash.keys": "^4.2.0",
     "node-install-release": "^0.1.6",
-    "node-semvers": "^0.4.3",
+    "node-semvers": "^0.4.4",
     "object-assign": "^4.1.1",
     "osenv": "^0.1.5"
   },
@@ -48,7 +48,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "mocha-compat": "^3.5.5",
-    "nvs": "^0.4.2",
+    "nvs": "^0.4.4",
     "prettier": "^2.0.5"
   },
   "engines": {
