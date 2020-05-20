@@ -28,14 +28,14 @@
     "test": "mocha-compat test/spec/**/*.test.js --no-timeouts"
   },
   "dependencies": {
-    "commander": "^2.20.3",
     "cross-spawn-cb": "^0.2.4",
     "end-with": "^1.0.2",
     "get-remote": "^0.2.3",
+    "getopts-compat": "^2.2.5",
     "lodash.keys": "^4.2.0",
     "node-install-release": "^0.1.6",
     "node-semvers": "^0.4.3",
-    "object.assign": "^4.1.0",
+    "object-assign": "^4.1.1",
     "osenv": "^0.1.5"
   },
   "devDependencies": {
