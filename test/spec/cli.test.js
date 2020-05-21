@@ -2,6 +2,7 @@ var assert = require('assert');
 var path = require('path');
 // var rimraf = require('rimraf');
 var crossSpawn = require('cross-spawn-cb');
+var isVersion = require('is-version');
 
 var CLI = path.join(__dirname, '..', '..', 'bin', 'node-version-use');
 var NODE = process.platform === 'win32' ? 'node.exe' : 'node';
@@ -20,11 +21,11 @@ describe('cli', function () {
   // });
 
   describe('happy path', function () {
-    it('npm whoami', function (done) {
-      crossSpawn(CLI, ['12', 'npm', 'whoami'], { stdout: 'string' }, function (err, res) {
+    it('npm --version', function (done) {
+      crossSpawn(CLI, ['12', 'npm', '--version'], { stdout: 'string' }, function (err, res) {
         assert.ok(!err);
         assert.equal(res.code, 0);
-        assert.ok(res.stdout.split(EOL).slice(-2, -1)[0].length > 1);
+        assert.ok(isVersion(res.stdout.split(EOL).slice(-2, -1)[0]));
         done();
       });
     });
