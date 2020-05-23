@@ -23,14 +23,14 @@
   },
   "scripts": {
     "compat": "nvs --engines -- mocha-compat test/spec/**/*.test.js  --no-timeouts",
-    "format": "prettier --write '**/*.js'",
+    "format": "eslint . --fix",
     "lint": "eslint .",
     "test": "mocha-compat test/spec/**/*.test.js --no-timeouts"
   },
   "dependencies": {
     "cross-spawn-cb": "^0.2.4",
     "end-with": "^1.0.2",
-    "get-remote": "^0.2.3",
+    "get-remote": "^0.4.2",
     "getopts-compat": "^2.2.5",
     "lodash.keys": "^4.2.0",
     "node-install-release": "^0.1.6",
@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
-    "eslint": "^7.0.0",
+    "eslint": "^7.1.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-plugin-import": "^2.20.2",
