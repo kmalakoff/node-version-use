@@ -30,7 +30,7 @@
   "dependencies": {
     "cross-spawn-cb": "^0.2.4",
     "end-with": "^1.0.2",
-    "get-remote": "^0.4.3",
+    "get-remote": "^0.4.4",
     "getopts-compat": "^2.2.5",
     "lodash.keys": "^4.2.0",
     "node-install-release": "^0.1.6",
