@@ -1,5 +1,0 @@
-#!/bin/sh
-if [ ! -d "$HOME/.nvm/versions/node/$1" ]; then
-  \. "$HOME/.nvm/nvm.sh"
-  nvm install $1
-fi
