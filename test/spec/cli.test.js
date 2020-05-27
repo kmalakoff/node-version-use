@@ -1,24 +1,24 @@
 var assert = require('assert');
 var path = require('path');
-// var rimraf = require('rimraf');
+var rimraf = require('rimraf');
 var crossSpawn = require('cross-spawn-cb');
 var isVersion = require('is-version');
 
 var CLI = path.join(__dirname, '..', '..', 'bin', 'node-version-use');
 var NODE = process.platform === 'win32' ? 'node.exe' : 'node';
 var EOL = /\r\n|\r|\n/;
-// var TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
-// var OPTIONS = {
-//   cacheDirectory: path.join(TMP_DIR, 'cache'),
-//   installedDirectory: path.join(TMP_DIR, 'installed'),
-// };
+var TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
+var OPTIONS = {
+  cacheDirectory: path.join(TMP_DIR, 'cache'),
+  installedDirectory: path.join(TMP_DIR, 'installed'),
+};
 
 describe('cli', function () {
-  // before(function (callback) {
-  //   rimraf(OPTIONS.cacheDirectory, function () {
-  //     rimraf(OPTIONS.cacheDirectory, callback.bind(null, null));
-  //   });
-  // });
+  before(function (callback) {
+    rimraf(OPTIONS.cacheDirectory, function () {
+      rimraf(OPTIONS.cacheDirectory, callback.bind(null, null));
+    });
+  });
 
   describe('happy path', function () {
     it('npm --version', function (done) {
@@ -34,7 +34,7 @@ describe('cli', function () {
       crossSpawn(CLI, ['12', 'node', '--version'], { stdout: 'string' }, function (err, res) {
         assert.ok(!err);
         assert.equal(res.code, 0);
-        assert.equal(res.stdout.split(EOL).slice(-2, -1)[0], 'v12.16.3');
+        assert.ok(res.stdout.split(EOL).slice(-2, -1)[0].indexOf('v12.') === 0);
         done();
       });
     });
