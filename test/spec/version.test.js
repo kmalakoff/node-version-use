@@ -45,7 +45,7 @@ describe('versions', function () {
       nvu('latest', NODE, ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
         assert.ok(!err);
         assert.equal(res.code, 0);
-        assert.equal(res.stdout.split(EOL).slice(-2, -1)[0], 'v13.14.0');
+        assert.ok(isVersion(res.stdout.split(EOL).slice(-2, -1)[0], 'v'));
         done();
       });
     });
