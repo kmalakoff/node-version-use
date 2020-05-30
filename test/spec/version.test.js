@@ -7,7 +7,7 @@ var isVersion = require('is-version');
 var nvu = require('../..');
 
 var NODE = process.platform === 'win32' ? 'node.exe' : 'node';
-var EOL = /\r\n|\r|\n/;
+var EOL = process.platform === 'win32' ? '\r\n' : '\n';
 var now = new Date(Date.parse('2020-05-10T03:23:29.347Z'));
 var TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
 var OPTIONS = {

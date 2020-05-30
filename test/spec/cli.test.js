@@ -6,7 +6,7 @@ var isVersion = require('is-version');
 
 var CLI = path.join(__dirname, '..', '..', 'bin', 'node-version-use');
 var NODE = process.platform === 'win32' ? 'node.exe' : 'node';
-var EOL = /\r\n|\r|\n/;
+var EOL = process.platform === 'win32' ? '\r\n' : '\n';
 var TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
 var OPTIONS = {
   cacheDirectory: path.join(TMP_DIR, 'cache'),
