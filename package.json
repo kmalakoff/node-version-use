@@ -29,12 +29,12 @@
   "dependencies": {
     "cross-spawn-cb": "^0.2.4",
     "end-with": "^1.0.2",
-    "get-remote": "^0.4.10",
+    "get-remote": "^0.4.11",
     "getopts-compat": "^2.2.5",
     "lodash.filter": "^4.6.0",
     "lodash.keys": "^4.2.0",
     "node-install-release": "^0.1.11",
-    "node-semvers": "^0.4.12",
+    "node-semvers": "^0.4.13",
     "object-assign": "^4.1.1",
     "osenv": "^0.1.5"
   },
