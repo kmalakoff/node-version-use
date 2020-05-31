@@ -33,7 +33,7 @@
     "isarray": "^2.0.5",
     "lodash.filter": "^4.6.0",
     "lodash.keys": "^4.2.0",
-    "node-install-release": "^0.1.13",
+    "node-install-release": "^0.1.14",
     "node-semvers": "^0.4.14",
     "object-assign": "^4.1.1",
     "osenv": "^0.1.5"
