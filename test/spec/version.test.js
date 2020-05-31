@@ -3,11 +3,11 @@ var path = require('path');
 var rimraf = require('rimraf');
 var assign = require('object-assign');
 var isVersion = require('is-version');
+var cr = require('cr');
 
 var nvu = require('../..');
 
 var NODE = process.platform === 'win32' ? 'node.exe' : 'node';
-var EOL = process.platform === 'win32' ? '\r\n' : '\n';
 var now = new Date(Date.parse('2020-05-10T03:23:29.347Z'));
 var TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
 var OPTIONS = {
@@ -27,7 +27,8 @@ describe('versions', function () {
       nvu('12', 'npm', ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
         assert.ok(!err);
         assert.equal(res.code, 0);
-        assert.ok(isVersion(res.stdout.split(EOL).slice(-2, -1)[0]));
+        var lines = cr(res.stdout).split('\n');
+        assert.ok(isVersion(lines.slice(-2, -1)[0]));
         done();
       });
     });
@@ -36,7 +37,8 @@ describe('versions', function () {
       nvu('12', NODE, ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
         assert.ok(!err);
         assert.equal(res.code, 0);
-        assert.ok(res.stdout.split(EOL).slice(-2, -1)[0].indexOf('v12.') === 0);
+        var lines = cr(res.stdout).split('\n');
+        assert.ok(lines.slice(-2, -1)[0].indexOf('v12.') === 0);
         done();
       });
     });
@@ -45,7 +47,8 @@ describe('versions', function () {
       nvu('latest', NODE, ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
         assert.ok(!err);
         assert.equal(res.code, 0);
-        assert.ok(isVersion(res.stdout.split(EOL).slice(-2, -1)[0], 'v'));
+        var lines = cr(res.stdout).split('\n');
+        assert.ok(lines.slice(-2, -1)[0], 'v');
         done();
       });
     });
@@ -54,7 +57,8 @@ describe('versions', function () {
       nvu('lts/erbium', NODE, ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
         assert.ok(!err);
         assert.equal(res.code, 0);
-        assert.equal(res.stdout.split(EOL).slice(-2, -1)[0], 'v12.16.3');
+        var lines = cr(res.stdout).split('\n');
+        assert.equal(lines.slice(-2, -1)[0], 'v12.16.3');
         done();
       });
     });
@@ -63,7 +67,8 @@ describe('versions', function () {
       nvu('lts/argon', NODE, ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
         assert.ok(!err);
         assert.equal(res.code, 0);
-        assert.equal(res.stdout.split(EOL).slice(-2, -1)[0], 'v4.9.1');
+        var lines = cr(res.stdout).split('\n');
+        assert.equal(lines.slice(-2, -1)[0], 'v4.9.1');
         done();
       });
     });
