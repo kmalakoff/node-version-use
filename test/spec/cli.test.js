@@ -4,7 +4,7 @@ var rimraf = require('rimraf');
 var crossSpawn = require('cross-spawn-cb');
 var isVersion = require('is-version');
 
-var CLI = path.join(__dirname, '..', '..', 'bin', 'node-version-use');
+var CLI = path.join(__dirname, '..', '..', 'bin', 'node-version-use.js');
 var NODE = process.platform === 'win32' ? 'node.exe' : 'node';
 var EOL = process.platform === 'win32' ? '\r\n' : '\n';
 var TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
