@@ -26,7 +26,6 @@ describe('versions', function () {
     it('npm --version', function (done) {
       nvu('12', 'npm', ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
         assert.ok(!err);
-        assert.equal(res.code, 0);
         var lines = cr(res.stdout).split('\n');
         assert.ok(isVersion(lines.slice(-2, -1)[0]));
         done();
@@ -36,7 +35,6 @@ describe('versions', function () {
     it('12', function (done) {
       nvu('12', NODE, ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
         assert.ok(!err);
-        assert.equal(res.code, 0);
         var lines = cr(res.stdout).split('\n');
         assert.ok(lines.slice(-2, -1)[0].indexOf('v12.') === 0);
         done();
@@ -46,7 +44,6 @@ describe('versions', function () {
     it('latest version', function (done) {
       nvu('latest', NODE, ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
         assert.ok(!err);
-        assert.equal(res.code, 0);
         var lines = cr(res.stdout).split('\n');
         assert.ok(lines.slice(-2, -1)[0], 'v');
         done();
@@ -56,7 +53,6 @@ describe('versions', function () {
     it('lts version', function (done) {
       nvu('lts/erbium', NODE, ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
         assert.ok(!err);
-        assert.equal(res.code, 0);
         var lines = cr(res.stdout).split('\n');
         assert.equal(lines.slice(-2, -1)[0], 'v12.16.3');
         done();
@@ -66,7 +62,6 @@ describe('versions', function () {
     it('lts/argon version', function (done) {
       nvu('lts/argon', NODE, ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
         assert.ok(!err);
-        assert.equal(res.code, 0);
         var lines = cr(res.stdout).split('\n');
         assert.equal(lines.slice(-2, -1)[0], 'v4.9.1');
         done();
