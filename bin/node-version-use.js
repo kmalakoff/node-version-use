@@ -19,6 +19,5 @@ var getopts = require('getopts-compat');
       console.log(err.message);
       return process.exit(err.code || -1);
     }
-    process.exit(0);
   });
 })();

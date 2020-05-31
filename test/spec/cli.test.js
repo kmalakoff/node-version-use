@@ -52,21 +52,21 @@ describe('cli', function () {
   describe('unhappy path', function () {
     it('err version (undefined)', function (done) {
       crossSpawn(CLI, [undefined], { stdout: 'string' }, function (err, res) {
-        assert.ok(!err);
+        assert.ok(!!err);
         done();
       });
     });
 
     it('err version (null)', function (done) {
       crossSpawn(CLI, [null, NODE, '--version'], { stdout: 'string' }, function (err, res) {
-        assert.ok(!err);
+        assert.ok(!!err);
         done();
       });
     });
 
     it('invalid versions', function (done) {
       crossSpawn(CLI, ['junk', NODE, '--version'], { stdout: 'string' }, function (err, res) {
-        assert.ok(!err);
+        assert.ok(!!err);
         done();
       });
     });
