@@ -16,11 +16,11 @@ var OPTIONS = {
 };
 
 describe('versions', function () {
-  // before(function (callback) {
-  //   rimraf(OPTIONS.cacheDirectory, function () {
-  //     rimraf(OPTIONS.installedDirectory, callback.bind(null, null));
-  //   });
-  // });
+  before(function (callback) {
+    rimraf(OPTIONS.cacheDirectory, function () {
+      rimraf(OPTIONS.installedDirectory, callback.bind(null, null));
+    });
+  });
 
   describe('happy path', function () {
     it('npm --version', function (done) {
@@ -41,14 +41,14 @@ describe('versions', function () {
       });
     });
 
-    it('latest version', function (done) {
-      nvu('latest', NODE, ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
-        assert.ok(!err);
-        var lines = cr(res.stdout).split('\n');
-        assert.ok(lines.slice(-2, -1)[0], 'v');
-        done();
-      });
-    });
+    // it('latest version', function (done) {
+    //   nvu('latest', NODE, ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
+    //     assert.ok(!err);
+    //     var lines = cr(res.stdout).split('\n');
+    //     assert.ok(lines.slice(-2, -1)[0], 'v');
+    //     done();
+    //   });
+    // });
 
     it('lts version', function (done) {
       nvu('lts/erbium', NODE, ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
