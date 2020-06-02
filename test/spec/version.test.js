@@ -16,11 +16,11 @@ var OPTIONS = {
 };
 
 describe('versions', function () {
-  before(function (callback) {
-    rimraf(OPTIONS.cacheDirectory, function () {
-      rimraf(OPTIONS.installedDirectory, callback.bind(null, null));
-    });
-  });
+  // before(function (callback) {
+  //   rimraf(OPTIONS.cacheDirectory, function () {
+  //     rimraf(OPTIONS.installedDirectory, callback.bind(null, null));
+  //   });
+  // });
 
   describe('happy path', function () {
     it('npm --version', function (done) {
