@@ -1,6 +1,6 @@
 {
   "name": "node-version-use",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Cross-platform solution for running commands on a specific version of node",
   "keywords": [
     "node",
@@ -34,7 +34,7 @@
     "isarray": "^2.0.5",
     "lodash.filter": "^4.6.0",
     "lodash.keys": "^4.2.0",
-    "node-install-release": "^0.1.19",
+    "node-install-release": "^0.1.20",
     "node-semvers": "^0.4.15",
     "object-assign": "^4.1.1",
     "osenv": "^0.1.5"
