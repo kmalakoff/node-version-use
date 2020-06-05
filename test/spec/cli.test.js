@@ -1,28 +1,16 @@
 var assert = require('assert');
 var path = require('path');
-var rimraf = require('rimraf');
-var crossSpawn = require('cross-spawn-cb');
+var spawn = require('cross-spawn-cb');
 var isVersion = require('is-version');
 var cr = require('cr');
 
 var CLI = path.join(__dirname, '..', '..', 'bin', 'node-version-use.js');
 var NODE = process.platform === 'win32' ? 'node.exe' : 'node';
-var TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
-var OPTIONS = {
-  cacheDirectory: path.join(TMP_DIR, 'cache'),
-  installedDirectory: path.join(TMP_DIR, 'installed'),
-};
 
 describe('cli', function () {
-  before(function (callback) {
-    rimraf(OPTIONS.cacheDirectory, function () {
-      rimraf(OPTIONS.cacheDirectory, callback.bind(null, null));
-    });
-  });
-
   describe('happy path', function () {
-    it('npm --version', function (done) {
-      crossSpawn(CLI, ['12', 'npm', '--version'], { stdout: 'string' }, function (err, res) {
+    it('one version - 12', function (done) {
+      spawn(CLI, ['12', '--silent', 'npm', '--version'], { stdout: 'string' }, function (err, res) {
         assert.ok(!err);
         var lines = cr(res.stdout).split('\n');
         assert.ok(isVersion(lines.slice(-2, -1)[0]));
@@ -30,8 +18,17 @@ describe('cli', function () {
       });
     });
 
-    it('12', function (done) {
-      crossSpawn(CLI, ['12', 'node', '--version'], { stdout: 'string' }, function (err, res) {
+    it('multiple versions - lts/argon,12', function (done) {
+      spawn(CLI, ['lts/argon,12', '--silent', 'npm', '--version'], { stdout: 'string' }, function (err, res) {
+        assert.ok(!err);
+        var lines = cr(res.stdout).split('\n');
+        assert.ok(isVersion(lines.slice(-2, -1)[0]));
+        done();
+      });
+    });
+
+    it('one version with options - lts/erbium', function (done) {
+      spawn(CLI, ['lts/erbium', '--silent', NODE, '--version'], { stdout: 'string' }, function (err, res) {
         assert.ok(!err);
         var lines = cr(res.stdout).split('\n');
         assert.ok(lines.slice(-2, -1)[0].indexOf('v12.') === 0);
@@ -39,33 +36,89 @@ describe('cli', function () {
       });
     });
 
-    it('one version with options', function (done) {
-      crossSpawn(CLI, ['lts/argon', NODE, '--version'], { stdout: 'string' }, function (err, res) {
+    it('one version with options - lts/argon', function (done) {
+      spawn(CLI, ['lts/argon', '--silent', NODE, '--version'], { stdout: 'string' }, function (err, res) {
         assert.ok(!err);
         var lines = cr(res.stdout).split('\n');
         assert.equal(lines.slice(-2, -1)[0], 'v4.9.1');
         done();
       });
     });
+
+    it('multiple versions with options - 10,12,lts/erbium', function (done) {
+      spawn(CLI, ['10,12,lts/erbium', '--silent', NODE, '--version'], { stdout: 'string' }, function (err, res) {
+        assert.ok(!err);
+        var lines = cr(res.stdout).split('\n');
+        assert.ok(lines.slice(-3, -2)[0].indexOf('v10.') === 0);
+        assert.ok(lines.slice(-2, -1)[0].indexOf('v12.') === 0);
+        done();
+      });
+    });
+
+    it('multiple versions with options - 10,12,lts/erbium (sort desc)', function (done) {
+      spawn(CLI, ['10,12,lts/erbium', '--silent', '--desc', NODE, '--version'], { stdout: 'string' }, function (err, res) {
+        assert.ok(!err);
+        var lines = cr(res.stdout).split('\n');
+        assert.ok(lines.slice(-3, -2)[0].indexOf('v12.') === 0);
+        assert.ok(lines.slice(-2, -1)[0].indexOf('v10.') === 0);
+        done();
+      });
+    });
+
+    it('using engines - 12', function (done) {
+      var cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
+      spawn(CLI, ['engines', '--silent', NODE, '--version'], { stdout: 'string', cwd: cwd }, function (err, res) {
+        assert.ok(!err);
+        var lines = cr(res.stdout).split('\n');
+        assert.ok(lines.slice(-2, -1)[0].indexOf('v12.') === 0);
+        done();
+      });
+    });
+
+    it('using engines - 12 (--)', function (done) {
+      var cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
+      spawn(CLI, ['engines', '--silent', '--', NODE, '--version'], { stdout: 'string', cwd: cwd }, function (err, res) {
+        assert.ok(!err);
+        var lines = cr(res.stdout).split('\n');
+        assert.ok(lines.slice(-2, -1)[0].indexOf('v12.') === 0);
+        done();
+      });
+    });
   });
 
   describe('unhappy path', function () {
-    it('err version (undefined)', function (done) {
-      crossSpawn(CLI, [undefined], { stdout: 'string' }, function (err, res) {
+    it('missing command', function (done) {
+      spawn(CLI, [], { stdout: 'string' }, function (err, res) {
         assert.ok(!!err);
         done();
       });
     });
 
-    it('err version (null)', function (done) {
-      crossSpawn(CLI, [null, NODE, '--version'], { stdout: 'string' }, function (err, res) {
+    it('missing versions', function (done) {
+      spawn(CLI, [NODE, '--version'], { stdout: 'string' }, function (err, res) {
         assert.ok(!!err);
         done();
       });
     });
 
     it('invalid versions', function (done) {
-      crossSpawn(CLI, ['junk', NODE, '--version'], { stdout: 'string' }, function (err, res) {
+      spawn(CLI, ['junk,junk', NODE, '--version'], { stdout: 'string' }, function (err, res) {
+        assert.ok(!!err);
+        done();
+      });
+    });
+
+    it('engines missing', function (done) {
+      var cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-missing'));
+      spawn(CLI, ['engines', NODE, '--version'], { stdout: 'string', cwd: cwd }, function (err, res) {
+        assert.ok(!!err);
+        done();
+      });
+    });
+
+    it('engines node missing', function (done) {
+      var cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-node-missing'));
+      spawn(CLI, ['engines', NODE, '--version'], { stdout: 'string', cwd: cwd }, function (err, res) {
         assert.ok(!!err);
         done();
       });

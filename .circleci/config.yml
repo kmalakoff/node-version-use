@@ -1,0 +1,41 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@2.0.0
+  win: circleci/windows@2.4.0
+
+jobs:
+  test-linux:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - checkout
+      - run: npm install
+      - run: npm install nvs cross-env@2
+      - run: ./node_modules/.bin/cross-env NODE_OPTIONS=--max_old_space_size=2048 CI=true ./node_modules/.bin/nvs engines ./node_modules/.bin/mocha-compat test/spec/**/*.test.js --no-timeouts
+
+  test-macos:
+    macos:
+      xcode: 11.3.0
+    steps:
+      - checkout
+      - run: npm install
+      - run: npm install nvs
+      - run: ./node_modules/.bin/cross-env NODE_OPTIONS=--max_old_space_size=2048 CI=true ./node_modules/.bin/nvs engines ./node_modules/.bin/mocha-compat test/spec/**/*.test.js --no-timeouts
+
+  test-windows:
+    executor:
+      name: win/default
+    steps:
+      - checkout
+      - run: npm install
+      - run: npm install nvs
+      - run: ./node_modules/.bin/cross-env NODE_OPTIONS=--max_old_space_size=2048 CI=true ./node_modules/.bin/nvs engines ./node_modules/.bin/mocha-compat test/spec/**/*.test.js --no-timeouts
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test-linux
+      - test-macos
+      - test-windows
