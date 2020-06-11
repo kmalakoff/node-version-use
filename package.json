@@ -1,6 +1,6 @@
 {
   "name": "node-version-use",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Cross-platform solution for using multiple versions of node. Useful for compatibility testing",
   "keywords": [
     "node",
@@ -32,8 +32,8 @@
     "cross-spawn-cb": "^0.3.1",
     "exit": "^0.1.2",
     "getopts-compat": "^2.2.5",
-    "node-install-release": "^0.1.24",
-    "node-resolve-versions": "^0.1.4",
+    "node-install-release": "^0.1.25",
+    "node-resolve-versions": "^0.1.5",
     "node-version-utils": "^0.1.1",
     "object-assign": "^4.1.1",
     "osenv": "^0.1.5",
