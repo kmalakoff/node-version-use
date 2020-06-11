@@ -11,8 +11,8 @@ jobs:
     steps:
       - checkout
       - run: npm install
-      - run: npm install nvs cross-env@2
-      - run: ./node_modules/.bin/cross-env NODE_OPTIONS=--max_old_space_size=2048 CI=true ./node_modules/.bin/nvs engines ./node_modules/.bin/mocha-compat test/spec/**/*.test.js --no-timeouts
+      - run: npm install node-version-use -g
+      - run: nvu engines ./node_modules/.bin/mocha-compat test/spec/**/*.test.js --no-timeouts
 
   test-macos:
     macos:
@@ -20,8 +20,8 @@ jobs:
     steps:
       - checkout
       - run: npm install
-      - run: npm install nvs cross-env@2
-      - run: ./node_modules/.bin/cross-env NODE_OPTIONS=--max_old_space_size=2048 CI=true ./node_modules/.bin/nvs engines ./node_modules/.bin/mocha-compat test/spec/**/*.test.js --no-timeouts
+      - run: npm install node-version-use -g
+      - run: nvu engines ./node_modules/.bin/mocha-compat test/spec/**/*.test.js --no-timeouts
 
   test-windows:
     executor:
@@ -29,8 +29,8 @@ jobs:
     steps:
       - checkout
       - run: npm install
-      - run: npm install nvs cross-env@2
-      - run: ./node_modules/.bin/cross-env NODE_OPTIONS=--max_old_space_size=2048 CI=true ./node_modules/.bin/nvs engines ./node_modules/.bin/mocha-compat test/spec/**/*.test.js --no-timeouts
+      - run: npm install node-version-use -g
+      - run: nvu engines ./node_modules/.bin/mocha-compat test/spec/**/*.test.js --no-timeouts
 
 workflows:
   version: 2
