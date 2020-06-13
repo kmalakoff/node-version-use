@@ -37,5 +37,5 @@ workflows:
   test:
     jobs:
       - test-linux
-      - test-macos
+      # - test-macos
       - test-windows
