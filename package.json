@@ -37,7 +37,7 @@
     "node-version-utils": "^0.1.4",
     "object-assign": "^4.1.1",
     "osenv": "^0.1.5",
-    "queue-cb": "^1.1.4"
+    "queue-cb": "^1.1.5"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
