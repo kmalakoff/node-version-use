@@ -1,6 +1,6 @@
 module.exports = {
   extends: ['standard', 'prettier'],
-  parser: 'babel-eslint',
+  parser: '@typescript-eslint/parser',
   env: {
     es6: true,
     node: true,

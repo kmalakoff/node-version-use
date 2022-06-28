@@ -1,7 +1,7 @@
 var assert = require('assert');
 var path = require('path');
 var rimraf = require('rimraf');
-var assign = require('object-assign');
+var assign = require('just-extend');
 var cr = require('cr');
 
 var versionUse = require('../..');
