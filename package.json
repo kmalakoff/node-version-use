@@ -54,7 +54,7 @@
     "is-version": "^0.2.0",
     "mocha-compat": "^3.5.5",
     "prettier": "^2.7.1",
-    "rimraf": "^2.7.1"
+    "rimraf": "^3.0.2"
   },
   "engines": {
     "node": ">=0.12"
