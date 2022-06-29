@@ -1,2 +1,2 @@
-ignores: ["depcheck"]
+ignores: ["depcheck" , "eslint-*"]
 ignoreDirs: [".tmp"]
