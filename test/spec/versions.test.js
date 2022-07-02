@@ -43,7 +43,7 @@ describe('versions', function () {
       });
     });
 
-    it('lts/argon version - lts/argon', function (done) {
+    it.only('lts/argon version - lts/argon', function (done) {
       versionUse('lts/argon', NODE, ['--version'], OPTIONS, function (err, results) {
         assert.ok(!err);
         assert.ok(results.length > 0);
