@@ -47,8 +47,16 @@ describe('versions', function () {
       var writeEnv = path.resolve(path.join(__dirname, '..', 'data', 'writeEnv.js'));
       var output = path.join(TMP_DIR, 'env.json');
       versionUse('lts/argon', NODE, [writeEnv, output], OPTIONS, function (err, results) {
-        console.log('local', JSON.stringify(process.env, null, 2))
         console.log('remote', JSON.stringify(require(output), null, 2))        
+        assert.ok(!err);
+        assert.ok(results.length > 0);
+        assert.equal(cr(results[0].result.stdout).split('\n').slice(-2, -1)[0], 'v4.9.1');
+        done();
+      });
+    });
+
+    it('lts/argon version - lts/argon', function (done) {
+      versionUse('lts/argon', NODE, ['--version'], OPTIONS, function (err, results) {
         assert.ok(!err);
         assert.ok(results.length > 0);
         assert.equal(cr(results[0].result.stdout).split('\n').slice(-2, -1)[0], 'v4.9.1');
