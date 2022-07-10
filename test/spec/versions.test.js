@@ -12,7 +12,7 @@ var now = new Date(Date.parse('2020-05-10T03:23:29.347Z'));
 var TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
 var OPTIONS = {
   cacheDirectory: path.join(TMP_DIR, 'cache'),
-  installedDirectory: path.join(TMP_DIR, 'installed'),
+  installDirectory: path.join(TMP_DIR, 'installed'),
   buildDirectory: path.join(TMP_DIR, 'build'),
   now: now,
   stdout: 'string',
@@ -94,6 +94,18 @@ describe('versions', function () {
             done();
           })
           .catch(done);
+      });
+    });
+
+    describe('contants', function () {
+      it('installDirectory', function () {
+        var installDirectory = versionUse.installDirectory()
+        assert.ok(installDirectory)
+      });
+
+      it('cacheDirectory', function () {
+        var cacheDirectory = versionUse.cacheDirectory()
+        assert.ok(cacheDirectory)
       });
     });
   });
