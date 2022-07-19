@@ -32,13 +32,13 @@
     "test": "mocha-compat test/spec/**/*.test.js --no-timeouts"
   },
   "dependencies": {
-    "cross-spawn-cb": "^0.6.2",
+    "cross-spawn-cb": "^0.6.3",
     "exit": "^0.1.2",
     "getopts-compat": "^2.2.5",
     "just-extend": "^6.0.1",
     "node-install-release": "^0.2.8",
     "node-resolve-versions": "^0.2.5",
-    "node-version-utils": "^0.4.3",
+    "node-version-utils": "^0.4.4",
     "osenv": "^0.1.5",
     "queue-cb": "^1.1.6"
   },
