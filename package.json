@@ -18,26 +18,27 @@
   },
   "license": "MIT",
   "main": "lib/index.js",
-  "files": [
-    "lib"
-  ],
   "bin": {
     "nvu": "./bin/node-version-use.js"
   },
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "compat": "./bin/node-version-use.js engines mocha-compat test/spec/**/*.test.js --no-timeouts",
     "format": "prettier --write .",
     "lint": "eslint .",
     "prepublishOnly": "npm run lint && depcheck",
-    "test": "mocha-compat test/spec/**/*.test.js --no-timeouts"
+    "test": "mocha-compat test/spec/**/*.test.js --no-timeouts",
+    "test:engines": "nvu engines npm test"
   },
   "dependencies": {
-    "cross-spawn-cb": "^0.6.4",
+    "cross-spawn-cb": "^0.6.5",
     "exit": "^0.1.2",
     "getopts-compat": "^2.2.5",
     "just-extend": "^6.0.1",
-    "node-install-release": "^0.3.2",
-    "node-resolve-versions": "^0.3.1",
+    "node-install-release": "^0.3.3",
+    "node-resolve-versions": "^0.3.2",
     "node-version-utils": "^0.5.1",
     "osenv": "^0.1.5",
     "queue-cb": "^1.1.6"
