@@ -34,18 +34,18 @@
     "test:engines": "nvu engines npm test"
   },
   "dependencies": {
-    "cross-spawn-cb": "^0.6.6",
+    "cross-spawn-cb": "^0.6.7",
     "exit": "^0.1.2",
     "getopts-compat": "^2.2.5",
     "just-extend": "^6.0.1",
     "node-install-release": "^0.3.6",
     "node-resolve-versions": "^0.3.2",
-    "node-version-utils": "^0.5.3",
+    "node-version-utils": "^0.5.4",
     "osenv": "^0.1.5",
     "queue-cb": "^1.1.7"
   },
   "devDependencies": {
-    "@typescript-eslint/parser": "^5.30.7",
+    "@typescript-eslint/parser": "^5.31.0",
     "cr": "^0.1.0",
     "depcheck": "^1.4.3",
     "eslint": "^8.20.0",
