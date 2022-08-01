@@ -34,7 +34,7 @@
     "test:engines": "nvu engines npm test"
   },
   "dependencies": {
-    "cross-spawn-cb": "^0.6.7",
+    "cross-spawn-cb": "^0.6.8",
     "exit": "^0.1.2",
     "getopts-compat": "^2.2.5",
     "just-extend": "^6.0.1",
