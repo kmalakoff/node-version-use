@@ -99,13 +99,13 @@ describe('versions', function () {
 
     describe('contants', function () {
       it('installDirectory', function () {
-        var installDirectory = versionUse.installDirectory()
-        assert.ok(installDirectory)
+        var installDirectory = versionUse.installDirectory();
+        assert.ok(installDirectory);
       });
 
       it('cacheDirectory', function () {
-        var cacheDirectory = versionUse.cacheDirectory()
-        assert.ok(cacheDirectory)
+        var cacheDirectory = versionUse.cacheDirectory();
+        assert.ok(cacheDirectory);
       });
     });
   });
