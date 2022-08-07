@@ -2,7 +2,8 @@ var assert = require('assert');
 var path = require('path');
 var spawn = require('cross-spawn-cb');
 var isVersion = require('is-version');
-var cr = require('cr');
+
+var versionLines = require('../lib/versionLines');
 
 var CLI = path.join(__dirname, '..', '..', 'bin', 'node-version-use.js');
 var NODE = process.platform === 'win32' ? 'node.exe' : 'node';
@@ -12,8 +13,7 @@ describe('cli', function () {
     it('one version - 12', function (done) {
       spawn(CLI, ['12', '--silent', 'npm', '--version'], { encoding: 'utf8' }, function (err, res) {
         assert.ok(!err);
-        var lines = cr(res.stdout).split('\n');
-        assert.ok(isVersion(lines.slice(-2, -1)[0]));
+        assert.ok(isVersion(versionLines(res.stdout).slice(-1)[0]));
         done();
       });
     });
@@ -21,8 +21,7 @@ describe('cli', function () {
     it('multiple versions - lts/argon,12', function (done) {
       spawn(CLI, ['lts/argon,12', '--silent', 'npm', '--version'], { encoding: 'utf8' }, function (err, res) {
         assert.ok(!err);
-        var lines = cr(res.stdout).split('\n');
-        assert.ok(isVersion(lines.slice(-2, -1)[0]));
+        assert.ok(isVersion(versionLines(res.stdout).slice(-1)[0]));
         done();
       });
     });
@@ -30,8 +29,7 @@ describe('cli', function () {
     it('one version with options - lts/erbium', function (done) {
       spawn(CLI, ['lts/erbium', '--silent', NODE, '--version'], { encoding: 'utf8' }, function (err, res) {
         assert.ok(!err);
-        var lines = cr(res.stdout).split('\n');
-        assert.ok(lines.slice(-2, -1)[0].indexOf('v12.') === 0);
+        assert.ok(versionLines(res.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
       });
     });
@@ -39,8 +37,7 @@ describe('cli', function () {
     it('one version with options - lts/argon', function (done) {
       spawn(CLI, ['lts/argon', '--silent', NODE, '--version'], { encoding: 'utf8' }, function (err, res) {
         assert.ok(!err);
-        var lines = cr(res.stdout).split('\n');
-        assert.equal(lines.slice(-2, -1)[0], 'v4.9.1');
+        assert.equal(versionLines(res.stdout).slice(-1)[0], 'v4.9.1');
         done();
       });
     });
@@ -48,9 +45,8 @@ describe('cli', function () {
     it('multiple versions with options - 10,12,lts/erbium', function (done) {
       spawn(CLI, ['10,12,lts/erbium', '--silent', NODE, '--version'], { encoding: 'utf8' }, function (err, res) {
         assert.ok(!err);
-        var lines = cr(res.stdout).split('\n');
-        assert.ok(lines.slice(-3, -2)[0].indexOf('v10.') === 0);
-        assert.ok(lines.slice(-2, -1)[0].indexOf('v12.') === 0);
+        assert.ok(versionLines(res.stdout).slice(-2)[0].indexOf('v10.') === 0);
+        assert.ok(versionLines(res.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
       });
     });
@@ -58,9 +54,8 @@ describe('cli', function () {
     it('multiple versions with options - 10,12,lts/erbium (sort desc)', function (done) {
       spawn(CLI, ['10,12,lts/erbium', '--silent', '--desc', NODE, '--version'], { encoding: 'utf8' }, function (err, res) {
         assert.ok(!err);
-        var lines = cr(res.stdout).split('\n');
-        assert.ok(lines.slice(-3, -2)[0].indexOf('v12.') === 0);
-        assert.ok(lines.slice(-2, -1)[0].indexOf('v10.') === 0);
+        assert.ok(versionLines(res.stdout).slice(-2)[0].indexOf('v12.') === 0);
+        assert.ok(versionLines(res.stdout).slice(-1)[0].indexOf('v10.') === 0);
         done();
       });
     });
@@ -69,8 +64,7 @@ describe('cli', function () {
       var cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['engines', '--silent', NODE, '--version'], { encoding: 'utf8', cwd: cwd }, function (err, res) {
         assert.ok(!err);
-        var lines = cr(res.stdout).split('\n');
-        assert.ok(lines.slice(-2, -1)[0].indexOf('v12.') === 0);
+        assert.ok(versionLines(res.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
       });
     });
@@ -79,8 +73,7 @@ describe('cli', function () {
       var cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['engines', '--silent', '--', NODE, '--version'], { encoding: 'utf8', cwd: cwd }, function (err, res) {
         assert.ok(!err);
-        var lines = cr(res.stdout).split('\n');
-        assert.ok(lines.slice(-2, -1)[0].indexOf('v12.') === 0);
+        assert.ok(versionLines(res.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
       });
     });
