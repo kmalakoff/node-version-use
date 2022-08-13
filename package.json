@@ -38,7 +38,7 @@
     "exit": "^0.1.2",
     "getopts-compat": "^2.2.5",
     "just-extend": "^6.1.1",
-    "node-install-release": "^0.4.4",
+    "node-install-release": "^0.4.5",
     "node-resolve-versions": "^0.3.9",
     "node-version-utils": "^0.5.6",
     "osenv": "^0.1.5",
