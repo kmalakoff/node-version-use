@@ -1,17 +1,21 @@
-var assert = require('assert');
-var path = require('path');
-var rimraf = require('rimraf');
-var assign = require('just-extend');
+// remove NODE_OPTIONS from ts-dev-stack
+// biome-ignore lint/performance/noDelete: <explanation>
+delete process.env.NODE_OPTIONS;
 
-var versionUse = require('../..');
+const assert = require('assert');
+const path = require('path');
+const rimraf = require('rimraf');
+const assign = require('just-extend');
 
-var versionLines = require('../lib/versionLines');
+const versionUse = require('node-version-use');
 
-var NODE = process.platform === 'win32' ? 'node.exe' : 'node';
-var now = new Date(Date.parse('2020-05-10T03:23:29.347Z'));
+const versionLines = require('../lib/versionLines');
 
-var TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
-var OPTIONS = {
+const NODE = process.platform === 'win32' ? 'node.exe' : 'node';
+const now = new Date(Date.parse('2020-05-10T03:23:29.347Z'));
+
+const TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
+const OPTIONS = {
   cacheDirectory: path.join(TMP_DIR, 'cache'),
   installDirectory: path.join(TMP_DIR, 'installed'),
   buildDirectory: path.join(TMP_DIR, 'build'),
@@ -20,14 +24,14 @@ var OPTIONS = {
   silent: true,
 };
 
-describe('versions', function () {
-  before(function (callback) {
+describe('versions', () => {
+  before((callback) => {
     rimraf(TMP_DIR, callback.bind(null, null));
   });
 
-  describe('happy path', function () {
-    it('one version - 12', function (done) {
-      versionUse('12', NODE, ['--version'], OPTIONS, function (err, results) {
+  describe('happy path', () => {
+    it('one version - 12', (done) => {
+      versionUse('12', NODE, ['--version'], OPTIONS, (err, results) => {
         assert.ok(!err);
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -35,8 +39,8 @@ describe('versions', function () {
       });
     });
 
-    it('lts version - lts/erbium', function (done) {
-      versionUse('lts/erbium', NODE, ['--version'], OPTIONS, function (err, results) {
+    it('lts version - lts/erbium', (done) => {
+      versionUse('lts/erbium', NODE, ['--version'], OPTIONS, (err, results) => {
         assert.ok(!err);
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -44,8 +48,8 @@ describe('versions', function () {
       });
     });
 
-    it('lts/argon version - lts/argon', function (done) {
-      versionUse('lts/argon', NODE, ['--version'], OPTIONS, function (err, results) {
+    it('lts/argon version - lts/argon', (done) => {
+      versionUse('lts/argon', NODE, ['--version'], OPTIONS, (err, results) => {
         assert.ok(!err);
         assert.ok(results.length > 0);
         assert.equal(versionLines(results[0].result.stdout).slice(-1)[0], 'v4.9.1');
@@ -53,8 +57,8 @@ describe('versions', function () {
       });
     });
 
-    it('multiple versions - 10,12,lts/erbium', function (done) {
-      versionUse('10,12,lts/erbium', NODE, ['--version'], OPTIONS, function (err, results) {
+    it('multiple versions - 10,12,lts/erbium', (done) => {
+      versionUse('10,12,lts/erbium', NODE, ['--version'], OPTIONS, (err, results) => {
         assert.ok(!err);
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
@@ -63,8 +67,8 @@ describe('versions', function () {
       });
     });
 
-    it('multiple versions - 10,12,lts/erbium (sort -1)', function (done) {
-      versionUse('10,12,lts/erbium', NODE, ['--version'], assign({ sort: -1 }, OPTIONS), function (err, results) {
+    it('multiple versions - 10,12,lts/erbium (sort -1)', (done) => {
+      versionUse('10,12,lts/erbium', NODE, ['--version'], assign({ sort: -1 }, OPTIONS), (err, results) => {
         assert.ok(!err);
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -73,9 +77,9 @@ describe('versions', function () {
       });
     });
 
-    it('using engines - 12', function (done) {
-      var cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
-      versionUse('engines', NODE, ['--version'], assign({ cwd: cwd }, OPTIONS), function (err, results) {
+    it('using engines - 12', (done) => {
+      const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
+      versionUse('engines', NODE, ['--version'], assign({ cwd: cwd }, OPTIONS), (err, results) => {
         assert.ok(!err);
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -83,13 +87,13 @@ describe('versions', function () {
       });
     });
 
-    describe('promise', function () {
+    describe('promise', () => {
       if (typeof Promise === 'undefined') return; // no promise support
 
-      it('using engines - 12 (promise)', function (done) {
-        var cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
+      it('using engines - 12 (promise)', (done) => {
+        const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
         versionUse('engines', NODE, ['--version'], assign({ cwd: cwd }, OPTIONS))
-          .then(function (results) {
+          .then((results) => {
             assert.ok(results.length > 0);
             assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
             done();
@@ -98,45 +102,45 @@ describe('versions', function () {
       });
     });
 
-    describe('contants', function () {
-      it('installDirectory', function () {
-        var installDirectory = versionUse.installDirectory();
+    describe('contants', () => {
+      it('installDirectory', () => {
+        const installDirectory = versionUse.installDirectory();
         assert.ok(installDirectory);
       });
 
-      it('cacheDirectory', function () {
-        var cacheDirectory = versionUse.cacheDirectory();
+      it('cacheDirectory', () => {
+        const cacheDirectory = versionUse.cacheDirectory();
         assert.ok(cacheDirectory);
       });
     });
   });
 
-  describe('unhappy path', function () {
-    it('invalid versions', function (done) {
-      versionUse('1.d.4', NODE, ['--version'], OPTIONS, function (err) {
+  describe('unhappy path', () => {
+    it('invalid versions', (done) => {
+      versionUse('1.d.4', NODE, ['--version'], OPTIONS, (err) => {
         assert.ok(!!err);
         done();
       });
     });
 
-    it('invalid versions', function (done) {
-      versionUse('14,bob', NODE, ['--version'], OPTIONS, function (err) {
+    it('invalid versions', (done) => {
+      versionUse('14,bob', NODE, ['--version'], OPTIONS, (err) => {
         assert.ok(!!err);
         done();
       });
     });
 
-    it('engines missing', function (done) {
-      var cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-missing'));
-      versionUse('engines', NODE, ['--version'], assign({ cwd: cwd }, OPTIONS), function (err) {
+    it('engines missing', (done) => {
+      const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-missing'));
+      versionUse('engines', NODE, ['--version'], assign({ cwd: cwd }, OPTIONS), (err) => {
         assert.ok(!!err);
         done();
       });
     });
 
-    it('engines node missing', function (done) {
-      var cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-node-missing'));
-      versionUse(NODE, ['--version'], assign({ cwd: cwd }, OPTIONS), function (err) {
+    it('engines node missing', (done) => {
+      const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-node-missing'));
+      versionUse(NODE, ['--version'], assign({ cwd: cwd }, OPTIONS), (err) => {
         assert.ok(!!err);
         done();
       });
