@@ -1,9 +1,9 @@
-var getopts = require('getopts-compat');
-var exit = require('exit');
-var nvs = require('..');
+import exit from 'exit';
+import getopts from 'getopts-compat';
+import nvu from './index.js';
 
-module.exports = function cli(argv, name) {
-  var options = getopts(argv.slice(1), {
+export default (argv, name) => {
+  const options = getopts(argv.slice(1), {
     alias: { range: 'r', desc: 'd', silent: 's' },
     default: { range: 'major,even' },
     boolean: ['silent', 'desc'],
@@ -14,38 +14,36 @@ module.exports = function cli(argv, name) {
   // define.option('-s, --silent', 'suppress logging', false);
   options.sort = options.desc ? -1 : 1;
 
-  var args = argv.slice(0, 1).concat(options._);
+  const args = argv.slice(0, 1).concat(options._);
   if (args.length < 1) {
-    console.log('Missing command. Example usage: ' + name + ' [version expression] [command]');
+    console.log(`Missing command. Example usage: ${name} [version expression] [command]`);
     return exit(-1);
   }
 
   if (!options.silent)
-    options.header = function (version, command, args) {
+    options.header = (version, command, args) => {
       console.log('\n----------------------');
-      console.log([command].concat(args).join(' ') + ' (' + version + ')');
+      console.log(`${[command].concat(args).join(' ')} (${version})`);
       console.log('----------------------');
     };
 
   options.stdio = 'inherit'; // pass through stdio
-  nvs(args[0], args[1], args.slice(2), options, function (err, results) {
+  nvu(args[0], args[1], args.slice(2), options, (err, results) => {
     if (err) {
       console.log(err.message);
       return exit(err.code || -1);
     }
-    var errors = results.filter(function (result) {
-      return !!result.error;
-    });
+    const errors = results.filter((result) => !!result.error);
 
     if (!options.silent) {
       console.log('\n======================');
       if (errors.length) {
-        console.log('Errors (' + errors.length + ')');
-        for (var index = 0; index < errors.length; index++) {
-          var result = errors[index];
-          console.log(result.version + ' Error: ' + result.error.message);
+        console.log(`Errors (${errors.length})`);
+        for (let index = 0; index < errors.length; index++) {
+          const result = errors[index];
+          console.log(`${result.version} Error: ${result.error.message}`);
         }
-      } else console.log('Success (' + results.length + ')');
+      } else console.log(`Success (${results.length})`);
       console.log('======================');
     }
 
