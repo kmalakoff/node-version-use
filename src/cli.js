@@ -1,6 +1,6 @@
 import exit from 'exit';
 import getopts from 'getopts-compat';
-import nvu from './index.js';
+import nvu from './index.mjs';
 
 export default (argv, name) => {
   const options = getopts(argv.slice(1), {

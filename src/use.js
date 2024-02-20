@@ -1,5 +1,4 @@
 const path = require('path');
-const assign = require('just-extend');
 const Queue = require('queue-cb');
 const installRelease = require('node-install-release');
 const versionUtils = require('node-version-utils');
@@ -9,7 +8,7 @@ const constants = require('./constants');
 const spawnKeys = ['encoding', 'stdio', 'stdin', 'stdout', 'stderr', 'cwd', 'env'];
 
 module.exports = function use(versionExpression, command, args, options, callback) {
-  resolveVersions(versionExpression, assign({}, options, { path: 'raw' }), (err, versions) => {
+  resolveVersions(versionExpression, { ...options, path: 'raw' }, (err, versions) => {
     if (err) return callback(err);
     if (!versions.length) return callback(new Error(`No versions found from expression: ${versionExpression}`));
 

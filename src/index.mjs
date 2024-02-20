@@ -1,7 +1,7 @@
-const use = require('./use');
-const constants = require('./constants');
+import constants from './constants';
+import use from './use';
 
-module.exports = function nodeVersionUse(versionExpression, command, args, options, callback) {
+export default function nodeVersionUse(versionExpression, command, args, options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
@@ -12,12 +12,12 @@ module.exports = function nodeVersionUse(versionExpression, command, args, optio
       err ? reject(err) : resolve(res);
     });
   });
-};
+}
 
-module.exports.installDirectory = function installDirectory() {
+export function installDirectory() {
   return constants.installDirectory;
-};
+}
 
-module.exports.cacheDirectory = function cacheDirectory(_options) {
+export function cacheDirectory(_options) {
   return constants.cacheDirectory;
-};
+}

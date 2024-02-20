@@ -5,7 +5,7 @@ delete process.env.NODE_OPTIONS;
 const assert = require('assert');
 const path = require('path');
 const rimraf = require('rimraf');
-const assign = require('just-extend');
+const _assign = require('just-extend');
 
 const versionUse = require('node-version-use');
 
@@ -68,7 +68,7 @@ describe('versions', () => {
     });
 
     it('multiple versions - 10,12,lts/erbium (sort -1)', (done) => {
-      versionUse('10,12,lts/erbium', NODE, ['--version'], assign({ sort: -1 }, OPTIONS), (err, results) => {
+      versionUse('10,12,lts/erbium', NODE, ['--version'], Object.assign({ sort: -1 }, OPTIONS), (err, results) => {
         assert.ok(!err);
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -79,7 +79,7 @@ describe('versions', () => {
 
     it('using engines - 12', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
-      versionUse('engines', NODE, ['--version'], assign({ cwd: cwd }, OPTIONS), (err, results) => {
+      versionUse('engines', NODE, ['--version'], Object.assign({ cwd: cwd }, OPTIONS), (err, results) => {
         assert.ok(!err);
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -92,7 +92,7 @@ describe('versions', () => {
 
       it('using engines - 12 (promise)', (done) => {
         const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
-        versionUse('engines', NODE, ['--version'], assign({ cwd: cwd }, OPTIONS))
+        versionUse('engines', NODE, ['--version'], Object.assign({ cwd: cwd }, OPTIONS))
           .then((results) => {
             assert.ok(results.length > 0);
             assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -132,7 +132,7 @@ describe('versions', () => {
 
     it('engines missing', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-missing'));
-      versionUse('engines', NODE, ['--version'], assign({ cwd: cwd }, OPTIONS), (err) => {
+      versionUse('engines', NODE, ['--version'], Object.assign({ cwd: cwd }, OPTIONS), (err) => {
         assert.ok(!!err);
         done();
       });
@@ -140,7 +140,7 @@ describe('versions', () => {
 
     it('engines node missing', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-node-missing'));
-      versionUse(NODE, ['--version'], assign({ cwd: cwd }, OPTIONS), (err) => {
+      versionUse(NODE, ['--version'], Object.assign({ cwd: cwd }, OPTIONS), (err) => {
         assert.ok(!!err);
         done();
       });
