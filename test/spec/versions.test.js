@@ -5,7 +5,6 @@ delete process.env.NODE_OPTIONS;
 const assert = require('assert');
 const path = require('path');
 const rimraf = require('rimraf');
-const _assign = require('just-extend');
 
 const versionUse = require('node-version-use');
 
