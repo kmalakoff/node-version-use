@@ -18,12 +18,12 @@ const OPTIONS = {
   cacheDirectory: path.join(TMP_DIR, 'cache'),
   installDirectory: path.join(TMP_DIR, 'installed'),
   buildDirectory: path.join(TMP_DIR, 'build'),
-  now: now,
+  now: now, // BE CAREFUL - this fixes a moment in time
   encoding: 'utf8',
   silent: true,
 };
 
-describe('versions', () => {
+describe('callback', () => {
   before((callback) => {
     rimraf(TMP_DIR, callback.bind(null, null));
   });
@@ -86,22 +86,16 @@ describe('versions', () => {
       });
     });
 
-    describe('promise', () => {
-      if (typeof Promise === 'undefined') return; // no promise support
-
-      it('using engines - 12 (promise)', (done) => {
-        const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
-        versionUse('engines', NODE, ['--version'], Object.assign({ cwd: cwd }, OPTIONS))
-          .then((results) => {
-            assert.ok(results.length > 0);
-            assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
-            done();
-          })
-          .catch(done);
+    it('>=8', (done) => {
+      versionUse('>=8', NODE, ['--version'], Object.assign({ range: 'major,even' }, OPTIONS), (err, results) => {
+        assert.ok(!err);
+        assert.ok(results.length > 0);
+        assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v8.') === 0);
+        done();
       });
     });
 
-    describe('contants', () => {
+    describe('constants', () => {
       it('installDirectory', () => {
         const installDirectory = versionUse.installDirectory();
         assert.ok(installDirectory);
