@@ -49,7 +49,7 @@ var _default = function(argv, name) {
     };
     options.stdio = "inherit"; // pass through stdio
     (0, _index.default)(args[0], args[1], args.slice(2), options, function(err, results) {
-        if (err) {
+        if (err && err.message.indexOf("ExperimentalWarning") < 0) {
             console.log(err.message);
             return (0, _exit.default)(err.code || -1);
         }

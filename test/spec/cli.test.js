@@ -81,6 +81,16 @@ describe('cli', () => {
         done();
       });
     });
+
+    it('>=8', (done) => {
+      const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
+      spawn(CLI, ['>=8', NODE, '--version'], { encoding: 'utf8', cwd: cwd }, (err, res) => {
+        assert.ok(!err);
+        console.log(res.stdout)
+        assert.ok(versionLines(res.stdout).slice(0)[0].indexOf('v8.') === 0);
+        done();
+      });
+    });
   });
 
   describe('unhappy path', () => {
