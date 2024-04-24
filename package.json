@@ -44,14 +44,14 @@
     "queue-cb": "^1.2.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.5.3",
+    "@biomejs/biome": "^1.7.1",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.19",
+    "@types/node": "^20.12.7",
     "cr": "^0.1.0",
     "depcheck": "^1.4.7",
     "is-version": "^0.2.1",
     "rimraf": "^2.7.1",
-    "ts-dev-stack": "^0.15.2"
+    "ts-dev-stack": "^0.15.8"
   },
   "engines": {
     "node": ">=0.8"
