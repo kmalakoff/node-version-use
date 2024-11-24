@@ -27,11 +27,11 @@ function _interop_require_default(obj) {
     };
 }
 function nodeVersionUse(versionExpression, command, args, options, callback) {
-    if (typeof options === "function") {
+    if (typeof options === 'function') {
         callback = options;
         options = {};
     }
-    if (typeof callback === "function") return (0, _use.default)(versionExpression, command, args, options || {}, callback);
+    if (typeof callback === 'function') return (0, _use.default)(versionExpression, command, args, options || {}, callback);
     return new Promise(function(resolve, reject) {
         nodeVersionUse(versionExpression, command, args, options, function nodeVersionUseCallback(err, res) {
             err ? reject(err) : resolve(res);

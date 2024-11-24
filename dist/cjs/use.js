@@ -51,15 +51,15 @@ function _object_spread_props(target, source) {
     }
     return target;
 }
-var path = require("path");
-var Queue = require("queue-cb");
-var installRelease = require("node-install-release");
-var versionUtils = require("node-version-utils");
-var resolveVersions = require("node-resolve-versions");
-var constants = require("./constants");
+var path = require('path');
+var Queue = require('queue-cb');
+var installRelease = require('node-install-release');
+var versionUtils = require('node-version-utils');
+var resolveVersions = require('node-resolve-versions');
+var constants = require('./constants');
 module.exports = function use(versionExpression, command, args, options, callback) {
     resolveVersions(versionExpression, _object_spread_props(_object_spread({}, options), {
-        path: "raw"
+        path: 'raw'
     }), function(err, versions) {
         if (err) return callback(err);
         if (!versions.length) return callback(new Error("No versions found from expression: ".concat(versionExpression)));
