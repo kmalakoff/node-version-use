@@ -51,7 +51,7 @@
     "depcheck": "^1.4.7",
     "is-version": "^0.2.1",
     "rimraf2": "^2.7.1",
-    "ts-dev-stack": "^0.16.3"
+    "ts-dev-stack": "^0.16.5"
   },
   "engines": {
     "node": ">=0.8"
