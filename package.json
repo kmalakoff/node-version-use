@@ -40,7 +40,7 @@
     "homedir-polyfill": "^1.0.3",
     "node-install-release": "^1.4.0",
     "node-resolve-versions": "^1.0.0",
-    "node-version-utils": "^0.5.7",
+    "node-version-utils": "^1.0.0",
     "queue-cb": "^1.2.1"
   },
   "devDependencies": {
