@@ -1,5 +1,5 @@
 const path = require('path');
-const home = require('osenv').home();
+const home = require('homedir-polyfill')();
 
 module.exports = {
   cacheDirectory: path.join(home, '.nvu', 'cache'),
