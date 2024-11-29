@@ -1,4 +1,4 @@
 {
   "upgrade": true,
-  "reject": ["mkdirp", "rimraf"]
+  "reject": ["mkdirp"]
 }

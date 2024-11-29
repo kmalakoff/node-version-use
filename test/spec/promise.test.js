@@ -4,7 +4,7 @@ delete process.env.NODE_OPTIONS;
 
 const assert = require('assert');
 const path = require('path');
-const rimraf = require('rimraf');
+const rimraf2 = require('rimraf2');
 
 const versionUse = require('node-version-use');
 
@@ -27,7 +27,7 @@ describe('promise', () => {
   if (typeof Promise === 'undefined') return; // no promise support
 
   before((callback) => {
-    rimraf(TMP_DIR, callback.bind(null, null));
+    rimraf2(TMP_DIR, { disableGlob: true }, callback.bind(null, null));
   });
 
   describe('happy path', () => {
