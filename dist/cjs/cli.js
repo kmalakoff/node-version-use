@@ -19,16 +19,16 @@ function _interop_require_default(obj) {
 var _default = function(argv, name) {
     var options = (0, _getoptscompat.default)(argv.slice(1), {
         alias: {
-            range: "r",
-            desc: "d",
-            silent: "s"
+            range: 'r',
+            desc: 'd',
+            silent: 's'
         },
         default: {
-            range: "major,even"
+            range: 'major,even'
         },
         boolean: [
-            "silent",
-            "desc"
+            'silent',
+            'desc'
         ],
         stopEarly: true
     });
@@ -41,15 +41,15 @@ var _default = function(argv, name) {
         return (0, _exit.default)(-1);
     }
     if (!options.silent) options.header = function(version, command, args) {
-        console.log("\n----------------------");
+        console.log('\n----------------------');
         console.log("".concat([
             command
-        ].concat(args).join(" "), " (").concat(version, ")"));
-        console.log("----------------------");
+        ].concat(args).join(' '), " (").concat(version, ")"));
+        console.log('----------------------');
     };
-    options.stdio = "inherit"; // pass through stdio
+    options.stdio = 'inherit'; // pass through stdio
     (0, _index.default)(args[0], args[1], args.slice(2), options, function(err, results) {
-        if (err && err.message.indexOf("ExperimentalWarning") < 0) {
+        if (err && err.message.indexOf('ExperimentalWarning') < 0) {
             console.log(err.message);
             return (0, _exit.default)(err.code || -1);
         }
@@ -57,7 +57,7 @@ var _default = function(argv, name) {
             return !!result.error;
         });
         if (!options.silent) {
-            console.log("\n======================");
+            console.log('\n======================');
             if (errors.length) {
                 console.log("Errors (".concat(errors.length, ")"));
                 for(var index = 0; index < errors.length; index++){
@@ -65,7 +65,7 @@ var _default = function(argv, name) {
                     console.log("".concat(result.version, " Error: ").concat(result.error.message));
                 }
             } else console.log("Success (".concat(results.length, ")"));
-            console.log("======================");
+            console.log('======================');
         }
         (0, _exit.default)(errors.length ? -1 : 0);
     });
