@@ -10,7 +10,8 @@ const versionUse = require('node-version-use');
 
 const versionLines = require('../lib/versionLines');
 
-const NODE = process.platform === 'win32' ? 'node.exe' : 'node';
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const NODE = isWindows ? 'node.exe' : 'node';
 const now = new Date(Date.parse('2020-05-10T03:23:29.347Z'));
 
 const TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
