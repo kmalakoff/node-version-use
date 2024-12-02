@@ -50,8 +50,8 @@
     "cr": "^0.1.0",
     "depcheck": "^1.4.7",
     "is-version": "^0.2.1",
-    "rimraf2": "^2.8.1",
-    "ts-dev-stack": "^0.17.0"
+    "rimraf2": "^2.8.2",
+    "ts-dev-stack": "^1.0.1"
   },
   "engines": {
     "node": ">=0.8"
