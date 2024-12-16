@@ -38,7 +38,7 @@
     "exit": "^0.1.2",
     "getopts-compat": "^2.2.5",
     "homedir-polyfill": "^1.0.3",
-    "node-install-release": "^1.4.1",
+    "node-install-release": "^1.4.2",
     "node-resolve-versions": "^1.0.0",
     "node-version-utils": "^1.0.1",
     "queue-cb": "^1.4.1"
