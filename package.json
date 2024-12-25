@@ -34,14 +34,14 @@
     "version": "tsds version"
   },
   "dependencies": {
-    "cross-spawn-cb": "^1.1.2",
+    "cross-spawn-cb": "^1.4.0",
     "exit": "^0.1.2",
     "getopts-compat": "^2.2.5",
     "homedir-polyfill": "^1.0.3",
-    "node-install-release": "^1.4.2",
-    "node-resolve-versions": "^1.0.0",
-    "node-version-utils": "^1.0.1",
-    "queue-cb": "^1.4.1"
+    "node-install-release": "^1.5.1",
+    "node-resolve-versions": "^1.0.1",
+    "node-version-utils": "^1.1.1",
+    "queue-cb": "^1.4.4"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
@@ -51,8 +51,9 @@
     "depcheck": "^1.4.7",
     "is-version": "^0.2.1",
     "rimraf2": "^2.8.2",
-    "ts-dev-stack": "^1.2.1"
+    "ts-dev-stack": "^1.5.4"
   },
+  "packageManager": "npm@11.0.0+sha512.11dff29565d2297c74e7c594a9762581bde969f0aa5cbe6f5b3644bf008a16c065ece61094d9ffbb81125be38df8e1ba43eb8244b3d30c61eb797e9a2440e3ec",
   "engines": {
     "node": ">=0.8"
   },

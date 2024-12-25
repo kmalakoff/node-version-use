@@ -1,5 +1,4 @@
 // remove NODE_OPTIONS from ts-dev-stack
-// biome-ignore lint/performance/noDelete: <explanation>
 delete process.env.NODE_OPTIONS;
 
 const assert = require('assert');
@@ -25,9 +24,7 @@ const OPTIONS = {
 };
 
 describe('callback', () => {
-  before((callback) => {
-    rimraf2(TMP_DIR, { disableGlob: true }, callback.bind(null, null));
-  });
+  before((cb) => rimraf2(TMP_DIR, { disableGlob: true }, cb.bind(null, null)));
 
   describe('happy path', () => {
     it('one version - 12', (done) => {
@@ -68,7 +65,7 @@ describe('callback', () => {
     });
 
     it('multiple versions - 10,12,lts/erbium (sort -1)', (done) => {
-      versionUse('10,12,lts/erbium', NODE, ['--version'], Object.assign({ sort: -1 }, OPTIONS), (err, results) => {
+      versionUse('10,12,lts/erbium', NODE, ['--version'], { sort: -1, ...OPTIONS }, (err, results) => {
         assert.ok(!err, err ? err.message : '');
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -79,7 +76,7 @@ describe('callback', () => {
 
     it('using engines - 12', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
-      versionUse('engines', NODE, ['--version'], Object.assign({ cwd: cwd }, OPTIONS), (err, results) => {
+      versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS }, (err, results) => {
         assert.ok(!err, err ? err.message : '');
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -88,7 +85,7 @@ describe('callback', () => {
     });
 
     it('>=8', (done) => {
-      versionUse('>=8', NODE, ['--version'], Object.assign({ range: 'major,even' }, OPTIONS), (err, results) => {
+      versionUse('>=8', NODE, ['--version'], { range: 'major,even', ...OPTIONS }, (err, results) => {
         assert.ok(!err, err ? err.message : '');
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v8.') === 0);
@@ -126,7 +123,7 @@ describe('callback', () => {
 
     it('engines missing', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-missing'));
-      versionUse('engines', NODE, ['--version'], Object.assign({ cwd: cwd }, OPTIONS), (err) => {
+      versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS }, (err) => {
         assert.ok(!!err);
         done();
       });
@@ -134,7 +131,7 @@ describe('callback', () => {
 
     it('engines node missing', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-node-missing'));
-      versionUse(NODE, ['--version'], Object.assign({ cwd: cwd }, OPTIONS), (err) => {
+      versionUse(NODE, ['--version'], { cwd, ...OPTIONS }, (err) => {
         assert.ok(!!err);
         done();
       });

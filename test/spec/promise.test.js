@@ -1,5 +1,4 @@
 // remove NODE_OPTIONS from ts-dev-stack
-// biome-ignore lint/performance/noDelete: <explanation>
 delete process.env.NODE_OPTIONS;
 
 const assert = require('assert');
@@ -25,11 +24,7 @@ const OPTIONS = {
 };
 
 describe('promise', () => {
-  if (typeof Promise === 'undefined') return; // no promise support
-
-  before((callback) => {
-    rimraf2(TMP_DIR, { disableGlob: true }, callback.bind(null, null));
-  });
+  before((cb) => rimraf2(TMP_DIR, { disableGlob: true }, cb.bind(null, null)));
 
   describe('happy path', () => {
     it('one version - 12', (done) => {
@@ -74,7 +69,7 @@ describe('promise', () => {
     });
 
     it('multiple versions - 10,12,lts/erbium (sort -1)', (done) => {
-      versionUse('10,12,lts/erbium', NODE, ['--version'], Object.assign({ sort: -1 }, OPTIONS))
+      versionUse('10,12,lts/erbium', NODE, ['--version'], { sort: -1, ...OPTIONS })
         .then((results) => {
           assert.ok(results.length > 0);
           assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -86,7 +81,7 @@ describe('promise', () => {
 
     it('using engines - 12', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
-      versionUse('engines', NODE, ['--version'], Object.assign({ cwd: cwd }, OPTIONS))
+      versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS })
         .then((results) => {
           assert.ok(results.length > 0);
           assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -129,7 +124,7 @@ describe('promise', () => {
 
     it('engines missing', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-missing'));
-      versionUse('engines', NODE, ['--version'], Object.assign({ cwd: cwd }, OPTIONS))
+      versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS })
         .then(() => assert.ok(false))
         .catch((err) => {
           assert.ok(!!err);
@@ -139,7 +134,7 @@ describe('promise', () => {
 
     it('engines node missing', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-node-missing'));
-      versionUse(NODE, ['--version'], Object.assign({ cwd: cwd }, OPTIONS))
+      versionUse(NODE, ['--version'], { cwd, ...OPTIONS })
         .then(() => assert.ok(false))
         .catch((err) => {
           assert.ok(!!err);
