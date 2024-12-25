@@ -1,5 +1,4 @@
 // remove NODE_OPTIONS from ts-dev-stack
-// biome-ignore lint/performance/noDelete: <explanation>
 delete process.env.NODE_OPTIONS;
 
 const assert = require('assert');
@@ -67,7 +66,7 @@ describe('cli', () => {
 
     it('using engines - 12', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
-      spawn(CLI, ['engines', '--silent', NODE, '--version'], { encoding: 'utf8', cwd: cwd }, (err, res) => {
+      spawn(CLI, ['engines', '--silent', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
         assert.ok(!err, err ? err.message : '');
         assert.ok(versionLines(res.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
@@ -76,7 +75,7 @@ describe('cli', () => {
 
     it('using engines - 12 (--)', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
-      spawn(CLI, ['engines', '--silent', '--', NODE, '--version'], { encoding: 'utf8', cwd: cwd }, (err, res) => {
+      spawn(CLI, ['engines', '--silent', '--', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
         assert.ok(!err, err ? err.message : '');
         assert.ok(versionLines(res.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
@@ -85,7 +84,7 @@ describe('cli', () => {
 
     it('>=8', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
-      spawn(CLI, ['>=8', NODE, '--version'], { encoding: 'utf8', cwd: cwd }, (err, res) => {
+      spawn(CLI, ['>=8', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
         assert.ok(!err, err ? err.message : '');
         console.log(res.stdout);
         assert.ok(versionLines(res.stdout).slice(0)[0].indexOf('v8.') === 0);
@@ -118,7 +117,7 @@ describe('cli', () => {
 
     it('engines missing', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-missing'));
-      spawn(CLI, ['engines', NODE, '--version'], { encoding: 'utf8', cwd: cwd }, (err, _res) => {
+      spawn(CLI, ['engines', NODE, '--version'], { encoding: 'utf8', cwd }, (err, _res) => {
         assert.ok(!!err);
         done();
       });
@@ -126,7 +125,7 @@ describe('cli', () => {
 
     it('engines node missing', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-node-missing'));
-      spawn(CLI, ['engines', NODE, '--version'], { encoding: 'utf8', cwd: cwd }, (err, _res) => {
+      spawn(CLI, ['engines', NODE, '--version'], { encoding: 'utf8', cwd }, (err, _res) => {
         assert.ok(!!err);
         done();
       });
