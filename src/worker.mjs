@@ -12,16 +12,17 @@ export default function worker(versionExpression, command, args, options, callba
     const results = [];
     const queue = new Queue(1);
     versions.forEach((version) =>
-      queue.defer((cb) =>
-        install(version, { installPath }, (err, install) => {
+      queue.defer((cb) => {
+        install(version, { installPath }, (err, installs) => {
           if (err) return cb(err);
+          if (installs.length !== 1) return callback(new Error(`Unexpected version results for version ${version}. Install ${installs}`));
 
-          spawn(install.installPath, command, args, options, (error, result) => {
+          spawn(installs[0].installPath, command, args, options, (error, result) => {
             results.push({ ...install, version, error, result });
             cb();
           });
-        })
-      )
+        });
+      })
     );
     queue.await((err) => {
       err ? callback(err) : callback(null, results);
