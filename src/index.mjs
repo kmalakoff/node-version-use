@@ -1,25 +1,16 @@
-// biome-ignore lint/suspicious/noShadowRestrictedNames: <explanation>
-import Promise from 'pinkie-promise';
-import constants from './constants';
-import use from './use';
+import worker from './worker.js';
 
 export default function nodeVersionUse(versionExpression, command, args, options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
   }
-  if (typeof callback === 'function') return use(versionExpression, command, args, options || {}, callback);
-  return new Promise((resolve, reject) => {
-    nodeVersionUse(versionExpression, command, args, options, function nodeVersionUseCallback(err, res) {
+  options = options || {};
+
+  if (typeof callback === 'function') return worker(versionExpression, command, args, options, callback);
+  return new Promise((resolve, reject) =>
+    worker(versionExpression, command, args, options, (err, res) => {
       err ? reject(err) : resolve(res);
-    });
-  });
-}
-
-export function installDirectory() {
-  return constants.installDirectory;
-}
-
-export function cacheDirectory(_options) {
-  return constants.cacheDirectory;
+    })
+  );
 }

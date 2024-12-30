@@ -15,9 +15,9 @@ const now = new Date(Date.parse('2020-05-10T03:23:29.347Z'));
 
 const TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
 const OPTIONS = {
-  cacheDirectory: path.join(TMP_DIR, 'cache'),
-  installDirectory: path.join(TMP_DIR, 'installed'),
-  buildDirectory: path.join(TMP_DIR, 'build'),
+  cachePath: path.join(TMP_DIR, 'cache'),
+  installPath: path.join(TMP_DIR, 'installed'),
+  buildPath: path.join(TMP_DIR, 'build'),
   now: now, // BE CAREFUL - this fixes a moment in time
   encoding: 'utf8',
   silent: true,
@@ -90,18 +90,6 @@ describe('callback', () => {
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v8.') === 0);
         done();
-      });
-    });
-
-    describe('constants', () => {
-      it('installDirectory', () => {
-        const installDirectory = versionUse.installDirectory();
-        assert.ok(installDirectory);
-      });
-
-      it('cacheDirectory', () => {
-        const cacheDirectory = versionUse.cacheDirectory();
-        assert.ok(cacheDirectory);
       });
     });
   });
