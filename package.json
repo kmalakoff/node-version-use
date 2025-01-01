@@ -17,10 +17,10 @@
     "url": "git@github.com:kmalakoff/node-version-use.git"
   },
   "license": "MIT",
-  "main": "dist/cjs/index.js",
+  "main": "dist/cjs/index.cjs",
   "types": "dist/types/index.d.ts",
   "bin": {
-    "nvu": "./bin/cli.js"
+    "nvu": "./bin/cli.cjs"
   },
   "files": [
     "dist"

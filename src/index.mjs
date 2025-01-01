@@ -1,4 +1,4 @@
-import worker from './worker.js';
+import worker from './worker';
 
 export default function nodeVersionUse(versionExpression, command, args, options, callback) {
   if (typeof options === 'function') {

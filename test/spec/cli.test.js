@@ -8,7 +8,7 @@ const isVersion = require('is-version');
 
 const versionLines = require('../lib/versionLines');
 
-const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.js');
+const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.cjs');
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 const NODE = isWindows ? 'node.exe' : 'node';
 
