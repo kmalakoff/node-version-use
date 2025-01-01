@@ -13,6 +13,7 @@ export default function worker(versionExpression, command, args, options, callba
     const queue = new Queue(1);
     versions.forEach((version) =>
       queue.defer((cb) => {
+        !options.header || options.header(version.version, command, args);
         install(version, { installPath }, (err, installs) => {
           if (err) return cb(err);
           if (installs.length !== 1) return callback(new Error(`Unexpected version results for version ${version}. Install ${installs}`));
