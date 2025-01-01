@@ -38,11 +38,8 @@ export default (argv, name) => {
     if (!options.silent) {
       console.log('\n======================');
       if (errors.length) {
-        console.log(`Errors (${errors.length})`);
-        for (let index = 0; index < errors.length; index++) {
-          const result = errors[index];
-          console.log(`${result.version} Error: ${result.error.message}`);
-        }
+        console.log(`Errors ${errors.length} and successes ${results.length - errors.length}`);
+        errors.forEach((result) => console.log(`${result.command} Error: ${result.error.message}`));
       } else console.log(`Success (${results.length})`);
       console.log('======================');
     }
