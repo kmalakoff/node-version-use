@@ -1,6 +1,7 @@
+import spawn from 'cross-spawn-cb';
 import resolveVersions from 'node-resolve-versions';
 import install from 'node-version-install';
-import { spawn } from 'node-version-utils';
+import { spawnOptions } from 'node-version-utils';
 import Queue from 'queue-cb';
 import { installPath } from './constants';
 
@@ -18,8 +19,8 @@ export default function worker(versionExpression, command, args, options, callba
           if (err) return cb(err);
           if (installs.length !== 1) return callback(new Error(`Unexpected version results for version ${version}. Install ${installs}`));
 
-          spawn(installs[0].installPath, command, args, options, (error, result) => {
-            results.push({ ...install, version, error, result });
+          spawn(command, args, spawnOptions(installs[0].installPath, options), (error, result) => {
+            results.push({ ...install, command, version, error, result });
             cb();
           });
         });
