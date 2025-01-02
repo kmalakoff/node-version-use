@@ -16,12 +16,11 @@ const now = new Date(Date.parse('2020-05-10T03:23:29.347Z'));
 const TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
 const OPTIONS = {
   cachePath: path.join(TMP_DIR, 'cache'),
-  installPath: path.join(TMP_DIR, 'installed'),
-  buildPath: path.join(TMP_DIR, 'build'),
   now: now, // BE CAREFUL - this fixes a moment in time
   encoding: 'utf8',
   silent: true,
 };
+const _installPath = path.join(TMP_DIR, 'installed');
 
 describe('callback', () => {
   before((cb) => rimraf2(TMP_DIR, { disableGlob: true }, cb.bind(null, null)));
