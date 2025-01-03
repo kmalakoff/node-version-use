@@ -20,10 +20,11 @@ jobs:
       - run: git config --global user.name "Github Actions"
       - run: git config --global user.email "actions@users.noreply.github.com"
       - run: npm uninstall ts-dev-stack node-version-use depcheck -g
+      - run: rm -rf $HOME/.im
       - run: npm install ts-dev-stack node-version-use depcheck -g
       - run: depcheck
       - run: npm ci
-      # - run: npm run version
+      - run: npm run docs
       - run: npm run build
       - run: npm run test
       - run: npm run test:engines
