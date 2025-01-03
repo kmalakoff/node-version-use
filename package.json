@@ -39,7 +39,7 @@
     "getopts-compat": "^2.2.5",
     "homedir-polyfill": "^1.0.3",
     "node-resolve-versions": "^1.0.5",
-    "node-version-install": "^0.2.6",
+    "node-version-install": "^0.2.7",
     "node-version-utils": "^1.2.1",
     "queue-cb": "^1.4.4"
   },
