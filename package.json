@@ -40,16 +40,16 @@
     "getopts-compat": "^2.2.5",
     "homedir-polyfill": "^1.0.3",
     "node-resolve-versions": "^1.0.10",
-    "node-version-install": "^1.0.6",
+    "node-version-install": "^1.1.0",
     "node-version-utils": "^1.2.4",
-    "queue-cb": "^1.4.9"
+    "queue-cb": "^1.4.10"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.10.5",
     "cr": "^0.1.0",
-    "is-version": "^0.2.1",
+    "is-version": "^0.2.5",
     "pinkie-promise": "^2.0.1",
     "rimraf2": "^2.8.2"
   },
