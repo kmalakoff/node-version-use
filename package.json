@@ -35,13 +35,13 @@
     "version": "tsds version"
   },
   "dependencies": {
-    "cross-spawn-cb": "^2.0.10",
+    "cross-spawn-cb": "^2.0.11",
     "exit": "^0.1.2",
     "getopts-compat": "^2.2.5",
     "homedir-polyfill": "^1.0.3",
-    "node-resolve-versions": "^1.0.7",
-    "node-version-install": "^1.0.3",
-    "node-version-utils": "^1.2.3",
+    "node-resolve-versions": "^1.0.8",
+    "node-version-install": "^1.0.4",
+    "node-version-utils": "^1.2.4",
     "queue-cb": "^1.4.9"
   },
   "devDependencies": {
