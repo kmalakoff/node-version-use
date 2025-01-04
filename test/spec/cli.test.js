@@ -65,7 +65,7 @@ describe('cli', () => {
     });
 
     it('using engines - 12', (done) => {
-      const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
+      const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['engines', '--silent', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
         assert.ok(!err, err ? err.message : '');
         assert.ok(versionLines(res.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -74,7 +74,7 @@ describe('cli', () => {
     });
 
     it('using engines - 12 (--)', (done) => {
-      const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
+      const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['engines', '--silent', '--', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
         assert.ok(!err, err ? err.message : '');
         assert.ok(versionLines(res.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -83,7 +83,7 @@ describe('cli', () => {
     });
 
     it('>=8', (done) => {
-      const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
+      const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['>=8', '--silent', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
         assert.ok(!err, err ? err.message : '');
         assert.ok(versionLines(res.stdout).slice(0)[0].indexOf('v8.') === 0);
@@ -115,7 +115,7 @@ describe('cli', () => {
     });
 
     it('engines missing', (done) => {
-      const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-missing'));
+      const cwd = path.join(path.join(__dirname, '..', 'data', 'engines-missing'));
       spawn(CLI, ['engines', NODE, '--version'], { encoding: 'utf8', cwd }, (err, _res) => {
         assert.ok(!!err);
         done();
@@ -123,7 +123,7 @@ describe('cli', () => {
     });
 
     it('engines node missing', (done) => {
-      const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-node-missing'));
+      const cwd = path.join(path.join(__dirname, '..', 'data', 'engines-node-missing'));
       spawn(CLI, ['engines', NODE, '--version'], { encoding: 'utf8', cwd }, (err, _res) => {
         assert.ok(!!err);
         done();
