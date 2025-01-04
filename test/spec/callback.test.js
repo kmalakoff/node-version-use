@@ -13,7 +13,7 @@ const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process
 const NODE = isWindows ? 'node.exe' : 'node';
 const now = new Date(Date.parse('2020-05-10T03:23:29.347Z'));
 
-const TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
+const TMP_DIR = path.join(path.join(__dirname, '..', '..', '.tmp'));
 const OPTIONS = {
   cachePath: path.join(TMP_DIR, 'cache'),
   now: now, // BE CAREFUL - this fixes a moment in time
@@ -74,7 +74,7 @@ describe('callback', () => {
     });
 
     it('using engines - 12', (done) => {
-      const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
+      const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS }, (err, results) => {
         assert.ok(!err, err ? err.message : '');
         assert.ok(results.length > 0);
@@ -109,7 +109,7 @@ describe('callback', () => {
     });
 
     it('engines missing', (done) => {
-      const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-missing'));
+      const cwd = path.join(path.join(__dirname, '..', 'data', 'engines-missing'));
       versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS }, (err) => {
         assert.ok(!!err);
         done();
@@ -117,7 +117,7 @@ describe('callback', () => {
     });
 
     it('engines node missing', (done) => {
-      const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-node-missing'));
+      const cwd = path.join(path.join(__dirname, '..', 'data', 'engines-node-missing'));
       versionUse(NODE, ['--version'], { cwd, ...OPTIONS }, (err) => {
         assert.ok(!!err);
         done();

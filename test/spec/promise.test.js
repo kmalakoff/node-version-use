@@ -13,7 +13,7 @@ const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process
 const NODE = isWindows ? 'node.exe' : 'node';
 const now = new Date(Date.parse('2020-05-10T03:23:29.347Z'));
 
-const TMP_DIR = path.resolve(path.join(__dirname, '..', '..', '.tmp'));
+const TMP_DIR = path.join(path.join(__dirname, '..', '..', '.tmp'));
 const OPTIONS = {
   cachePath: path.join(TMP_DIR, 'cache'),
   installPath: path.join(TMP_DIR, 'installed'),
@@ -73,7 +73,7 @@ describe('promise', () => {
       });
 
       it('using engines - 12', async () => {
-        const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
+        const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
         const results = await versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS });
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -100,7 +100,7 @@ describe('promise', () => {
       });
 
       it('engines missing', async () => {
-        const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-missing'));
+        const cwd = path.join(path.join(__dirname, '..', 'data', 'engines-missing'));
         try {
           await versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS });
           assert.ok(false);
@@ -110,7 +110,7 @@ describe('promise', () => {
       });
 
       it('engines node missing', async () => {
-        const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines-node-missing'));
+        const cwd = path.join(path.join(__dirname, '..', 'data', 'engines-node-missing'));
         try {
           await versionUse(NODE, ['--version'], { cwd, ...OPTIONS });
           assert.ok(false);
