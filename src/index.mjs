@@ -1,3 +1,4 @@
+import './filterExperimental.cjs';
 import worker from './worker';
 
 export default function nodeVersionUse(versionExpression, command, args, options, callback) {
