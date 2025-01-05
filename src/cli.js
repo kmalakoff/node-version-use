@@ -1,7 +1,11 @@
 import exit from 'exit';
-import figures from 'figures';
 import getopts from 'getopts-compat';
 import nvu from './index.mjs';
+
+const figures = {
+  tick: '✔',
+  cross: '✘',
+};
 
 export default (argv, name) => {
   const options = getopts(argv.slice(1), {
