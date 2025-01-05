@@ -37,6 +37,7 @@
   "dependencies": {
     "cross-spawn-cb": "^2.0.13",
     "exit": "^0.1.2",
+    "figures": "^6.1.0",
     "getopts-compat": "^2.2.5",
     "homedir-polyfill": "^1.0.3",
     "node-resolve-versions": "^1.0.10",
