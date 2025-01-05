@@ -20,8 +20,12 @@ export default function worker(versionExpression, command, args, options, callba
           if (err) return cb(err);
           if (installs.length !== 1) return callback(new Error(`Unexpected version results for version ${version}. Install ${installs}`));
 
-          spawn(command, args, spawnOptions(installs[0].installPath, options), (error, result) => {
-            results.push({ ...install, command, version, error, result });
+          spawn(command, args, spawnOptions(installs[0].installPath, options), (err, res) => {
+            if (err && err.message.indexOf('ExperimentalWarning') >= 0) {
+              res = err;
+              err = null;
+            }
+            results.push({ ...install, command, version, error: err, result: res });
             cb();
           });
         });
