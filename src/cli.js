@@ -1,4 +1,5 @@
 import exit from 'exit';
+import figures from 'figures';
 import getopts from 'getopts-compat';
 import nvu from './index.mjs';
 
@@ -37,11 +38,8 @@ export default (argv, name) => {
 
     if (!options.silent) {
       console.log('\n======================');
-      if (errors.length) {
-        console.log(`Errors ${errors.length} and successes ${results.length - errors.length}`);
-        errors.forEach((result) => console.log(`${result.command} Error: ${result.error.message}`));
-      } else console.log(`Success (${results.length})`);
-      console.log('======================');
+      console.log(`nvu ${args.join(' ')} ${errors.length ? 'failed' : 'succeeed'}`);
+      results.forEach((res) => console.log(`${res.error ? figures.cross : figures.tick} ${res.version}${res.error ? ` Error: ${res.error.message}` : ''}`));
     }
 
     exit(errors.length ? -1 : 0);
