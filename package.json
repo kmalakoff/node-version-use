@@ -33,7 +33,7 @@
     "version": "tsds version"
   },
   "dependencies": {
-    "cross-spawn-cb": "^2.0.13",
+    "cross-spawn-cb": "^2.1.0",
     "exit": "^0.1.2",
     "getopts-compat": "^2.2.5",
     "homedir-polyfill": "^1.0.3",
