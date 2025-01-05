@@ -5,15 +5,6 @@ import { spawnOptions } from 'node-version-utils';
 import Queue from 'queue-cb';
 import { storagePath } from './constants';
 
-// https://github.com/yarnpkg/berry/blob/2cf0a8fe3e4d4bd7d4d344245d24a85a45d4c5c9/packages/yarnpkg-pnp/sources/loader/applyPatch.ts#L414-L435
-const originalEmit = process.emit;
-// @ts-expect-error - TS complains about the return type of originalEmit.apply
-process.emit = (name, data, ..._args) => {
-  if (name === 'warning' && typeof data === 'object' && data.name === 'ExperimentalWarning' && (data.message.includes('--experimental-loader') || data.message.includes('Custom ESM Loaders is an experimental feature'))) return false;
-
-  return originalEmit.call(process, name, data, ..._args);
-};
-
 export default function worker(versionExpression, command, args, options, callback) {
   resolveVersions(versionExpression, options, (err, versions) => {
     if (err) return callback(err);
