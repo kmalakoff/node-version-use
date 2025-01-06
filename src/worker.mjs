@@ -1,6 +1,6 @@
 import spawn from 'cross-spawn-cb';
 import resolveVersions from 'node-resolve-versions';
-import install from 'node-version-install';
+import installVersion from 'node-version-install';
 import { spawnOptions } from 'node-version-utils';
 import Queue from 'queue-cb';
 import { storagePath } from './constants';
@@ -16,16 +16,19 @@ export default function worker(versionExpression, command, args, options, callba
     versions.forEach((version) =>
       queue.defer((cb) => {
         !options.header || options.header(version, command, args);
-        install(version, installOptions, (err, installs) => {
-          if (err) return cb(err);
-          if (installs.length !== 1) return callback(new Error(`Unexpected version results for version ${version}. Install ${installs}`));
+        installVersion(version, installOptions, (_err, installs) => {
+          const install = installs && installs.length === 1 ? installs[0] : null;
+          if (!install) {
+            results.push({ install, command, version, error: new Error(`Unexpected version results for version ${version}. Install ${JSON.stringify(installs)}`), result: null });
+            return callback();
+          }
 
-          spawn(command, args, spawnOptions(installs[0].installPath, options), (err, res) => {
+          spawn(command, args, spawnOptions(install.installPath, options), (err, res) => {
             if (err && err.message.indexOf('ExperimentalWarning') >= 0) {
               res = err;
               err = null;
             }
-            results.push({ ...install, command, version, error: err, result: res });
+            results.push({ install, command, version, error: err, result: res });
             cb();
           });
         });
