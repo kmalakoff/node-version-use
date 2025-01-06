@@ -37,6 +37,7 @@ describe('callback', () => {
 
     it('lts version - lts/erbium', (done) => {
       versionUse('lts/erbium', NODE, ['--version'], OPTIONS, (err, results) => {
+        console.log(err, results);
         if (err) return done(err);
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);

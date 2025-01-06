@@ -35,8 +35,10 @@ export default (argv, name) => {
   options.stdio = 'inherit'; // pass through stdio
   nvu(args[0], args[1], args.slice(2), options, (err, results) => {
     if (err && err.message.indexOf('ExperimentalWarning') >= 0) err = null;
-    if (err) console.log(err.message);
-
+    if (err) {
+      results = err.results;
+      console.log(err.message);
+    }
     const errors = results.filter((result) => !!result.error);
 
     if (!options.silent) {
@@ -45,6 +47,6 @@ export default (argv, name) => {
       results.forEach((res) => console.log(`${res.error ? figures.cross : figures.tick} ${res.version}${res.error ? ` Error: ${res.error.message}` : ''}`));
     }
 
-    exit(errors.length ? -1 : 0);
+    exit(err || errors.length ? -1 : 0);
   });
 };
