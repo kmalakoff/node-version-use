@@ -7,7 +7,7 @@ const rimraf2 = require('rimraf2');
 
 const versionUse = require('node-version-use');
 
-const versionLines = require('../lib/versionLines');
+const getLines = require('../lib/getLines.cjs');
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 const NODE = isWindows ? 'node.exe' : 'node';
@@ -43,40 +43,40 @@ describe('promise', () => {
       it('one version - 12', async () => {
         const results = await versionUse('12', NODE, ['--version'], OPTIONS);
         assert.ok(results.length > 0);
-        assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
       });
 
       it('lts version - lts/erbium', async () => {
         const results = await versionUse('lts/erbium', NODE, ['--version'], OPTIONS);
         assert.ok(results.length > 0);
-        assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
       });
 
       it('lts/argon version - lts/argon', async () => {
         const results = await versionUse('lts/argon', NODE, ['--version'], OPTIONS);
         assert.ok(results.length > 0);
-        assert.equal(versionLines(results[0].result.stdout).slice(-1)[0], 'v4.9.1');
+        assert.equal(getLines(results[0].result.stdout).slice(-1)[0], 'v4.9.1');
       });
 
       it('multiple versions - 10,12,lts/erbium', async () => {
         const results = await versionUse('10,12,lts/erbium', NODE, ['--version'], OPTIONS);
         assert.ok(results.length > 0);
-        assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
-        assert.ok(versionLines(results[1].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
+        assert.ok(getLines(results[1].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
       });
 
       it('multiple versions - 10,12,lts/erbium (sort -1)', async () => {
         const results = await versionUse('10,12,lts/erbium', NODE, ['--version'], { sort: -1, ...OPTIONS });
         assert.ok(results.length > 0);
-        assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
-        assert.ok(versionLines(results[1].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
+        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(getLines(results[1].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
       });
 
       it('using engines - 12', async () => {
         const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
         const results = await versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS });
         assert.ok(results.length > 0);
-        assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
       });
     });
 

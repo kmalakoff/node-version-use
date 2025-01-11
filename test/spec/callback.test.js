@@ -7,7 +7,8 @@ const rimraf2 = require('rimraf2');
 
 const versionUse = require('node-version-use');
 
-const versionLines = require('../lib/versionLines');
+const getLines = require('../lib/getLines.cjs');
+const _isVersion = require('is-version');
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 const NODE = isWindows ? 'node.exe' : 'node';
@@ -29,7 +30,7 @@ describe('callback', () => {
       versionUse('12', NODE, ['--version'], OPTIONS, (err, results) => {
         if (err) return done(err);
         assert.ok(results.length > 0);
-        assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
       });
     });
@@ -39,7 +40,7 @@ describe('callback', () => {
         console.log(err, results);
         if (err) return done(err);
         assert.ok(results.length > 0);
-        assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
       });
     });
@@ -49,7 +50,7 @@ describe('callback', () => {
         console.log(err, results);
         if (err) return done(err);
         assert.ok(results.length > 0);
-        assert.equal(versionLines(results[0].result.stdout).slice(-1)[0], 'v4.9.1');
+        assert.equal(getLines(results[0].result.stdout).slice(-1)[0], 'v4.9.1');
         done();
       });
     });
@@ -58,8 +59,8 @@ describe('callback', () => {
       versionUse('10,12,lts/erbium', NODE, ['--version'], OPTIONS, (err, results) => {
         if (err) return done(err);
         assert.ok(results.length > 0);
-        assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
-        assert.ok(versionLines(results[1].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
+        assert.ok(getLines(results[1].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
       });
     });
@@ -68,8 +69,8 @@ describe('callback', () => {
       versionUse('10,12,lts/erbium', NODE, ['--version'], { sort: -1, ...OPTIONS }, (err, results) => {
         if (err) return done(err);
         assert.ok(results.length > 0);
-        assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
-        assert.ok(versionLines(results[1].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
+        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(getLines(results[1].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
         done();
       });
     });
@@ -79,7 +80,7 @@ describe('callback', () => {
       versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS }, (err, results) => {
         if (err) return done(err);
         assert.ok(results.length > 0);
-        assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
       });
     });
@@ -88,7 +89,7 @@ describe('callback', () => {
       versionUse('>=8', NODE, ['--version'], { range: 'major,even', ...OPTIONS }, (err, results) => {
         if (err) return done(err);
         assert.ok(results.length > 0);
-        assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v8.') === 0);
+        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v8.') === 0);
         done();
       });
     });
