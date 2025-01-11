@@ -20,7 +20,6 @@ const OPTIONS = {
   encoding: 'utf8',
   silent: true,
 };
-const _installPath = path.join(TMP_DIR, 'installed');
 
 describe('callback', () => {
   before((cb) => rimraf2(TMP_DIR, { disableGlob: true }, cb.bind(null, null)));
@@ -47,6 +46,7 @@ describe('callback', () => {
 
     it('lts/argon version - lts/argon', (done) => {
       versionUse('lts/argon', NODE, ['--version'], OPTIONS, (err, results) => {
+        console.log(err, results);
         if (err) return done(err);
         assert.ok(results.length > 0);
         assert.equal(versionLines(results[0].result.stdout).slice(-1)[0], 'v4.9.1');

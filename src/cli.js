@@ -25,13 +25,6 @@ export default (argv, name) => {
     return exit(-1);
   }
 
-  if (!options.silent)
-    options.header = (version, command, args) => {
-      console.log('\n----------------------');
-      console.log(`${[command].concat(args).join(' ')} (${version})`);
-      console.log('----------------------');
-    };
-
   options.stdio = 'inherit'; // pass through stdio
   nvu(args[0], args[1], args.slice(2), options, (err, results) => {
     if (err && err.message.indexOf('ExperimentalWarning') >= 0) err = null;
