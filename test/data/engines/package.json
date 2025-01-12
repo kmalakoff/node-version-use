@@ -1,5 +1,6 @@
 {
-  "name": "engines",
+  "name": "node-version-use-engines",
+  "private": true,
   "engines": {
     "node": "12"
   },
