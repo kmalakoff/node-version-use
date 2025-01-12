@@ -1,3 +1,4 @@
 {
-  "name": "engines-missing"
+  "name": "node-version-use-engines-missing",
+  "private": true
 }
