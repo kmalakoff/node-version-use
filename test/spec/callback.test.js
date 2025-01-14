@@ -37,7 +37,6 @@ describe('callback', () => {
 
     it('lts version - lts/erbium', (done) => {
       versionUse('lts/erbium', NODE, ['--version'], OPTIONS, (err, results) => {
-        console.log(err, results);
         if (err) return done(err);
         assert.ok(results.length > 0);
         assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -47,7 +46,6 @@ describe('callback', () => {
 
     it('lts/argon version - lts/argon', (done) => {
       versionUse('lts/argon', NODE, ['--version'], OPTIONS, (err, results) => {
-        console.log(err, results);
         if (err) return done(err);
         assert.ok(results.length > 0);
         assert.equal(getLines(results[0].result.stdout).slice(-1)[0], 'v4.9.1');
