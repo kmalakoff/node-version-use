@@ -33,15 +33,15 @@
     "version": "tsds version"
   },
   "dependencies": {
-    "cross-spawn-cb": "^2.1.4",
+    "cross-spawn-cb": "^2.1.5",
     "exit": "^0.1.2",
     "getopts-compat": "^2.2.6",
     "homedir-polyfill": "^1.0.3",
     "node-resolve-versions": "^1.0.11",
-    "node-version-install": "^1.1.4",
+    "node-version-install": "^1.1.6",
     "node-version-utils": "^1.2.5",
     "queue-cb": "^1.4.11",
-    "spawn-streaming": "^1.0.5"
+    "spawn-streaming": "^1.0.7"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
