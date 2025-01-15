@@ -22,7 +22,7 @@ export default (argv, name) => {
   const args = argv.slice(0, 1).concat(options._);
   if (args.length < 1) {
     console.log(`Missing command. Example usage: ${name} [version expression] [command]`);
-    return exit(1);
+    return exit(13);
   }
 
   options.stdio = 'inherit'; // pass through stdio
@@ -40,6 +40,6 @@ export default (argv, name) => {
       results.forEach((res) => console.log(`${res.error ? figures.cross : figures.tick} ${res.version}${res.error ? ` Error: ${res.error.message}` : ''}`));
     }
 
-    exit(err || errors.length ? 1 : 0);
+    exit(err || errors.length ? 14 : 0);
   });
 };
