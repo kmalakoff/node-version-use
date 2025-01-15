@@ -38,7 +38,7 @@
     "getopts-compat": "^2.2.6",
     "homedir-polyfill": "^1.0.3",
     "node-resolve-versions": "^1.0.16",
-    "node-version-install": "^1.1.15",
+    "node-version-install": "^1.1.16",
     "node-version-utils": "^1.2.8",
     "queue-cb": "^1.4.13",
     "spawn-streaming": "^1.0.14"
