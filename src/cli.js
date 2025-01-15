@@ -38,7 +38,7 @@ export default (argv, name) => {
       console.log('\n======================');
       results.forEach((res) => console.log(`${res.error ? figures.cross : figures.tick} ${res.version}${res.error ? ` Error: ${res.error.message}` : ''}`));
       console.log('\n----------------------');
-      console.log(`nvu "${args.join('" "')}"\n${errors.length ? `${errors.length} failed` : `${results.length - errors.length} succeeded`}`);
+      console.log(`nvu ${args.map(x => x.indexOf(' ') >= 0 ? `"${x}"` : x).join('')}\n${errors.length ? `${errors.length} failed` : `${results.length - errors.length} succeeded`}`);
     }
 
     exit(err || errors.length ? 14 : 0);
