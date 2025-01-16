@@ -52,7 +52,7 @@
     "rimraf2": "*"
   },
   "engines": {
-    "node": ">=0.8"
+    "node": ">=14"
   },
   "tsds": {
     "source": "src/index.mjs",
