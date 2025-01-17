@@ -24,6 +24,5 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: tsds validate
-      - run: npm install cross-env -g
-      - run: cross-env DEBUG=true npm run test
-      - run: cross-env DEBUG=true npm run test:engines
+      - run: npm run test
+      - run: npm run test:engines
