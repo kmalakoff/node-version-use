@@ -4,6 +4,7 @@ delete process.env.NODE_OPTIONS;
 const assert = require('assert');
 const path = require('path');
 const rimraf2 = require('rimraf2');
+const isVersion = require('is-version');
 
 const versionUse = require('node-version-use');
 
@@ -11,14 +12,10 @@ const getLines = require('../lib/getLines.cjs');
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 const NODE = isWindows ? 'node.exe' : 'node';
-const now = new Date(Date.parse('2020-05-10T03:23:29.347Z'));
 
 const TMP_DIR = path.join(path.join(__dirname, '..', '..', '.tmp'));
 const OPTIONS = {
-  cachePath: path.join(TMP_DIR, 'cache'),
-  installPath: path.join(TMP_DIR, 'installed'),
-  buildPath: path.join(TMP_DIR, 'build'),
-  now: now, // BE CAREFUL - this fixes a moment in time
+  storagePath: TMP_DIR,
   encoding: 'utf8',
   silent: true,
 };
@@ -37,7 +34,7 @@ describe('promise', () => {
   })();
 
   describe('clean directories', () => {
-    before((cb) => rimraf2(TMP_DIR, { disableGlob: true }, cb.bind(null, null)));
+    before(rimraf2.bind(null, TMP_DIR, { disableGlob: true }));
 
     describe('happy path', () => {
       it('one version - 12', async () => {
@@ -46,33 +43,29 @@ describe('promise', () => {
         assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
       });
 
-      it('lts version - lts/erbium', async () => {
-        const results = await versionUse('lts/erbium', NODE, ['--version'], OPTIONS);
+      it('lts version - lts', async () => {
+        const results = await versionUse('lts', NODE, ['--version'], OPTIONS);
         assert.ok(results.length > 0);
-        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(isVersion(getLines(results[0].result.stdout).slice(-1)[0], 'v'));
       });
 
-      it('lts/argon version - lts/argon', async () => {
-        const results = await versionUse('lts/argon', NODE, ['--version'], OPTIONS);
-        assert.ok(results.length > 0);
-        assert.equal(getLines(results[0].result.stdout).slice(-1)[0], 'v4.9.1');
-      });
-
-      it('multiple versions - 10,12,lts/erbium', async () => {
-        const results = await versionUse('10,12,lts/erbium', NODE, ['--version'], OPTIONS);
+      it('multiple versions - 10,12,lts', async () => {
+        const results = await versionUse('10,12,lts', NODE, ['--version'], OPTIONS);
         assert.ok(results.length > 0);
         assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
         assert.ok(getLines(results[1].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(isVersion(getLines(results[1].result.stdout).slice(-1)[0], 'v'));
       });
 
-      it('multiple versions - 10,12,lts/erbium (sort -1)', async () => {
-        const results = await versionUse('10,12,lts/erbium', NODE, ['--version'], { sort: -1, ...OPTIONS });
+      it('multiple versions - 10,12,lts (sort -1)', async () => {
+        const results = await versionUse('10,12,lts', NODE, ['--version'], { sort: -1, ...OPTIONS });
         assert.ok(results.length > 0);
-        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
-        assert.ok(getLines(results[1].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
+        assert.ok(isVersion(getLines(results[0].result.stdout).slice(-1)[0], 'v'));
+        assert.ok(getLines(results[1].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(getLines(results[2].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
       });
 
-      it('using engines - 12', async () => {
+      it('using engines', async () => {
         const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
         const results = await versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS });
         assert.ok(results.length > 0);

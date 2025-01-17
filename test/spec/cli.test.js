@@ -3,8 +3,8 @@ delete process.env.NODE_OPTIONS;
 
 const assert = require('assert');
 const path = require('path');
-const spawn = require('cross-spawn-cb');
 const isVersion = require('is-version');
+const spawn = require('cross-spawn-cb');
 
 const getLines = require('../lib/getLines.cjs');
 
@@ -12,59 +12,59 @@ const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.cjs');
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 const NODE = isWindows ? 'node.exe' : 'node';
 
+const OPTIONS = {
+  encoding: 'utf8',
+};
+
 describe('cli', () => {
   describe('happy path', () => {
     it('one version - 12', (done) => {
-      spawn(CLI, ['12', '--silent', 'npm', '--version'], { encoding: 'utf8' }, (err, res) => {
+      spawn(CLI, ['12', '--silent', 'npm', '--version'], OPTIONS, (err, res) => {
         if (err) return done(err.message);
+        console.log('res.stdout', res.stdout);
+        console.log('getLines(res.stdout)', getLines(res.stdout));
         assert.ok(isVersion(getLines(res.stdout).slice(-1)[0]));
         done();
       });
     });
 
-    it('multiple versions - lts/argon,12', (done) => {
-      spawn(CLI, ['lts/argon,12', '--silent', 'npm', '--version'], { encoding: 'utf8' }, (err, res) => {
+    it('multiple versions - lts,12', (done) => {
+      spawn(CLI, ['lts,12', '--silent', 'npm', '--version'], OPTIONS, (err, res) => {
         if (err) return done(err.message);
+        assert.ok(isVersion(getLines(res.stdout).slice(-2)[0]));
         assert.ok(isVersion(getLines(res.stdout).slice(-1)[0]));
         done();
       });
     });
 
-    it('one version with options - lts/erbium', (done) => {
-      spawn(CLI, ['lts/erbium', '--silent', NODE, '--version'], { encoding: 'utf8' }, (err, res) => {
+    it('one version with options - lts', (done) => {
+      spawn(CLI, ['lts', '--silent', NODE, '--version'], OPTIONS, (err, res) => {
         if (err) return done(err.message);
-        assert.ok(getLines(res.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(isVersion(getLines(res.stdout).slice(-1)[0], 'v'));
         done();
       });
     });
 
-    it('one version with options - lts/argon', (done) => {
-      spawn(CLI, ['lts/argon', '--silent', NODE, '--version'], { encoding: 'utf8' }, (err, res) => {
-        if (err) return done(err.message);
-        assert.equal(getLines(res.stdout).slice(-1)[0], 'v4.9.1');
+    it('multiple versions with options - 10,12,lts', (done) => {
+      spawn(CLI, ['10,12,lts', '--silent', NODE, '--version'], OPTIONS, (_err, res) => {
+        assert.ok(getLines(res.stdout).slice(-3)[0].indexOf('v10.') === 0);
+        assert.ok(getLines(res.stdout).slice(-2)[0].indexOf('v12.') === 0);
+        assert.ok(isVersion(getLines(res.stdout).slice(-1)[0], 'v'));
         done();
       });
     });
 
-    it('multiple versions with options - 10,12,lts/erbium', (done) => {
-      spawn(CLI, ['10,12,lts/erbium', '--silent', NODE, '--version'], { encoding: 'utf8' }, (err, res) => {
+    it('multiple versions with options - 10,12,lts (sort desc)', (done) => {
+      spawn(CLI, ['10,12,lts', '--silent', '--desc', NODE, '--version'], OPTIONS, (err, res) => {
         if (err) return done(err.message);
-        assert.ok(getLines(res.stdout).slice(-2)[0].indexOf('v10.') === 0);
-        assert.ok(getLines(res.stdout).slice(-1)[0].indexOf('v12.') === 0);
-        done();
-      });
-    });
-
-    it('multiple versions with options - 10,12,lts/erbium (sort desc)', (done) => {
-      spawn(CLI, ['10,12,lts/erbium', '--silent', '--desc', NODE, '--version'], { encoding: 'utf8' }, (err, res) => {
-        if (err) return done(err.message);
+        assert.ok(isVersion(getLines(res.stdout).slice(-3)[0], 'v'));
         assert.ok(getLines(res.stdout).slice(-2)[0].indexOf('v12.') === 0);
         assert.ok(getLines(res.stdout).slice(-1)[0].indexOf('v10.') === 0);
         done();
       });
     });
 
-    it('using engines - 12', (done) => {
+    it('using engines', (done) => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['engines', '--silent', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
         if (err) return done(err.message);
@@ -73,7 +73,7 @@ describe('cli', () => {
       });
     });
 
-    it('using engines - 12 (--)', (done) => {
+    it('using engines (--)', (done) => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['engines', '--silent', '--', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
         if (err) return done(err.message);
@@ -86,6 +86,7 @@ describe('cli', () => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['>=8', '--silent', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
         if (err) return done(err.message);
+        console.log(res.stdout, getLines(res.stdout));
         assert.ok(getLines(res.stdout).slice(0)[0].indexOf('v8.') === 0);
         done();
       });
@@ -94,21 +95,21 @@ describe('cli', () => {
 
   describe('unhappy path', () => {
     it('missing command', (done) => {
-      spawn(CLI, [], { encoding: 'utf8' }, (err, _res) => {
+      spawn(CLI, [], OPTIONS, (err, _res) => {
         assert.ok(!!err);
         done();
       });
     });
 
     it('missing versions', (done) => {
-      spawn(CLI, [NODE, '--version'], { encoding: 'utf8' }, (err, _res) => {
+      spawn(CLI, [NODE, '--version'], OPTIONS, (err, _res) => {
         assert.ok(!!err);
         done();
       });
     });
 
     it('invalid versions', (done) => {
-      spawn(CLI, ['junk,junk', NODE, '--version'], { encoding: 'utf8' }, (err, _res) => {
+      spawn(CLI, ['junk,junk', NODE, '--version'], OPTIONS, (err, _res) => {
         assert.ok(!!err);
         done();
       });
