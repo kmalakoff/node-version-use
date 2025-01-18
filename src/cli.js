@@ -28,10 +28,11 @@ export default (argv, name) => {
 
   options.stdio = 'inherit'; // pass through stdio
   return run(args[0], args[1], args.slice(2), options, (err, results) => {
-    if (err) {
+    if (err && !err.results) {
       console.log(err.message);
       return exit(ERROR_CODE);
     }
+    if (err) results = err.results;
     const errors = results.filter((result) => !!result.error);
 
     if (!options.silent) {
