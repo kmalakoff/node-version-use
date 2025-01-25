@@ -1,9 +1,10 @@
 import spawn from 'cross-spawn-cb';
 import resolveVersions from 'node-resolve-versions';
 import installVersion from 'node-version-install';
-import { spawnOptions } from 'node-version-utils';
+import { spawnOptions as createSpawnOptions } from 'node-version-utils';
 import Queue from 'queue-cb';
 import spawnStreaming from 'spawn-streaming';
+import spawnTerm from 'spawn-term';
 import { storagePath } from './constants';
 
 export default function worker(versionExpression, command, args, options, callback) {
@@ -22,6 +23,7 @@ export default function worker(versionExpression, command, args, options, callba
             results.push({ install, command, version, error: new Error(`Unexpected version results for version ${version}. Install ${JSON.stringify(installs)}`), result: null });
             return callback();
           }
+          const spawnOptions = createSpawnOptions(install.installPath, options);
           const prefix = install.version;
 
           const next = (err, res) => {
@@ -33,8 +35,9 @@ export default function worker(versionExpression, command, args, options, callba
             cb();
           };
 
-          if (versions.length < 2) return spawn(command, args, spawnOptions(install.installPath, options), next);
-          spawnStreaming(command, args, spawnOptions(install.installPath, options), { prefix }, next);
+          if (versions.length < 2) return spawn(command, args, spawnOptions, next);
+          if (spawnTerm) spawnTerm(command, args, spawnOptions, { group: prefix, expanded: options.expanded }, next);
+          else spawnStreaming(command, args, spawnOptions, { prefix }, next);
         });
       })
     );

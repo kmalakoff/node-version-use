@@ -1,18 +1,22 @@
 // remove NODE_OPTIONS from ts-dev-stack
 delete process.env.NODE_OPTIONS;
 
-const assert = require('assert');
-const path = require('path');
-const rimraf2 = require('rimraf2');
-const isVersion = require('is-version');
+import assert from 'assert';
+import path from 'path';
+import url from 'url';
+import isVersion from 'is-version';
+import Pinkie from 'pinkie-promise';
+import rimraf2 from 'rimraf2';
 
-const versionUse = require('node-version-use');
+// @ts-ignore
+import versionUse from 'node-version-use';
 
-const getLines = require('../lib/getLines.cjs');
+import getLines from '../lib/getLines.cjs';
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 const NODE = isWindows ? 'node.exe' : 'node';
 
+const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const TMP_DIR = path.join(path.join(__dirname, '..', '..', '.tmp'));
 const OPTIONS = {
   storagePath: TMP_DIR,
@@ -23,10 +27,11 @@ const OPTIONS = {
 describe('promise', () => {
   (() => {
     // patch and restore promise
-    let rootPromise;
+    // @ts-ignore
+    let rootPromise: Promise;
     before(() => {
       rootPromise = global.Promise;
-      global.Promise = require('pinkie-promise');
+      global.Promise = Pinkie;
     });
     after(() => {
       global.Promise = rootPromise;

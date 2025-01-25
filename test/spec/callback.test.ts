@@ -1,18 +1,21 @@
 // remove NODE_OPTIONS from ts-dev-stack
 delete process.env.NODE_OPTIONS;
 
-const assert = require('assert');
-const path = require('path');
-const rimraf2 = require('rimraf2');
+import assert from 'assert';
+import path from 'path';
+import url from 'url';
+import rimraf2 from 'rimraf2';
 
-const versionUse = require('node-version-use');
+// @ts-ignore
+import versionUse from 'node-version-use';
 
-const getLines = require('../lib/getLines.cjs');
-const isVersion = require('is-version');
+import isVersion from 'is-version';
+import getLines from '../lib/getLines.cjs';
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 const NODE = isWindows ? 'node.exe' : 'node';
 
+const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const TMP_DIR = path.join(path.join(__dirname, '..', '..', '.tmp'));
 const OPTIONS = {
   storagePath: TMP_DIR,
