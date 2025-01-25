@@ -1,6 +1,6 @@
 import worker from './worker';
 
-export default function nodeVersionUse(versionExpression, command, args, options, callback) {
+export default function nodeVersionUse(versionExpression, command, args, options?, callback?) {
   if (typeof options === 'function') {
     callback = options;
     options = {};

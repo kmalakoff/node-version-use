@@ -1,15 +1,15 @@
 import exit from 'exit';
 import getopts from 'getopts-compat';
-import { figures } from 'spawn-term';
-import run from './index.mjs';
+import spawnTerm, { figures, formatArguments } from 'spawn-term';
+import run from './index.js';
 
 const ERROR_CODE = 13;
 
 export default (argv, name) => {
-  const options = getopts(argv.slice(1), {
-    alias: { range: 'r', desc: 'd', silent: 's' },
-    default: { range: 'major,even' },
-    boolean: ['silent', 'desc'],
+  const options = getopts(argv, {
+    alias: { range: 'r', desc: 'd', expanded: 'e', silent: 's' },
+    default: { range: 'major,even', expanded: false },
+    boolean: ['silent', 'desc', 'expanded'],
     stopEarly: true,
   });
 
@@ -17,7 +17,7 @@ export default (argv, name) => {
   // define.option('-s, --silent', 'suppress logging', false);
   options.sort = options.desc ? -1 : 1;
 
-  const args = argv.slice(0, 1).concat(options._);
+  const args = options._;
   if (args.length < 1) {
     console.log(`Missing command. Example usage: ${name} [version expression] [command]`);
     return exit(ERROR_CODE);
@@ -33,10 +33,12 @@ export default (argv, name) => {
     const errors = results.filter((result) => !!result.error);
 
     if (!options.silent) {
-      console.log('\n======================');
-      results.forEach((res) => console.log(`${res.error ? figures.cross : figures.tick} ${res.version}${res.error ? ` Error: ${res.error.message}` : ''}`));
+      if (!spawnTerm) {
+        console.log('\n======================');
+        results.forEach((res) => console.log(`${res.error ? figures.cross : figures.tick} ${res.version}${res.error ? ` Error: ${res.error.message}` : ''}`));
+      }
       console.log('\n----------------------');
-      console.log(`${name} ${args.map((x) => (x.indexOf(' ') >= 0 ? `"${x}"` : x)).join(' ')}`);
+      console.log(`${name} ${formatArguments(args).join(' ')}`);
       console.log(`${figures.tick} ${results.length - errors.length} succeeded`);
       if (errors.length) console.log(`${figures.cross} ${errors.length} failed`);
     }

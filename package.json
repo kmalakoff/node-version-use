@@ -17,7 +17,14 @@
     "url": "git+ssh://git@github.com/kmalakoff/node-version-use.git"
   },
   "license": "MIT",
+  "type": "module",
+  "exports": {
+    "import": "./dist/esm/index.mjs",
+    "require": "./dist/cjs/index.cjs",
+    "types": "./dist/types/index.d.ts"
+  },
   "main": "dist/cjs/index.cjs",
+  "module": "dist/dist/esm/index.mjs",
   "types": "dist/types/index.d.ts",
   "bin": {
     "nvu": "./bin/cli.cjs"
@@ -42,7 +49,7 @@
     "node-version-utils": "^1.2.14",
     "queue-cb": "^1.4.16",
     "spawn-streaming": "^1.0.27",
-    "spawn-term": "^0.1.1"
+    "spawn-term": "^0.1.9"
   },
   "devDependencies": {
     "@types/mocha": "*",
@@ -56,9 +63,6 @@
     "node": ">=14"
   },
   "tsds": {
-    "source": "src/index.mjs",
-    "targets": [
-      "cjs"
-    ]
+    "source": "src/index.ts"
   }
 }
