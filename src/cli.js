@@ -1,11 +1,8 @@
 import exit from 'exit';
 import getopts from 'getopts-compat';
+import { figures } from 'spawn-term';
 import run from './index.mjs';
 
-const figures = {
-  tick: '✔',
-  cross: '✘',
-};
 const ERROR_CODE = 13;
 
 export default (argv, name) => {

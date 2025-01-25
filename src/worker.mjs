@@ -22,6 +22,7 @@ export default function worker(versionExpression, command, args, options, callba
             results.push({ install, command, version, error: new Error(`Unexpected version results for version ${version}. Install ${JSON.stringify(installs)}`), result: null });
             return callback();
           }
+          const prefix = install.version;
 
           const next = (err, res) => {
             if (err && err.message.indexOf('ExperimentalWarning') >= 0) {
@@ -33,7 +34,7 @@ export default function worker(versionExpression, command, args, options, callba
           };
 
           if (versions.length < 2) return spawn(command, args, spawnOptions(install.installPath, options), next);
-          spawnStreaming(command, args, spawnOptions(install.installPath, options), { prefix: install.version }, next);
+          spawnStreaming(command, args, spawnOptions(install.installPath, options), { prefix }, next);
         });
       })
     );
