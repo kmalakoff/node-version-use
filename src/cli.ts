@@ -7,9 +7,9 @@ const ERROR_CODE = 13;
 
 export default (argv, name) => {
   const options = getopts(argv, {
-    alias: { range: 'r', desc: 'd', expanded: 'e', silent: 's' },
-    default: { range: 'major,even', expanded: false },
-    boolean: ['silent', 'desc', 'expanded'],
+    alias: { range: 'r', desc: 'd', expanded: 'e', streaming: 's', silent: 'si' },
+    default: { range: 'major,even' },
+    boolean: ['silent', 'desc', 'expanded', 'streaming'],
     stopEarly: true,
   });
 
