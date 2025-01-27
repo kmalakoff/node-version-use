@@ -18,8 +18,12 @@ export default (argv, name) => {
   options.sort = options.desc ? -1 : 1;
 
   const args = options._;
-  if (args.length < 1) {
-    console.log(`Missing command. Example usage: ${name} [version expression] [command]`);
+  if (args.length === 0) {
+    console.log(`Missing version expression. Example usage: ${name} version command arg1 arg2`);
+    return exit(ERROR_CODE);
+  }
+  if (args.length === 1) {
+    console.log(`Missing command. Example usage: ${name} version command arg1 arg2`);
     return exit(ERROR_CODE);
   }
 
