@@ -49,7 +49,7 @@
     "node-version-utils": "^1.2.14",
     "queue-cb": "^1.4.16",
     "spawn-streaming": "^1.0.31",
-    "spawn-term": "^0.1.47"
+    "spawn-term": "^0.1.49"
   },
   "devDependencies": {
     "@types/mocha": "*",
