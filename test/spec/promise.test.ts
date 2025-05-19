@@ -20,7 +20,7 @@ const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : 
 const TMP_DIR = path.join(path.join(__dirname, '..', '..', '.tmp'));
 const OPTIONS = {
   storagePath: TMP_DIR,
-  encoding: 'utf8',
+  encoding: 'utf8' as BufferEncoding,
   silent: true,
 };
 
@@ -110,7 +110,8 @@ describe('promise', () => {
       it('engines node missing', async () => {
         const cwd = path.join(path.join(__dirname, '..', 'data', 'engines-node-missing'));
         try {
-          await versionUse(NODE, ['--version'], { cwd, ...OPTIONS });
+          const use = versionUse as (...args) => void;
+          await use(NODE, ['--version'], { cwd, ...OPTIONS });
           assert.ok(false);
         } catch (err) {
           assert.ok(!!err);

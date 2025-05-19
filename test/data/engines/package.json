@@ -3,11 +3,5 @@
   "private": true,
   "engines": {
     "node": "12"
-  },
-  "tsds": {
-    "source": "src/index.mjs",
-    "targets": [
-      "cjs"
-    ]
   }
 }
