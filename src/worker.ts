@@ -1,5 +1,5 @@
 import spawn from 'cross-spawn-cb';
-import resolveVersions from 'node-resolve-versions';
+import resolveVersions, { type VersionResult } from 'node-resolve-versions';
 import installVersion from 'node-version-install';
 import { spawnOptions as createSpawnOptions } from 'node-version-utils';
 import Queue from 'queue-cb';
@@ -17,7 +17,7 @@ export default function worker(versionExpression, command, args, options, callba
     const installOptions = { storagePath, ...options };
     const results: UseResult[] = [];
     const queue = new Queue(1);
-    versions.forEach((version) =>
+    versions.forEach((version: string) =>
       queue.defer((cb) => {
         installVersion(version, installOptions, (_err, installs) => {
           const install = installs && installs.length === 1 ? installs[0] : null;
