@@ -7,7 +7,7 @@ import url from 'url';
 import rimraf2 from 'rimraf2';
 
 // @ts-ignore
-import versionUse from 'node-version-use';
+import versionUse, { type UseOptions } from 'node-version-use';
 
 import isVersion from 'is-version';
 import getLines from '../lib/getLines.cjs';
@@ -19,7 +19,7 @@ const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : 
 const TMP_DIR = path.join(path.join(__dirname, '..', '..', '.tmp'));
 const OPTIONS = {
   storagePath: TMP_DIR,
-  encoding: 'utf8',
+  encoding: 'utf8' as BufferEncoding,
   silent: true,
 };
 
@@ -78,7 +78,7 @@ describe('callback', () => {
     });
 
     it('>=8', (done) => {
-      versionUse('>=8', NODE, ['--version'], { range: 'major,even', ...OPTIONS }, (err, results) => {
+      versionUse('>=8', NODE, ['--version'], { range: 'major,even', ...OPTIONS } as unknown as UseOptions, (err, results) => {
         if (err) return done(err.message);
         assert.ok(results.length > 0);
         assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v8.') === 0);
@@ -112,7 +112,8 @@ describe('callback', () => {
 
     it('engines node missing', (done) => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines-node-missing'));
-      versionUse(NODE, ['--version'], { cwd, ...OPTIONS }, (err) => {
+      const use = versionUse as (...args) => void;
+      use(NODE, ['--version'], { cwd, ...OPTIONS }, (err) => {
         assert.ok(!!err);
         done();
       });

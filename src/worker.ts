@@ -5,7 +5,9 @@ import { spawnOptions as createSpawnOptions } from 'node-version-utils';
 import Queue from 'queue-cb';
 import spawnStreaming from 'spawn-streaming';
 import spawnTerm from 'spawn-term';
-import { storagePath } from './constants';
+import { storagePath } from './constants.js';
+
+import type { UseResult } from './types.js';
 
 export default function worker(versionExpression, command, args, options, callback) {
   resolveVersions(versionExpression, options, (err, versions) => {
@@ -13,7 +15,7 @@ export default function worker(versionExpression, command, args, options, callba
     if (!versions.length) return callback(new Error(`No versions found from expression: ${versionExpression}`));
 
     const installOptions = { storagePath, ...options };
-    const results = [];
+    const results: UseResult[] = [];
     const queue = new Queue(1);
     versions.forEach((version) =>
       queue.defer((cb) => {
