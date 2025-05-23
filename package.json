@@ -46,11 +46,11 @@
     "getopts-compat": "^2.2.6",
     "homedir-polyfill": "^1.0.3",
     "node-resolve-versions": "^1.0.44",
-    "node-version-install": "^1.2.4",
+    "node-version-install": "^1.2.5",
     "node-version-utils": "^1.2.18",
     "queue-cb": "^1.5.0",
     "spawn-streaming": "^1.0.37",
-    "spawn-term": "^0.1.55"
+    "spawn-term": "^0.2.0"
   },
   "devDependencies": {
     "@types/mocha": "*",
