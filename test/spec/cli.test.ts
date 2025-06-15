@@ -4,7 +4,6 @@ delete process.env.NODE_OPTIONS;
 import assert from 'assert';
 import path from 'path';
 import url from 'url';
-import cr from 'cr';
 import spawn from 'cross-spawn-cb';
 import isVersion from 'is-version';
 
