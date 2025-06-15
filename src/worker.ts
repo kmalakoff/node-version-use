@@ -1,5 +1,5 @@
 import spawn from 'cross-spawn-cb';
-import resolveVersions, { type VersionResult } from 'node-resolve-versions';
+import resolveVersions from 'node-resolve-versions';
 import installVersion from 'node-version-install';
 import { spawnOptions as createSpawnOptions } from 'node-version-utils';
 import Queue from 'queue-cb';
