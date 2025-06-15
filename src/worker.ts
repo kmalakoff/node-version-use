@@ -28,14 +28,14 @@ export default function worker(versionExpression, command, args, options, callba
           const spawnOptions = createSpawnOptions(install.installPath, options);
           const prefix = install.version;
 
-          const next = (err, res) => {
+          function next(err?, res?): undefined {
             if (err && err.message.indexOf('ExperimentalWarning') >= 0) {
               res = err;
               err = null;
             }
             results.push({ install, command, version, error: err, result: res });
             cb();
-          };
+          }
 
           if (versions.length < 2) return spawn(command, args, spawnOptions, next);
           if (spawnTerm && !options.streaming) spawnTerm(command, args, spawnOptions, { group: prefix, expanded: options.expanded }, next);
