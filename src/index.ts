@@ -1,6 +1,5 @@
-import worker from './worker.js';
-
 import type { UseCallback, UseOptions, UseResult } from './types.js';
+import worker from './worker.js';
 
 export type * from './types.js';
 export default function nodeVersionUse(versionExpression: string, command: string, args: string[], options?: UseOptions, callback?: UseCallback): undefined | Promise<UseResult[]> {

@@ -2,14 +2,12 @@
 delete process.env.NODE_OPTIONS;
 
 import assert from 'assert';
-import path from 'path';
-import url from 'url';
-import rimraf2 from 'rimraf2';
-
+import isVersion from 'is-version';
 // @ts-ignore
 import versionUse, { type UseOptions } from 'node-version-use';
-
-import isVersion from 'is-version';
+import path from 'path';
+import rimraf2 from 'rimraf2';
+import url from 'url';
 import getLines from '../lib/getLines.cjs';
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
