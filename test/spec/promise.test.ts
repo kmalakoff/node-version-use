@@ -2,14 +2,13 @@
 delete process.env.NODE_OPTIONS;
 
 import assert from 'assert';
-import path from 'path';
-import url from 'url';
 import isVersion from 'is-version';
-import Pinkie from 'pinkie-promise';
-import rimraf2 from 'rimraf2';
-
 // @ts-ignore
 import versionUse from 'node-version-use';
+import path from 'path';
+import Pinkie from 'pinkie-promise';
+import rimraf2 from 'rimraf2';
+import url from 'url';
 
 import getLines from '../lib/getLines.cjs';
 
