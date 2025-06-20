@@ -10,7 +10,7 @@ import url from 'url';
 import getLines from '../lib/getLines.cjs';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
-const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.cjs');
+const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.js');
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 const NODE = isWindows ? 'node.exe' : 'node';
 

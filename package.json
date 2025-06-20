@@ -28,7 +28,7 @@
   "main": "dist/cjs/index.js",
   "types": "dist/cjs/index.d.cts",
   "bin": {
-    "nvu": "./bin/cli"
+    "nvu": "./bin/cli.js"
   },
   "files": [
     "dist"
@@ -50,7 +50,7 @@
     "node-version-utils": "^1.2.20",
     "queue-cb": "^1.5.3",
     "spawn-streaming": "^1.0.42",
-    "spawn-term": "^1.0.3"
+    "spawn-term": "^1.0.4"
   },
   "devDependencies": {
     "@types/mocha": "*",
