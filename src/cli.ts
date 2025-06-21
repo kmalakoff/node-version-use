@@ -6,7 +6,7 @@ import type { UseError, UseOptions, UseResult } from './types.ts';
 
 const ERROR_CODE = 13;
 
-export default (argv, name) => {
+export default (argv: string[], name: string): undefined => {
   const options = getopts(argv, {
     alias: { range: 'r', desc: 'd', expanded: 'e', streaming: 's', silent: 'si' },
     default: { range: 'major,even' },
