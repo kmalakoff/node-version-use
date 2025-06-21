@@ -1,5 +1,6 @@
 import type { SpawnOptions, SpawnResult } from 'cross-spawn-cb';
-import type { InstallResult } from 'node-version-install';
+import type { VersionOptions } from 'node-resolve-versions';
+import type { InstallOptions, InstallResult } from 'node-version-install';
 
 export interface UseResult {
   install: InstallResult;
@@ -13,10 +14,13 @@ export interface UseError extends Error {
   results: UseResult[] | undefined;
 }
 
-export interface UseOptions extends SpawnOptions {
+export interface Options {
   range?: string;
   concurrency?: number;
   sort?: number;
+  streaming?: boolean;
+  expanded?: boolean;
 }
+export type UseOptions = Options | InstallOptions | VersionOptions | SpawnOptions;
 
-export type UseCallback = (err?: UseError, results?: UseResult[]) => undefined;
+export type UseCallback = (err?: UseError | Error, results?: UseResult[]) => undefined;

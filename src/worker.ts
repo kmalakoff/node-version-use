@@ -1,5 +1,5 @@
-import spawn from 'cross-spawn-cb';
-import resolveVersions from 'node-resolve-versions';
+import spawn, { type SpawnOptions } from 'cross-spawn-cb';
+import resolveVersions, { type VersionOptions } from 'node-resolve-versions';
 import installVersion from 'node-version-install';
 import { spawnOptions as createSpawnOptions } from 'node-version-utils';
 import Queue from 'queue-cb';
@@ -7,14 +7,21 @@ import spawnStreaming from 'spawn-streaming';
 import spawnTerm from 'spawn-term';
 import { storagePath } from './constants.ts';
 
-import type { UseResult } from './types.ts';
+import type { Options, UseCallback, UseOptions, UseResult } from './types.ts';
 
-export default function worker(versionExpression, command, args, options, callback) {
-  resolveVersions(versionExpression, options, (err, versions) => {
-    if (err) return callback(err);
-    if (!versions.length) return callback(new Error(`No versions found from expression: ${versionExpression}`));
+export default function worker(versionExpression: string, command: string, args: string[], options: UseOptions, callback: UseCallback): undefined {
+  resolveVersions(versionExpression, options as VersionOptions, (err?: Error, versions?) => {
+    if (err) {
+      callback(err);
+      return;
+    }
+    if (!versions.length) {
+      callback(new Error(`No versions found from expression: ${versionExpression}`));
+      return;
+    }
 
     const installOptions = { storagePath, ...options };
+    const streamingOptions = options as Options;
     const results: UseResult[] = [];
     const queue = new Queue(1);
     versions.forEach((version: string) =>
@@ -25,7 +32,7 @@ export default function worker(versionExpression, command, args, options, callba
             results.push({ install, command, version, error: new Error(`Unexpected version results for version ${version}. Install ${JSON.stringify(installs)}`), result: null });
             return callback();
           }
-          const spawnOptions = createSpawnOptions(install.installPath, options);
+          const spawnOptions = createSpawnOptions(install.installPath, options as SpawnOptions);
           const prefix = install.version;
 
           function next(err?, res?): undefined {
@@ -38,7 +45,7 @@ export default function worker(versionExpression, command, args, options, callba
           }
 
           if (versions.length < 2) return spawn(command, args, spawnOptions, next);
-          if (spawnTerm && !options.streaming) spawnTerm(command, args, spawnOptions, { group: prefix, expanded: options.expanded }, next);
+          if (spawnTerm && !streamingOptions.streaming) spawnTerm(command, args, spawnOptions, { group: prefix, expanded: streamingOptions.expanded }, next);
           else spawnStreaming(command, args, spawnOptions, { prefix }, next);
         });
       })
