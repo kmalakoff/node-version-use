@@ -1,5 +1,6 @@
 {
   "name": "node-version-use-engines-node-missing",
   "private": true,
-  "engines": {}
+  "engines": {},
+  "version": ""
 }

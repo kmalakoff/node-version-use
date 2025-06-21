@@ -28,7 +28,7 @@
   "main": "dist/cjs/index.js",
   "types": "dist/cjs/index.d.cts",
   "bin": {
-    "nvu": "./bin/cli.js"
+    "nvu": "bin/cli.js"
   },
   "files": [
     "dist"
