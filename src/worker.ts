@@ -1,6 +1,6 @@
 import spawn, { type SpawnOptions } from 'cross-spawn-cb';
 import resolveVersions, { type VersionOptions } from 'node-resolve-versions';
-import installVersion from 'node-version-install';
+import installVersion, { type InstallOptions } from 'node-version-install';
 import { spawnOptions as createSpawnOptions } from 'node-version-utils';
 import Queue from 'queue-cb';
 import spawnStreaming from 'spawn-streaming';
@@ -20,7 +20,7 @@ export default function worker(versionExpression: string, command: string, args:
       return;
     }
 
-    const installOptions = { storagePath, ...options };
+    const installOptions = { storagePath, ...options } as InstallOptions;
     const streamingOptions = options as Options;
     const results: UseResult[] = [];
     const queue = new Queue(1);
