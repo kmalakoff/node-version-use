@@ -19,4 +19,4 @@ export interface UseOptions extends SpawnOptions {
   sort?: number;
 }
 
-export type UseCallback = (err?: UseError, results?: UseResult[]) => void;
+export type UseCallback = (err?: UseError, results?: UseResult[]) => undefined;

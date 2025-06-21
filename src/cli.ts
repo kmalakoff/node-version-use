@@ -1,8 +1,8 @@
 import exit from 'exit';
 import getopts from 'getopts-compat';
 import spawnTerm, { figures, formatArguments } from 'spawn-term';
-import run from './index.js';
-import type { UseError, UseOptions, UseResult } from './types.js';
+import run from './index.ts';
+import type { UseError, UseOptions, UseResult } from './types.ts';
 
 const ERROR_CODE = 13;
 
@@ -29,7 +29,7 @@ export default (argv, name) => {
   }
 
   options.stdio = 'inherit'; // pass through stdio
-  return run(args[0], args[1], args.slice(2), options as unknown as UseOptions, (err: UseError, results: UseResult[]) => {
+  return run(args[0], args[1], args.slice(2), options as unknown as UseOptions, (err: UseError, results: UseResult[]): undefined => {
     if (err && !err.results) {
       console.log(err.message);
       return exit(ERROR_CODE);

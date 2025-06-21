@@ -5,9 +5,9 @@ import { spawnOptions as createSpawnOptions } from 'node-version-utils';
 import Queue from 'queue-cb';
 import spawnStreaming from 'spawn-streaming';
 import spawnTerm from 'spawn-term';
-import { storagePath } from './constants.js';
+import { storagePath } from './constants.ts';
 
-import type { UseResult } from './types.js';
+import type { UseResult } from './types.ts';
 
 export default function worker(versionExpression, command, args, options, callback) {
   resolveVersions(versionExpression, options, (err, versions) => {

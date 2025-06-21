@@ -1,8 +1,15 @@
-import type { UseCallback, UseOptions, UseResult } from './types.js';
-import worker from './worker.js';
+import type { UseCallback, UseOptions, UseResult } from './types.ts';
+import worker from './worker.ts';
 
-export type * from './types.js';
-export default function nodeVersionUse(versionExpression: string, command: string, args: string[], options?: UseOptions, callback?: UseCallback): undefined | Promise<UseResult[]> {
+export type * from './types.ts';
+
+export default function nodeVersionUse(versionExpression: string, command: string, args: string[]): Promise<UseResult[]>;
+export default function nodeVersionUse(versionExpression: string, command: string, args: string[], options: UseOptions): Promise<UseResult[]>;
+
+export default function nodeVersionUse(versionExpression: string, command: string, args: string[], callback: UseCallback): undefined;
+export default function nodeVersionUse(versionExpression: string, command: string, args: string[], options: UseOptions, callback: UseCallback): undefined;
+
+export default function nodeVersionUse(versionExpression: string, command: string, args: string[], options?: UseOptions | UseCallback, callback?: UseCallback): undefined | Promise<UseResult[]> {
   if (typeof options === 'function') {
     callback = options as UseCallback;
     options = {};
