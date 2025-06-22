@@ -22,7 +22,10 @@ describe('cli', () => {
   describe('happy path', () => {
     it('one version - 12', (done) => {
       spawn(CLI, ['--silent', '--expanded', '12', NODE, '--version'], OPTIONS, (err, res) => {
-        if (err) return done(err.message);
+        if (err) {
+          done(err.message);
+          return;
+        }
         assert.ok(res.stdout.indexOf('v12.') >= 0);
         done();
       });
@@ -30,7 +33,10 @@ describe('cli', () => {
 
     it('multiple versions - 22,12', (done) => {
       spawn(CLI, ['--silent', '--expanded', '22,12', NODE, '--version'], OPTIONS, (err, res) => {
-        if (err) return done(err.message);
+        if (err) {
+          done(err.message);
+          return;
+        }
         assert.ok(res.stdout.indexOf('v22.') >= 0);
         assert.ok(res.stdout.indexOf('v12.') >= 0);
         done();
@@ -39,7 +45,10 @@ describe('cli', () => {
 
     it('one version with options - 22', (done) => {
       spawn(CLI, ['--silent', '--expanded', '22', NODE, '--version'], OPTIONS, (err, res) => {
-        if (err) return done(err.message);
+        if (err) {
+          done(err.message);
+          return;
+        }
         assert.ok(isVersion(getLines(res.stdout).slice(-1)[0], 'v'));
         done();
       });
@@ -56,7 +65,10 @@ describe('cli', () => {
 
     it('multiple versions with options - 10,12,22 (sort desc)', (done) => {
       spawn(CLI, ['--silent', '--expanded', '--desc', '10,12,22', NODE, '--version'], OPTIONS, (err, res) => {
-        if (err) return done(err.message);
+        if (err) {
+          done(err.message);
+          return;
+        }
         assert.ok(res.stdout.indexOf('v10.') >= 0);
         assert.ok(res.stdout.indexOf('v12.') >= 0);
         assert.ok(res.stdout.indexOf('v22.') >= 0);
@@ -67,7 +79,10 @@ describe('cli', () => {
     it('using engines', (done) => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['--silent', '--expanded', 'engines', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
-        if (err) return done(err.message);
+        if (err) {
+          done(err.message);
+          return;
+        }
         assert.ok(getLines(res.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
       });
@@ -76,7 +91,10 @@ describe('cli', () => {
     it('>=8', (done) => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['--silent', '--expanded', '>=8', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
-        if (err) return done(err.message);
+        if (err) {
+          done(err.message);
+          return;
+        }
         assert.ok(res.stdout.indexOf('v6.') < 0);
         assert.ok(res.stdout.indexOf('v8.') >= 0);
         assert.ok(res.stdout.indexOf('v10.') >= 0);

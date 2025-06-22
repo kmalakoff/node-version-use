@@ -10,7 +10,7 @@ import { storagePath } from './constants.ts';
 import type { Options, UseCallback, UseOptions, UseResult } from './types.ts';
 
 export default function worker(versionExpression: string, command: string, args: string[], options: UseOptions, callback: UseCallback): undefined {
-  resolveVersions(versionExpression, options as VersionOptions, (err?: Error, versions?) => {
+  resolveVersions(versionExpression, options as VersionOptions, (err?: Error, versions?: string[]) => {
     if (err) {
       callback(err);
       return;
