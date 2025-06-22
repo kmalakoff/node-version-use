@@ -10,7 +10,7 @@ import Pinkie from 'pinkie-promise';
 import rimraf2 from 'rimraf2';
 import url from 'url';
 
-import getLines from '../lib/getLines.cjs';
+import getLines from '../lib/getLines.ts';
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 const NODE = isWindows ? 'node.exe' : 'node';

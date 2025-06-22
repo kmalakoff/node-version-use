@@ -7,7 +7,7 @@ import isVersion from 'is-version';
 import path from 'path';
 import url from 'url';
 
-import getLines from '../lib/getLines.cjs';
+import getLines from '../lib/getLines.ts';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.js');
