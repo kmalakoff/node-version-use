@@ -1,6 +1,6 @@
 {
   "name": "node-version-use",
-  "version": "1.6.10",
+  "version": "1.6.11",
   "description": "Cross-platform solution for using multiple versions of node. Useful for compatibility testing",
   "keywords": [
     "node",
