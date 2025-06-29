@@ -55,7 +55,11 @@ describe('cli', () => {
     });
 
     it('multiple versions with options - 10,12,22', (done) => {
-      spawn(CLI, ['--silent', '--expanded', '10,12,22', NODE, '--version'], OPTIONS, (_err, res) => {
+      spawn(CLI, ['--silent', '--expanded', '10,12,22', NODE, '--version'], OPTIONS, (err, res) => {
+        if (err) {
+          done(err.message);
+          return;
+        }
         assert.ok(res.stdout.indexOf('v10.') >= 0);
         assert.ok(res.stdout.indexOf('v12.') >= 0);
         assert.ok(res.stdout.indexOf('v22.') >= 0);
