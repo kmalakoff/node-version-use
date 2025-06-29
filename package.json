@@ -41,16 +41,16 @@
     "version": "tsds version"
   },
   "dependencies": {
-    "cross-spawn-cb": "^2.3.9",
+    "cross-spawn-cb": "^2.3.10",
     "exit": "^0.1.2",
     "getopts-compat": "^2.2.6",
     "homedir-polyfill": "^1.0.3",
-    "node-resolve-versions": "^1.2.7",
+    "node-resolve-versions": "^1.2.8",
     "node-version-install": "^1.3.10",
     "node-version-utils": "^1.3.3",
     "queue-cb": "^1.5.5",
-    "spawn-streaming": "^1.0.52",
-    "spawn-term": "^1.0.17"
+    "spawn-streaming": "^1.0.53",
+    "spawn-term": "^1.0.18"
   },
   "devDependencies": {
     "@types/mocha": "*",
