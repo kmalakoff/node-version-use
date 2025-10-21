@@ -40,7 +40,9 @@ export default (argv: string[], name: string): undefined => {
     if (!options.silent) {
       if (!spawnTerm) {
         console.log('\n======================');
-        results.forEach((res) => console.log(`${res.error ? figures.cross : figures.tick} ${res.version}${res.error ? ` Error: ${res.error.message}` : ''}`));
+        results.forEach((res) => {
+          console.log(`${res.error ? figures.cross : figures.tick} ${res.version}${res.error ? ` Error: ${res.error.message}` : ''}`);
+        });
       }
       console.log('\n----------------------');
       console.log(`${name} ${formatArguments(args).join(' ')}`);
