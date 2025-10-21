@@ -24,7 +24,7 @@ export default function worker(versionExpression: string, command: string, args:
     const streamingOptions = options as Options;
     const results: UseResult[] = [];
     const queue = new Queue(1);
-    versions.forEach((version: string) =>
+    versions.forEach((version: string) => {
       queue.defer((cb) => {
         installVersion(version, installOptions, (_err, installs) => {
           const install = installs && installs.length === 1 ? installs[0] : null;
@@ -48,8 +48,8 @@ export default function worker(versionExpression: string, command: string, args:
           if (spawnTerm && !streamingOptions.streaming) spawnTerm(command, args, spawnOptions, { group: prefix, expanded: streamingOptions.expanded }, next);
           else spawnStreaming(command, args, spawnOptions, { prefix }, next);
         });
-      })
-    );
+      });
+    });
     queue.await((err) => {
       err ? callback(err) : callback(null, results);
     });

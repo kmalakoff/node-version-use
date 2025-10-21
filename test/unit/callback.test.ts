@@ -3,7 +3,6 @@ delete process.env.NODE_OPTIONS;
 
 import assert from 'assert';
 import isVersion from 'is-version';
-// @ts-ignore
 import versionUse, { type UseOptions } from 'node-version-use';
 import path from 'path';
 import rimraf2 from 'rimraf2';
