@@ -18,6 +18,7 @@ export default function worker(versionExpression: string, command: string, args:
 
   loaderQueue.defer((cb) =>
     loadNodeVersionInstall((err, fn) => {
+      console.log(fn);
       installVersion = fn;
       cb(err);
     })
