@@ -55,7 +55,8 @@ export default function worker(versionExpression: string, command: string, args:
       const queue = new Queue(1);
 
       // Create session once for all processes (only if multiple versions)
-      const session = versions.length >= 2 && createSession && !streamingOptions.streaming ? createSession({ header: `${command} ${args.join(' ')}`, showStatusBar: true }) : null;
+      const interactive = options.interactive !== false;
+      const session = versions.length >= 2 && createSession && !streamingOptions.streaming ? createSession({ header: `${command} ${args.join(' ')}`, showStatusBar: true, interactive }) : null;
 
       versions.forEach((version: string) => {
         queue.defer((cb) => {

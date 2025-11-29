@@ -20,7 +20,8 @@ export interface Options {
   sort?: number;
   streaming?: boolean;
   expanded?: boolean;
+  interactive?: boolean;
 }
-export type UseOptions = Options | InstallOptions | VersionOptions | SpawnOptions;
+export type UseOptions = Options & InstallOptions & VersionOptions & SpawnOptions;
 
 export type UseCallback = (err?: UseError | Error, results?: UseResult[]) => undefined;
