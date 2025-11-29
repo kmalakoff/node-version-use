@@ -36,6 +36,7 @@
   "scripts": {
     "build": "tsds build",
     "format": "biome check --write --unsafe",
+    "prepublishOnly": "tsds validate",
     "test": "mocha --no-timeouts test/**/*.test.*",
     "test:engines": "nvu engines tsds test:node --no-timeouts",
     "version": "tsds version"
@@ -45,18 +46,18 @@
     "exit": "*",
     "getopts-compat": "*",
     "homedir-polyfill": "*",
+    "install-module-linked": "*",
     "node-resolve-versions": "*",
-    "node-version-install": "*",
     "node-version-utils": "*",
     "queue-cb": "*",
-    "spawn-streaming": "*",
-    "spawn-term": "*"
+    "spawn-streaming": "*"
   },
   "devDependencies": {
     "@types/mocha": "*",
     "@types/node": "*",
     "cr": "*",
     "is-version": "*",
+    "node-version-install": "*",
     "pinkie-promise": "*",
     "rimraf2": "*"
   },
