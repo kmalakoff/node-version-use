@@ -6,11 +6,16 @@ const _dirname = path.dirname(typeof __dirname !== 'undefined' ? __dirname : url
 const nodeModules = path.join(_dirname, '..', '..', '..', 'node_modules');
 const moduleName = 'spawn-term';
 
-// biome-ignore lint/suspicious/noExplicitAny: module type varies by Node version
-type SpawnTermFn = ((command: string, args: string[], options: any, termOptions: any, callback: (err?: Error, res?: any) => void) => void) | null;
+type CreateSessionFn =
+  | ((options?: { header?: string; showStatusBar?: boolean; interactive?: boolean }) => {
+      spawn: (command: string, args: string[], options: unknown, termOptions: unknown, callback: (err?: Error, res?: unknown) => void) => void;
+      close: () => void;
+      waitAndClose: (callback?: () => void) => void;
+    })
+  | undefined;
 
 interface SpawnTermModule {
-  spawnTerm: SpawnTermFn;
+  createSession: CreateSessionFn;
   figures: { tick: string; cross: string };
   formatArguments: (args: string[]) => string[];
 }
@@ -22,7 +27,7 @@ function loadModule(moduleName, callback) {
     import(moduleName)
       .then((mod) => {
         callback(null, {
-          spawnTerm: mod?.default ?? null,
+          createSession: mod?.createSession ?? undefined,
           figures: mod?.figures ?? { tick: '✓', cross: '✗' },
           formatArguments: mod?.formatArguments ?? ((args: string[]) => args),
         });
