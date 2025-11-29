@@ -14,7 +14,13 @@ export default function worker(versionExpression: string, command: string, args:
   // Load lazy dependencies in parallel
   const loaderQueue = new Queue();
   let installVersion: (version: string, opts: InstallOptions, cb: (err?: Error, results?: InstallResult[]) => void) => void;
-  let spawnTerm: ((cmd: string, a: string[], opts: SpawnOptions, termOpts: unknown, cb: (err?: Error, res?: unknown) => void) => void) | null;
+  let createSession:
+    | ((options?: { header?: string; showStatusBar?: boolean; interactive?: boolean }) => {
+        spawn: (command: string, args: string[], options: unknown, termOptions: unknown, callback: (err?: Error, res?: unknown) => void) => void;
+        close: () => void;
+        waitAndClose: (callback?: () => void) => void;
+      })
+    | undefined;
 
   loaderQueue.defer((cb) =>
     loadNodeVersionInstall((err, fn) => {
@@ -25,7 +31,7 @@ export default function worker(versionExpression: string, command: string, args:
   );
   loaderQueue.defer((cb) =>
     loadSpawnTerm((err, mod) => {
-      spawnTerm = mod?.spawnTerm;
+      createSession = mod?.createSession;
       cb(err);
     })
   );
@@ -47,6 +53,10 @@ export default function worker(versionExpression: string, command: string, args:
       const streamingOptions = options as Options;
       const results: UseResult[] = [];
       const queue = new Queue(1);
+
+      // Create session once for all processes (only if multiple versions)
+      const session = versions.length >= 2 && createSession && !streamingOptions.streaming ? createSession({ header: `${command} ${args.join(' ')}`, showStatusBar: true }) : null;
+
       versions.forEach((version: string) => {
         queue.defer((cb) => {
           installVersion(version, installOptions, (_err, installs) => {
@@ -68,13 +78,19 @@ export default function worker(versionExpression: string, command: string, args:
             }
 
             if (versions.length < 2) return spawn(command, args, spawnOptions, next);
-            if (spawnTerm && !streamingOptions.streaming) spawnTerm(command, args, spawnOptions, { group: prefix, expanded: streamingOptions.expanded, header: `${command} ${args.join(' ')}`, showStatusBar: true }, next);
+            if (session) session.spawn(command, args, spawnOptions, { group: prefix, expanded: streamingOptions.expanded }, next);
             else spawnStreaming(command, args, spawnOptions, { prefix }, next);
           });
         });
       });
       queue.await((err) => {
-        err ? callback(err) : callback(null, results);
+        if (session) {
+          session.waitAndClose(() => {
+            err ? callback(err) : callback(null, results);
+          });
+        } else {
+          err ? callback(err) : callback(null, results);
+        }
       });
     });
   });
