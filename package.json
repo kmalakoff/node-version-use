@@ -50,7 +50,7 @@
     "node-resolve-versions": "*",
     "node-version-utils": "*",
     "queue-cb": "*",
-    "resolve-bin-sync": "^1.0.7",
+    "resolve-bin-sync": "^1.0.8",
     "spawn-streaming": "*"
   },
   "devDependencies": {
