@@ -19,6 +19,58 @@ const OPTIONS = {
 };
 
 describe('cli', () => {
+  describe('version and help', () => {
+    it('--version', (done) => {
+      spawn(CLI, ['--version'], OPTIONS, (err, res) => {
+        if (err) {
+          done(err.message);
+          return;
+        }
+        const version = (res.stdout as string).trim();
+        assert.ok(/^\d+\.\d+\.\d+/.test(version), `Expected version format x.y.z, got: ${version}`);
+        done();
+      });
+    });
+
+    it('-v', (done) => {
+      spawn(CLI, ['-v'], OPTIONS, (err, res) => {
+        if (err) {
+          done(err.message);
+          return;
+        }
+        const version = (res.stdout as string).trim();
+        assert.ok(/^\d+\.\d+\.\d+/.test(version), `Expected version format x.y.z, got: ${version}`);
+        done();
+      });
+    });
+
+    it('--help', (done) => {
+      spawn(CLI, ['--help'], OPTIONS, (err, res) => {
+        if (err) {
+          done(err.message);
+          return;
+        }
+        assert.ok(res.stdout.indexOf('Usage:') >= 0);
+        assert.ok(res.stdout.indexOf('--version') >= 0);
+        assert.ok(res.stdout.indexOf('--help') >= 0);
+        done();
+      });
+    });
+
+    it('-h', (done) => {
+      spawn(CLI, ['-h'], OPTIONS, (err, res) => {
+        if (err) {
+          done(err.message);
+          return;
+        }
+        assert.ok(res.stdout.indexOf('Usage:') >= 0);
+        assert.ok(res.stdout.indexOf('--version') >= 0);
+        assert.ok(res.stdout.indexOf('--help') >= 0);
+        done();
+      });
+    });
+  });
+
   describe('happy path', () => {
     it('one version - 12', (done) => {
       spawn(CLI, ['--silent', '--expanded', '12', NODE, '--version'], OPTIONS, (err, res) => {
