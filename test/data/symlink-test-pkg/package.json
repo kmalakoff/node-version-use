@@ -1,0 +1,7 @@
+{
+  "name": "print-node-version",
+  "version": "1.0.0",
+  "bin": {
+    "print-node-version": "./bin/cli.js"
+  }
+}

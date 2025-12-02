@@ -1,2 +1,2 @@
-ignores: ["node-version-use"]
+ignores: ["node-version-use", "ts-dev-stack"]
 ignoreDirs: [".tmp"]

@@ -1,14 +1,62 @@
 import spawn, { type SpawnOptions } from 'cross-spawn-cb';
+import fs from 'fs';
 import resolveVersions, { type VersionOptions } from 'node-resolve-versions';
 import type { InstallOptions, InstallResult } from 'node-version-install';
 import { spawnOptions as createSpawnOptions } from 'node-version-utils';
+import path from 'path';
 import Queue from 'queue-cb';
+import resolveBin from 'resolve-bin-sync';
 import spawnStreaming from 'spawn-streaming';
 import { storagePath } from './constants.ts';
 import loadNodeVersionInstall from './lib/loadNodeVersionInstall.ts';
 import loadSpawnTerm from './lib/loadSpawnTerm.ts';
 
 import type { Options, UseCallback, UseOptions, UseResult } from './types.ts';
+
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const NODE = isWindows ? 'node.exe' : 'node';
+
+// Parse npm-generated .cmd wrapper to extract the JS script path
+function parseNpmCmdWrapper(cmdPath: string): string | null {
+  try {
+    const content = fs.readFileSync(cmdPath, 'utf8');
+    // Match: "%_prog%"  "%dp0%\node_modules\...\cli.js" %*
+    // or: "%_prog%"  "%dp0%\path\to\script.js" %*
+    const match = content.match(/"%_prog%"\s+"?%dp0%\\([^"]+)"?\s+%\*/);
+    if (match) {
+      const relativePath = match[1];
+      const cmdDir = path.dirname(cmdPath);
+      return path.join(cmdDir, relativePath);
+    }
+  } catch (_e) {
+    // ignore
+  }
+  return null;
+}
+
+// On Windows, resolve npm bin commands to their JS entry points to bypass .cmd wrappers
+// This fixes issues with nvm-windows where .cmd wrappers use symlinked node.exe directly
+function resolveCommand(command: string, args: string[]): { command: string; args: string[] } {
+  if (!isWindows) return { command, args };
+
+  // Case 1: Command is a .cmd file path
+  if (command.toLowerCase().endsWith('.cmd')) {
+    const scriptPath = parseNpmCmdWrapper(command);
+    if (scriptPath) {
+      return { command: NODE, args: [scriptPath, ...args] };
+    }
+  }
+
+  // Case 2: Try to resolve the command as an npm package bin from node_modules
+  try {
+    const binPath = resolveBin(command);
+    return { command: NODE, args: [binPath, ...args] };
+  } catch (_e) {
+    // Not an npm package bin, use original command
+  }
+
+  return { command, args };
+}
 
 export default function worker(versionExpression: string, command: string, args: string[], options: UseOptions, callback: UseCallback): undefined {
   // Load lazy dependencies in parallel
@@ -77,9 +125,12 @@ export default function worker(versionExpression: string, command: string, args:
               cb();
             }
 
-            if (versions.length < 2) return spawn(command, args, spawnOptions, next);
-            if (session) session.spawn(command, args, spawnOptions, { group: prefix, expanded: streamingOptions.expanded }, next);
-            else spawnStreaming(command, args, spawnOptions, { prefix }, next);
+            // On Windows, resolve npm bin commands to bypass .cmd wrappers
+            const resolved = resolveCommand(command, args);
+
+            if (versions.length < 2) return spawn(resolved.command, resolved.args, spawnOptions, next);
+            if (session) session.spawn(resolved.command, resolved.args, spawnOptions, { group: prefix, expanded: streamingOptions.expanded }, next);
+            else spawnStreaming(resolved.command, resolved.args, spawnOptions, { prefix }, next);
           });
         });
       });

@@ -1,6 +1,6 @@
 {
   "name": "node-version-use",
-  "version": "1.8.5",
+  "version": "1.8.6",
   "description": "Cross-platform solution for using multiple versions of node. Useful for compatibility testing",
   "keywords": [
     "node",
@@ -37,7 +37,7 @@
     "build": "tsds build",
     "format": "biome check --write --unsafe",
     "prepublishOnly": "tsds validate",
-    "test": "mocha --no-timeouts test/**/*.test.*",
+    "test": "tsds test:node --no-timeouts",
     "test:engines": "nvu engines tsds test:node --no-timeouts",
     "version": "tsds version"
   },
@@ -50,16 +50,20 @@
     "node-resolve-versions": "*",
     "node-version-utils": "*",
     "queue-cb": "*",
+    "resolve-bin-sync": "^1.0.7",
     "spawn-streaming": "*"
   },
   "devDependencies": {
+    "@biomejs/biome": "*",
     "@types/mocha": "*",
     "@types/node": "*",
     "cr": "*",
     "is-version": "*",
     "node-version-install": "*",
+    "node-version-use": "*",
     "pinkie-promise": "*",
-    "rimraf2": "*"
+    "rimraf2": "*",
+    "ts-dev-stack": "*"
   },
   "engines": {
     "node": ">=0.8"
