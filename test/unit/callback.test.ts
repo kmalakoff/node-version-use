@@ -18,6 +18,7 @@ const OPTIONS = {
   storagePath: TMP_DIR,
   encoding: 'utf8' as BufferEncoding,
   silent: true,
+  interactive: false,
 };
 
 describe('callback', () => {
