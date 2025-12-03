@@ -1,5 +1,4 @@
-import homedir from 'homedir-polyfill';
 import path from 'path';
+import { homedir } from './compat.ts';
 
-const home = homedir();
-export const storagePath = path.join(home, '.nvu') as string;
+export const storagePath = path.join(homedir(), '.nvu') as string;
