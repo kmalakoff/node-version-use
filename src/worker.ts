@@ -7,6 +7,7 @@ import path from 'path';
 import Queue from 'queue-cb';
 import resolveBin from 'resolve-bin-sync';
 import spawnStreaming from 'spawn-streaming';
+import { stringEndsWith } from './compat.ts';
 import { storagePath } from './constants.ts';
 import loadNodeVersionInstall from './lib/loadNodeVersionInstall.ts';
 import loadSpawnTerm from './lib/loadSpawnTerm.ts';
@@ -40,7 +41,7 @@ function resolveCommand(command: string, args: string[]): { command: string; arg
   if (!isWindows) return { command, args };
 
   // Case 1: Command is a .cmd file path
-  if (command.toLowerCase().endsWith('.cmd')) {
+  if (stringEndsWith(command.toLowerCase(), '.cmd')) {
     const scriptPath = parseNpmCmdWrapper(command);
     if (scriptPath) {
       return { command: NODE, args: [scriptPath, ...args] };
