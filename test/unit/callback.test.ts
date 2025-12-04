@@ -2,10 +2,10 @@
 delete process.env.NODE_OPTIONS;
 
 import assert from 'assert';
+import { safeRm } from 'fs-remove-compat';
 import isVersion from 'is-version';
 import versionUse, { type UseOptions } from 'node-version-use';
 import path from 'path';
-import rimraf2 from 'rimraf2';
 import url from 'url';
 import getLines from '../lib/getLines.ts';
 
@@ -22,7 +22,7 @@ const OPTIONS = {
 };
 
 describe('callback', () => {
-  before(rimraf2.bind(null, TMP_DIR, { disableGlob: true }));
+  before((cb) => safeRm(TMP_DIR, cb));
 
   describe('happy path', () => {
     it('one version - 12', (done) => {
