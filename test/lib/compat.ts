@@ -3,22 +3,16 @@
  * Uses native fs functions when available, falls back to ponyfills for old Node.
  */
 import fs from 'fs';
+import { safeRmSync } from 'fs-remove-compat';
 
-var hasRmSync = typeof fs.rmSync === 'function';
 var hasCopyFileSync = typeof fs.copyFileSync === 'function';
 var hasRecursiveMkdir = +process.versions.node.split('.')[0] >= 10;
 
 /**
  * Recursively remove a directory and its contents.
- * Uses native fs.rmSync on Node 14.14+, falls back to rimraf2 on older versions.
  */
 export function rmRecursive(dir: string): void {
-  if (hasRmSync) {
-    fs.rmSync(dir, { recursive: true, force: true });
-  } else {
-    var rimraf = require('rimraf2');
-    rimraf.sync(dir);
-  }
+  safeRmSync(dir, { recursive: true, force: true });
 }
 
 /**

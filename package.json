@@ -59,12 +59,12 @@
     "@types/node": "*",
     "cr": "*",
     "fs-copy-compat": "*",
+    "fs-remove-compat": "*",
     "is-version": "*",
     "mkdirp-classic": "*",
     "node-version-install": "*",
     "node-version-use": "*",
     "pinkie-promise": "*",
-    "rimraf2": "*",
     "ts-dev-stack": "*",
     "tsds-config": "*"
   },

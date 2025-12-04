@@ -2,11 +2,11 @@
 delete process.env.NODE_OPTIONS;
 
 import assert from 'assert';
+import { safeRm } from 'fs-remove-compat';
 import isVersion from 'is-version';
 import versionUse from 'node-version-use';
 import path from 'path';
 import Pinkie from 'pinkie-promise';
-import rimraf2 from 'rimraf2';
 import url from 'url';
 
 import getLines from '../lib/getLines.ts';
@@ -37,7 +37,7 @@ describe('promise', () => {
   })();
 
   describe('clean directories', () => {
-    before(rimraf2.bind(null, TMP_DIR, { disableGlob: true }));
+    before((cb) => safeRm(TMP_DIR, cb));
 
     describe('happy path', () => {
       it('one version - 12', async () => {
