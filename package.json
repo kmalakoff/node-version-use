@@ -26,6 +26,7 @@
     "./package.json": "./package.json"
   },
   "main": "dist/cjs/index.js",
+  "source": "src/index.ts",
   "types": "dist/cjs/index.d.ts",
   "bin": {
     "nvu": "bin/cli.js"
@@ -50,7 +51,7 @@
     "node-resolve-versions": "*",
     "node-version-utils": "*",
     "queue-cb": "*",
-    "resolve-bin-sync": "^1.0.8",
+    "resolve-bin-sync": "^1.0.9",
     "spawn-streaming": "*"
   },
   "devDependencies": {
@@ -67,8 +68,5 @@
   },
   "engines": {
     "node": ">=0.8"
-  },
-  "tsds": {
-    "source": "src/index.ts"
   }
 }
