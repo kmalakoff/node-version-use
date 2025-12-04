@@ -6,9 +6,11 @@ delete process.env.NODE_OPTIONS;
 import assert from 'assert';
 import spawn from 'cross-spawn-cb';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import url from 'url';
+
+import { homedir } from '../../src/compat.ts';
+import { copyFileSync, mkdirRecursive, rmRecursive } from '../lib/compat.ts';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.js');
@@ -45,7 +47,7 @@ endLocal & goto #_undefined_# 2>NUL || title %COMSPEC% & "%_prog%"  "%dp0%\\${sc
 
 function cleanup() {
   try {
-    fs.rmSync(TMP_DIR, { recursive: true, force: true });
+    rmRecursive(TMP_DIR);
   } catch (_e) {
     // ignore
   }
@@ -63,7 +65,7 @@ describe('windows symlink', () => {
     cleanup();
 
     // Create temp directory structure
-    fs.mkdirSync(TMP_DIR, { recursive: true });
+    mkdirRecursive(TMP_DIR);
 
     // First, we need to get the install path for Node 20 to create a symlink to it
     // For now, let's use a simpler approach: install Node 20, then create our symlink setup
@@ -73,7 +75,7 @@ describe('windows symlink', () => {
       if (err) return done(err);
 
       // Find where Node 20 was installed
-      const nvuStoragePath = path.join(os.homedir(), '.nvu', 'installed');
+      const nvuStoragePath = path.join(homedir(), '.nvu', 'installed');
       const entries = fs.readdirSync(nvuStoragePath);
       const node20Dir = entries.find((e) => e.startsWith('v20.'));
 
@@ -89,14 +91,14 @@ describe('windows symlink', () => {
 
       // Create node_modules directory and copy test package
       const nodeModulesDir = path.join(symlinkDir, 'node_modules', 'print-node-version');
-      fs.mkdirSync(nodeModulesDir, { recursive: true });
+      mkdirRecursive(nodeModulesDir);
 
       // Copy package.json
-      fs.copyFileSync(path.join(TEST_PKG_DIR, 'package.json'), path.join(nodeModulesDir, 'package.json'));
+      copyFileSync(path.join(TEST_PKG_DIR, 'package.json'), path.join(nodeModulesDir, 'package.json'));
 
       // Copy bin directory
-      fs.mkdirSync(path.join(nodeModulesDir, 'bin'), { recursive: true });
-      fs.copyFileSync(path.join(TEST_PKG_DIR, 'bin', 'cli.js'), path.join(nodeModulesDir, 'bin', 'cli.js'));
+      mkdirRecursive(path.join(nodeModulesDir, 'bin'));
+      copyFileSync(path.join(TEST_PKG_DIR, 'bin', 'cli.js'), path.join(nodeModulesDir, 'bin', 'cli.js'));
 
       // Create .cmd wrapper in the symlink directory
       const cmdContent = generateCmdWrapper('node_modules\\print-node-version\\bin\\cli.js');
