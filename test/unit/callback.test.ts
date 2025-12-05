@@ -28,7 +28,7 @@ describe('callback', () => {
     it('one version - 12', (done) => {
       versionUse('12', NODE, ['--version'], OPTIONS, (err, results) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(results.length > 0);
@@ -40,7 +40,7 @@ describe('callback', () => {
     it('lts version - lts', (done) => {
       versionUse('lts', NODE, ['--version'], OPTIONS, (err, results) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(results.length > 0);
@@ -52,7 +52,7 @@ describe('callback', () => {
     it('multiple versions - 10,12,lts', (done) => {
       versionUse('10,12,lts', NODE, ['--version'], OPTIONS, (err, results) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(results.length > 0);
@@ -66,7 +66,7 @@ describe('callback', () => {
     it('multiple versions - 10,12,lts (sort -1)', (done) => {
       versionUse('10,12,lts', NODE, ['--version'], { sort: -1, ...OPTIONS }, (err, results) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(results.length > 0);
@@ -81,7 +81,7 @@ describe('callback', () => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS }, (err, results) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(results.length > 0);
@@ -93,7 +93,7 @@ describe('callback', () => {
     it('>=8', (done) => {
       versionUse('>=8', NODE, ['--version'], { range: 'major,even', ...OPTIONS } as unknown as UseOptions, (err, results) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(results.length > 0);

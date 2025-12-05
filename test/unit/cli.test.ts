@@ -23,7 +23,7 @@ describe('cli', () => {
     it('--version', (done) => {
       spawn(CLI, ['--version'], OPTIONS, (err, res) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         const version = (res.stdout as string).trim();
@@ -35,7 +35,7 @@ describe('cli', () => {
     it('-v', (done) => {
       spawn(CLI, ['-v'], OPTIONS, (err, res) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         const version = (res.stdout as string).trim();
@@ -47,7 +47,7 @@ describe('cli', () => {
     it('--help', (done) => {
       spawn(CLI, ['--help'], OPTIONS, (err, res) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(res.stdout.indexOf('Usage:') >= 0);
@@ -60,7 +60,7 @@ describe('cli', () => {
     it('-h', (done) => {
       spawn(CLI, ['-h'], OPTIONS, (err, res) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(res.stdout.indexOf('Usage:') >= 0);
@@ -75,7 +75,7 @@ describe('cli', () => {
     it('one version - 12', (done) => {
       spawn(CLI, ['--silent', '--expanded', '12', NODE, '--version'], OPTIONS, (err, res) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(res.stdout.indexOf('v12.') >= 0);
@@ -86,7 +86,7 @@ describe('cli', () => {
     it('multiple versions - 22,12', (done) => {
       spawn(CLI, ['--silent', '--expanded', '22,12', NODE, '--version'], OPTIONS, (err, res) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(res.stdout.indexOf('v22.') >= 0);
@@ -98,7 +98,7 @@ describe('cli', () => {
     it('one version with options - 22', (done) => {
       spawn(CLI, ['--silent', '--expanded', '22', NODE, '--version'], OPTIONS, (err, res) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(isVersion(getLines(res.stdout).slice(-1)[0], 'v'));
@@ -109,7 +109,7 @@ describe('cli', () => {
     it('multiple versions with options - 10,12,22', (done) => {
       spawn(CLI, ['--silent', '--expanded', '10,12,22', NODE, '--version'], OPTIONS, (err, res) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(res.stdout.indexOf('v10.') >= 0);
@@ -122,7 +122,7 @@ describe('cli', () => {
     it('multiple versions with options - 10,12,22 (sort desc)', (done) => {
       spawn(CLI, ['--silent', '--expanded', '--desc', '10,12,22', NODE, '--version'], OPTIONS, (err, res) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(res.stdout.indexOf('v10.') >= 0);
@@ -136,7 +136,7 @@ describe('cli', () => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['--silent', '--expanded', 'engines', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(getLines(res.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -148,7 +148,7 @@ describe('cli', () => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['--silent', '--expanded', '>=8', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
         if (err) {
-          done(err.message);
+          done(err);
           return;
         }
         assert.ok(res.stdout.indexOf('v6.') < 0);
