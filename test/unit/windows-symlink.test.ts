@@ -10,7 +10,7 @@ import path from 'path';
 import url from 'url';
 
 import { homedir } from '../../src/compat.ts';
-import { copyFileSync, mkdirRecursive, rmRecursive } from '../lib/compat.ts';
+import { arrayFind, copyFileSync, mkdirRecursive, rmRecursive, stringStartsWith } from '../lib/compat.ts';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.js');
@@ -77,7 +77,7 @@ describe('windows symlink', () => {
       // Find where Node 20 was installed
       const nvuStoragePath = path.join(homedir(), '.nvu', 'installed');
       const entries = fs.readdirSync(nvuStoragePath);
-      const node20Dir = entries.find((e) => e.startsWith('v20.'));
+      const node20Dir = arrayFind(entries, (e) => stringStartsWith(e, 'v20.'));
 
       if (!node20Dir) {
         return done(new Error('Could not find Node 20 installation'));
@@ -139,10 +139,10 @@ describe('windows symlink', () => {
 
       // The output should contain v22.x, indicating nvu correctly used Node 22
       // If bug exists, output will contain v20.x (from symlinked node.exe)
-      assert.ok(output.includes('v22.'), `Expected Node 22 version in output, but got: ${output}. This indicates the .cmd wrapper used the symlinked node.exe instead of the PATH node.`);
+      assert.ok(output.indexOf('v22.') >= 0, `Expected Node 22 version in output, but got: ${output}. This indicates the .cmd wrapper used the symlinked node.exe instead of the PATH node.`);
 
       // Also verify it does NOT contain v20
-      assert.ok(!output.includes('v20.'), `Output should not contain v20.x, but got: ${output}`);
+      assert.ok(output.indexOf('v20.') < 0, `Output should not contain v20.x, but got: ${output}`);
 
       done();
     });
