@@ -21,6 +21,7 @@ export interface Options {
   streaming?: boolean;
   expanded?: boolean;
   interactive?: boolean;
+  silent?: boolean;
 }
 export type UseOptions = Options & InstallOptions & VersionOptions & SpawnOptions;
 

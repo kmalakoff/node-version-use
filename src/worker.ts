@@ -132,8 +132,8 @@ export default function worker(versionExpression: string, command: string, args:
             const resolved = resolveCommand(command, args);
 
             if (versions.length < 2) {
-              // Show command when running single version (no terminal session)
-              console.log(`$ ${formatArguments([resolved.command].concat(resolved.args)).join(' ')}`);
+              // Show command when running single version (no terminal session, unless silent)
+              if (!options.silent) console.log(`$ ${formatArguments([resolved.command].concat(resolved.args)).join(' ')}`);
               return spawn(resolved.command, resolved.args, spawnOptions, next);
             }
             if (session) session.spawn(resolved.command, resolved.args, spawnOptions, { group: prefix, expanded: streamingOptions.expanded }, next);
