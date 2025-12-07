@@ -37,6 +37,32 @@ export function copyFileSync(src: string, dest: string): void {
     fs.copyFileSync(src, dest);
   } else {
     var copy = require('fs-copy-compat');
-    copy.sync(src, dest);
+    copy.copyFileSync(src, dest);
   }
+}
+
+/**
+ * Find an element in an array.
+ * Uses native Array.prototype.find on Node 4+, falls back to manual iteration.
+ */
+export function arrayFind<T>(arr: T[], predicate: (item: T, index: number, arr: T[]) => boolean): T | undefined {
+  if (typeof arr.find === 'function') {
+    return arr.find(predicate);
+  }
+  for (var i = 0; i < arr.length; i++) {
+    if (predicate(arr[i], i, arr)) return arr[i];
+  }
+  return undefined;
+}
+
+/**
+ * Check if a string starts with a search string.
+ * Uses native String.prototype.startsWith on Node 4+, falls back to indexOf.
+ */
+export function stringStartsWith(str: string, search: string, position?: number): boolean {
+  if (typeof str.startsWith === 'function') {
+    return str.startsWith(search, position);
+  }
+  position = position || 0;
+  return str.indexOf(search, position) === position;
 }

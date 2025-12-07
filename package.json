@@ -43,30 +43,30 @@
     "version": "tsds version"
   },
   "dependencies": {
-    "cross-spawn-cb": "*",
-    "exit": "*",
-    "getopts-compat": "*",
-    "homedir-polyfill": "*",
-    "install-module-linked": "*",
-    "node-resolve-versions": "*",
-    "node-version-utils": "*",
-    "queue-cb": "*",
+    "cross-spawn-cb": "^2.4.10",
+    "exit": "^0.1.2",
+    "getopts-compat": "^2.2.6",
+    "homedir-polyfill": "^1.0.3",
+    "install-module-linked": "^1.3.10",
+    "node-resolve-versions": "^1.3.11",
+    "node-version-utils": "^1.3.15",
+    "queue-cb": "^1.6.1",
     "resolve-bin-sync": "^1.0.10",
-    "spawn-streaming": "*"
+    "spawn-streaming": "^1.1.13"
   },
   "devDependencies": {
-    "@types/mocha": "*",
-    "@types/node": "*",
-    "cr": "*",
-    "fs-copy-compat": "*",
-    "fs-remove-compat": "*",
-    "is-version": "*",
-    "mkdirp-classic": "*",
-    "node-version-install": "*",
-    "node-version-use": "*",
-    "pinkie-promise": "*",
-    "ts-dev-stack": "*",
-    "tsds-config": "*"
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.1",
+    "cr": "^0.1.0",
+    "fs-copy-compat": "^0.1.3",
+    "fs-remove-compat": "^0.2.1",
+    "is-version": "^1.0.7",
+    "mkdirp-classic": "^0.5.3",
+    "node-version-install": "^1.4.18",
+    "node-version-use": "^1.9.7",
+    "pinkie-promise": "^2.0.1",
+    "ts-dev-stack": "^1.21.2",
+    "tsds-config": "^0.2.0"
   },
   "engines": {
     "node": ">=0.8"

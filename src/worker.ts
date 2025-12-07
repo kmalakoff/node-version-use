@@ -70,6 +70,7 @@ export default function worker(versionExpression: string, command: string, args:
         waitAndClose: (callback?: () => void) => void;
       })
     | undefined;
+  let formatArguments: (args: string[]) => string[] = (x) => x;
 
   loaderQueue.defer((cb) =>
     loadNodeVersionInstall((err, fn) => {
@@ -80,6 +81,7 @@ export default function worker(versionExpression: string, command: string, args:
   loaderQueue.defer((cb) =>
     loadSpawnTerm((err, mod) => {
       createSession = mod?.createSession;
+      formatArguments = mod?.formatArguments || ((x) => x);
       cb(err);
     })
   );
@@ -129,7 +131,11 @@ export default function worker(versionExpression: string, command: string, args:
             // On Windows, resolve npm bin commands to bypass .cmd wrappers
             const resolved = resolveCommand(command, args);
 
-            if (versions.length < 2) return spawn(resolved.command, resolved.args, spawnOptions, next);
+            if (versions.length < 2) {
+              // Show command when running single version (no terminal session)
+              console.log(`$ ${formatArguments([resolved.command].concat(resolved.args)).join(' ')}`);
+              return spawn(resolved.command, resolved.args, spawnOptions, next);
+            }
             if (session) session.spawn(resolved.command, resolved.args, spawnOptions, { group: prefix, expanded: streamingOptions.expanded }, next);
             else spawnStreaming(resolved.command, resolved.args, spawnOptions, { prefix }, next);
           });
