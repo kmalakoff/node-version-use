@@ -14,7 +14,7 @@ const { execSync } = require('child_process');
 
 // Configuration
 const GITHUB_REPO = 'kmalakoff/node-version-use';
-const SHIM_VERSION = '1.0.0';
+const SHIM_VERSION = '1.0.1';
 
 /**
  * Get the platform-specific binary name

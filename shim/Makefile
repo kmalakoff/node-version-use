@@ -7,7 +7,7 @@ BINARY_NAME := nvu-shim
 # Build flags for smaller binaries
 LDFLAGS := -s -w -X main.version=$(VERSION)
 
-.PHONY: all clean darwin-arm64 darwin-x64 linux-x64 linux-arm64 windows-x64 windows-arm64
+.PHONY: all clean darwin-arm64 darwin-x64 linux-x64 linux-arm64 windows-x64 windows-arm64 local install release
 
 all: darwin-arm64 darwin-x64 linux-x64 linux-arm64 windows-x64 windows-arm64
 
@@ -33,11 +33,11 @@ windows-arm64: $(BUILD_DIR)
 	GOOS=windows GOARCH=arm64 go build -ldflags="$(LDFLAGS)" -o $(BUILD_DIR)/$(BINARY_NAME)-win32-arm64.exe .
 
 # Build for current platform (for local testing)
-build: $(BUILD_DIR)
+local: $(BUILD_DIR)
 	go build -ldflags="$(LDFLAGS)" -o $(BUILD_DIR)/$(BINARY_NAME) .
 
 # Install shims to ~/.nvu/bin for local testing
-install: build
+install: local
 	mkdir -p $(HOME)/.nvu/bin
 	cp $(BUILD_DIR)/$(BINARY_NAME) $(HOME)/.nvu/bin/node
 	cp $(BUILD_DIR)/$(BINARY_NAME) $(HOME)/.nvu/bin/npm

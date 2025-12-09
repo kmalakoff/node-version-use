@@ -118,24 +118,29 @@ func findBinary(name string, version string) (string, error) {
 		return "", fmt.Errorf("failed to get home directory: %w", err)
 	}
 
-	// Normalize version - remove 'v' prefix if present
-	version = strings.TrimPrefix(version, "v")
+	versionsDir := filepath.Join(homeDir, ".nvu", "versions")
+
+	// Resolve version to an installed version directory
+	resolvedVersion, err := resolveInstalledVersion(versionsDir, version)
+	if err != nil {
+		return "", err
+	}
 
 	// The binary should be at ~/.nvu/versions/<version>/bin/<name>
 	var binaryPath string
 	if runtime.GOOS == "windows" {
 		// On Windows, look for .exe or .cmd
-		binaryPath = filepath.Join(homeDir, ".nvu", "versions", version, "bin", name+".exe")
+		binaryPath = filepath.Join(versionsDir, resolvedVersion, "bin", name+".exe")
 		if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
-			// Try without extension (for node.exe which is just node.exe)
-			binaryPath = filepath.Join(homeDir, ".nvu", "versions", version, name+".exe")
+			// Try without bin/ (for node.exe which might be at root)
+			binaryPath = filepath.Join(versionsDir, resolvedVersion, name+".exe")
 		}
 		if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
 			// Try .cmd for npm/npx
-			binaryPath = filepath.Join(homeDir, ".nvu", "versions", version, name+".cmd")
+			binaryPath = filepath.Join(versionsDir, resolvedVersion, name+".cmd")
 		}
 	} else {
-		binaryPath = filepath.Join(homeDir, ".nvu", "versions", version, "bin", name)
+		binaryPath = filepath.Join(versionsDir, resolvedVersion, "bin", name)
 	}
 
 	if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
@@ -143,6 +148,50 @@ func findBinary(name string, version string) (string, error) {
 	}
 
 	return binaryPath, nil
+}
+
+// resolveInstalledVersion finds the best matching installed version
+func resolveInstalledVersion(versionsDir string, version string) (string, error) {
+	// Normalize version - remove 'v' prefix for comparison
+	normalizedVersion := strings.TrimPrefix(version, "v")
+
+	// Try exact matches first (with and without 'v' prefix)
+	exactMatches := []string{version, "v" + normalizedVersion, normalizedVersion}
+	for _, v := range exactMatches {
+		path := filepath.Join(versionsDir, v)
+		if info, err := os.Stat(path); err == nil && info.IsDir() {
+			return v, nil
+		}
+	}
+
+	// If no exact match, scan for partial version match (e.g., "20" matches "v20.19.6")
+	entries, err := os.ReadDir(versionsDir)
+	if err != nil {
+		return "", fmt.Errorf("failed to read versions directory: %w", err)
+	}
+
+	var bestMatch string
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		dirName := entry.Name()
+		dirVersion := strings.TrimPrefix(dirName, "v")
+
+		// Check if this version starts with our target
+		if strings.HasPrefix(dirVersion, normalizedVersion+".") || dirVersion == normalizedVersion {
+			// Prefer higher versions (simple string comparison works for semver)
+			if bestMatch == "" || dirName > bestMatch {
+				bestMatch = dirName
+			}
+		}
+	}
+
+	if bestMatch != "" {
+		return bestMatch, nil
+	}
+
+	return "", fmt.Errorf("no installed version matching %s", version)
 }
 
 // execBinary replaces the current process with the target binary
