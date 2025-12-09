@@ -1,6 +1,7 @@
 import exit from 'exit';
 import fs from 'fs';
 import path from 'path';
+import { readdirWithTypes } from '../compat.ts';
 import { storagePath } from '../constants.ts';
 
 /**
@@ -9,7 +10,7 @@ import { storagePath } from '../constants.ts';
  * List all installed Node versions.
  */
 export default function listCmd(_args: string[]): void {
-  const versionsPath = path.join(storagePath, 'versions');
+  var versionsPath = path.join(storagePath, 'versions');
 
   // Check if versions directory exists
   if (!fs.existsSync(versionsPath)) {
@@ -20,8 +21,8 @@ export default function listCmd(_args: string[]): void {
   }
 
   // Read all directories in versions folder
-  const entries = fs.readdirSync(versionsPath, { withFileTypes: true });
-  const versions = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+  var entries = readdirWithTypes(versionsPath);
+  var versions = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
 
   if (versions.length === 0) {
     console.log('No Node versions installed.');
