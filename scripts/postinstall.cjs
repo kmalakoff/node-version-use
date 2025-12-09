@@ -22,7 +22,7 @@ var spawn = require('child_process').spawn;
 
 // Configuration
 var GITHUB_REPO = 'kmalakoff/node-version-use';
-var SHIM_VERSION = '1.0.2';
+var SHIM_VERSION = '1.0.3';
 
 /**
  * Get the platform-specific binary name
