@@ -24,7 +24,7 @@ describe('commands', () => {
   before((cb) => {
     safeRm(TMP_DIR, () => {
       fs.mkdirSync(TMP_DIR, { recursive: true });
-      fs.mkdirSync(path.join(TMP_DIR, 'versions'), { recursive: true });
+      fs.mkdirSync(path.join(TMP_DIR, 'installed'), { recursive: true });
       cb();
     });
   });
@@ -96,7 +96,7 @@ describe('commands', () => {
 
     it('lists installed versions', (done) => {
       // Create fake version directories
-      const versionsDir = path.join(TMP_DIR, 'versions');
+      const versionsDir = path.join(TMP_DIR, 'installed');
       fs.mkdirSync(path.join(versionsDir, 'v18.19.0'), { recursive: true });
       fs.mkdirSync(path.join(versionsDir, 'v20.10.0'), { recursive: true });
 
@@ -148,7 +148,7 @@ describe('commands', () => {
 
     it('removes installed version', (done) => {
       // Create a fake installed version
-      const versionsDir = path.join(TMP_DIR, 'versions');
+      const versionsDir = path.join(TMP_DIR, 'installed');
       const versionDir = path.join(versionsDir, 'v22.0.0');
       fs.mkdirSync(path.join(versionDir, 'bin'), { recursive: true });
       fs.writeFileSync(path.join(versionDir, 'bin', 'node'), '');
@@ -162,7 +162,7 @@ describe('commands', () => {
 
     it('errors when multiple versions match', (done) => {
       // Create multiple matching versions
-      const versionsDir = path.join(TMP_DIR, 'versions');
+      const versionsDir = path.join(TMP_DIR, 'installed');
       fs.mkdirSync(path.join(versionsDir, 'v21.1.0', 'bin'), { recursive: true });
       fs.mkdirSync(path.join(versionsDir, 'v21.2.0', 'bin'), { recursive: true });
 

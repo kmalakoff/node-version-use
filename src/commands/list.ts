@@ -10,7 +10,7 @@ import { storagePath } from '../constants.ts';
  * List all installed Node versions.
  */
 export default function listCmd(_args: string[]): void {
-  var versionsPath = path.join(storagePath, 'versions');
+  var versionsPath = path.join(storagePath, 'installed');
 
   // Check if versions directory exists
   if (!fs.existsSync(versionsPath)) {

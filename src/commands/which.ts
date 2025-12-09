@@ -26,7 +26,7 @@ export default function whichCmd(_args: string[]): void {
   }
 
   // Check if the version is installed
-  const versionsPath = path.join(storagePath, 'versions');
+  const versionsPath = path.join(storagePath, 'installed');
   const versionPath = path.join(versionsPath, version);
   const versionPathWithV = path.join(versionsPath, `v${version}`);
   const versionPathWithoutV = path.join(versionsPath, version.replace(/^v/, ''));

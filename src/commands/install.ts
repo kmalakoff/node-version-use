@@ -38,7 +38,7 @@ export default function installCmd(args: string[]): void {
       return;
     }
 
-    const versionsPath = path.join(storagePath, 'versions');
+    const versionsPath = path.join(storagePath, 'installed');
 
     nodeVersionInstall(
       version,
