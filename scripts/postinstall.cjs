@@ -188,12 +188,11 @@ function printInstructions(installed) {
   }
 
   console.log('');
-  console.log('Then restart your terminal or run: source ~/.bashrc');
+  console.log('Then restart your terminal or source your shell profile.');
   console.log('');
   console.log("Without this, 'nvu 18 npm test' still works - you just won't have");
   console.log("transparent 'node' command override.");
   console.log('============================================================');
-  console.log('');
 }
 
 /**

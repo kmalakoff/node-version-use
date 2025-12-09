@@ -21,14 +21,33 @@ func main() {
 	// Remove .exe suffix on Windows
 	execName = strings.TrimSuffix(execName, ".exe")
 
-	// Resolve the Node version to use
-	version, err := resolveVersion()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "nvu shim error: %s\n", err)
-		fmt.Fprintf(os.Stderr, "\nTo fix this, either:\n")
-		fmt.Fprintf(os.Stderr, "  1. Create a .nvmrc file with a version: echo 20 > .nvmrc\n")
-		fmt.Fprintf(os.Stderr, "  2. Set a global default: nvu default 20\n")
-		os.Exit(1)
+	// Check if we're running the nvu CLI itself - if so, use any available version
+	// This prevents chicken-and-egg problems where nvu can't run because the
+	// configured version isn't installed yet
+	isNvuCli := isRunningNvuCli()
+
+	var version string
+	var err error
+
+	if isNvuCli {
+		// For nvu CLI, use any available installed version
+		version, err = findAnyInstalledVersion()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "nvu shim error: no Node versions installed\n")
+			fmt.Fprintf(os.Stderr, "\nInstall Node manually first, or use system Node to run:\n")
+			fmt.Fprintf(os.Stderr, "  /usr/bin/node $(which nvu) install 20\n")
+			os.Exit(1)
+		}
+	} else {
+		// Resolve the Node version to use
+		version, err = resolveVersion()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "nvu shim error: %s\n", err)
+			fmt.Fprintf(os.Stderr, "\nTo fix this, either:\n")
+			fmt.Fprintf(os.Stderr, "  1. Create a .nvmrc file with a version: echo 20 > .nvmrc\n")
+			fmt.Fprintf(os.Stderr, "  2. Set a global default: nvu default 20\n")
+			os.Exit(1)
+		}
 	}
 
 	// Find the real binary path
@@ -227,4 +246,57 @@ func execWindows(binaryPath string, args []string) error {
 	}
 	os.Exit(0)
 	return nil
+}
+
+// isRunningNvuCli checks if we're being used to run the nvu CLI
+func isRunningNvuCli() bool {
+	if len(os.Args) < 2 {
+		return false
+	}
+
+	// Check if the script being run is the nvu CLI
+	script := os.Args[1]
+
+	// Check for common nvu CLI paths
+	if strings.Contains(script, "node-version-use") {
+		return true
+	}
+	if strings.HasSuffix(script, "/nvu") || strings.HasSuffix(script, "\\nvu") {
+		return true
+	}
+	if filepath.Base(script) == "nvu" || filepath.Base(script) == "nvu.js" {
+		return true
+	}
+
+	return false
+}
+
+// findAnyInstalledVersion returns any installed Node version
+func findAnyInstalledVersion() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	versionsDir := filepath.Join(homeDir, ".nvu", "versions")
+	entries, err := os.ReadDir(versionsDir)
+	if err != nil {
+		return "", err
+	}
+
+	// Return the first installed version we find
+	for _, entry := range entries {
+		if entry.IsDir() {
+			// Verify it has a node binary
+			nodePath := filepath.Join(versionsDir, entry.Name(), "bin", "node")
+			if runtime.GOOS == "windows" {
+				nodePath = filepath.Join(versionsDir, entry.Name(), "node.exe")
+			}
+			if _, err := os.Stat(nodePath); err == nil {
+				return entry.Name(), nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("no installed versions found")
 }
