@@ -1,6 +1,7 @@
 import exit from 'exit';
 import fs from 'fs';
 import path from 'path';
+import { mkdirpSync } from '../compat.ts';
 import { storagePath } from '../constants.ts';
 
 /**
@@ -10,13 +11,13 @@ import { storagePath } from '../constants.ts';
  * This is used when no .nvmrc or .nvurc is found in the project.
  */
 export default function defaultCmd(args: string[]): void {
-  const defaultFilePath = path.join(storagePath, 'default');
+  var defaultFilePath = path.join(storagePath, 'default');
 
   // If no version provided, display current default
   if (args.length === 0) {
     if (fs.existsSync(defaultFilePath)) {
-      const version = fs.readFileSync(defaultFilePath, 'utf8').trim();
-      console.log(`Current default: ${version}`);
+      var currentVersion = fs.readFileSync(defaultFilePath, 'utf8').trim();
+      console.log(`Current default: ${currentVersion}`);
     } else {
       console.log('No default version set.');
       console.log('Usage: nvu default <version>');
@@ -25,7 +26,7 @@ export default function defaultCmd(args: string[]): void {
     return;
   }
 
-  const version = args[0].trim();
+  var version = args[0].trim();
 
   // Validate version format (basic check)
   if (!version || version.startsWith('-')) {
@@ -37,7 +38,7 @@ export default function defaultCmd(args: string[]): void {
 
   // Ensure storage directory exists
   if (!fs.existsSync(storagePath)) {
-    fs.mkdirSync(storagePath, { recursive: true });
+    mkdirpSync(storagePath);
   }
 
   // Write the default version

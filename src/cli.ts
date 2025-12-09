@@ -31,8 +31,11 @@ function printHelp(name: string): void {
   console.log('  default [version]  Set or display the global default Node version');
   console.log('  local [version]    Set or display the local Node version (.nvmrc)');
   console.log('  install <version>  Download and install a Node version');
+  console.log('  uninstall <version> Remove an installed Node version');
   console.log('  list               List installed Node versions');
   console.log('  which              Show which Node version would be used');
+  console.log('  setup              Install/reinstall shims to ~/.nvu/bin');
+  console.log('  teardown           Remove shims from ~/.nvu/bin');
   console.log('');
   console.log('Options:');
   console.log('  -v, --version      Print version number');

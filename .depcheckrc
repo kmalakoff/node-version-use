@@ -1,2 +1,2 @@
-ignores: ["node-version-use", "ts-dev-stack"]
+ignores: ["node-version-use", "ts-dev-stack", "homedir-polyfill"]
 ignoreDirs: [".tmp"]
