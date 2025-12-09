@@ -3,6 +3,7 @@ import fs from 'fs';
 import getopts from 'getopts-compat';
 import path from 'path';
 import url from 'url';
+import { isCommand, runCommand } from './commands/index.ts';
 import run from './index.ts';
 import loadSpawnTerm from './lib/loadSpawnTerm.ts';
 import type { UseError, UseOptions, UseResult } from './types.ts';
@@ -22,8 +23,16 @@ function printHelp(name: string): void {
   console.log(`${name} v${version}`);
   console.log('');
   console.log(`Usage: ${name} [options] <version> <command> [args...]`);
+  console.log(`       ${name} <subcommand> [args...]`);
   console.log('');
   console.log('Run commands with specific Node.js versions');
+  console.log('');
+  console.log('Subcommands:');
+  console.log('  default [version]  Set or display the global default Node version');
+  console.log('  local [version]    Set or display the local Node version (.nvmrc)');
+  console.log('  install <version>  Download and install a Node version');
+  console.log('  list               List installed Node versions');
+  console.log('  which              Show which Node version would be used');
   console.log('');
   console.log('Options:');
   console.log('  -v, --version      Print version number');
@@ -36,9 +45,11 @@ function printHelp(name: string): void {
   console.log('  --silent           Suppress logging');
   console.log('');
   console.log('Examples:');
-  console.log(`  ${name} 22 node --version`);
-  console.log(`  ${name} 22,20,18 npm test`);
-  console.log(`  ${name} engines node --version`);
+  console.log(`  ${name} 22 node --version           Run with Node 22`);
+  console.log(`  ${name} 22,20,18 npm test           Run with multiple versions`);
+  console.log(`  ${name} engines node --version      Use version from package.json`);
+  console.log(`  ${name} default 20                  Set global default to Node 20`);
+  console.log(`  ${name} local 18                    Create .nvmrc with Node 18`);
 }
 
 export default (argv: string[], name: string): undefined => {
@@ -61,11 +72,17 @@ export default (argv: string[], name: string): undefined => {
     return;
   }
 
+  // Check if first argument is a subcommand
+  const args = options._;
+  if (args.length > 0 && isCommand(args[0])) {
+    runCommand(args[0], args.slice(1));
+    return;
+  }
+
   // define.option('-r, --range [range]', 'range type of major, minor, or patch with filters of lts, even, odd for version string expressions', 'major,even');
   // define.option('-s, --silent', 'suppress logging', false);
   options.sort = options.desc ? -1 : 1;
 
-  const args = options._;
   if (args.length === 0) {
     console.log(`Missing version expression. Example usage: ${name} version command arg1 arg2`);
     exit(ERROR_CODE);
