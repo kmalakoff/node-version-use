@@ -1,4 +1,4 @@
-import exit from 'exit';
+import exit from 'exit-compat';
 import path from 'path';
 import { storagePath } from '../constants.ts';
 import loadNodeVersionInstall from '../lib/loadNodeVersionInstall.ts';

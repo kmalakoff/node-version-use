@@ -1,4 +1,4 @@
-// remove NODE_OPTIONS from ts-dev-stack
+// remove NODE_OPTIONS to not interfere with tests
 delete process.env.NODE_OPTIONS;
 
 import assert from 'assert';

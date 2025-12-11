@@ -15,7 +15,7 @@
 var fs = require('fs');
 var path = require('path');
 var os = require('os');
-var exit = require('exit');
+var exit = require('exit-compat');
 
 // Polyfills for old Node versions
 var mkdirp = require('mkdirp-classic');
