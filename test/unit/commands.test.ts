@@ -55,6 +55,51 @@ describe('commands', () => {
         done();
       });
     });
+
+    it('resolves partial version to exact when setting default', (done) => {
+      // Create fake installed versions
+      const versionsDir = path.join(TMP_DIR, 'installed');
+      mkdirRecursive(path.join(versionsDir, 'v18.19.0', 'bin'));
+      mkdirRecursive(path.join(versionsDir, 'v18.20.0', 'bin'));
+      const defaultPath = path.join(TMP_DIR, 'default');
+
+      // Remove any existing default
+      if (fs.existsSync(defaultPath)) {
+        fs.unlinkSync(defaultPath);
+      }
+
+      spawn(CLI, ['default', '18'], OPTIONS, (err, res) => {
+        assert.ok(!err, `Should not error: ${err ? err.message : ''}`);
+        assert.ok(res.stdout.indexOf('v18.20.0') >= 0, 'Should resolve to highest matching version');
+        // Verify file contains exact version
+        const content = fs.readFileSync(defaultPath, 'utf8').trim();
+        assert.strictEqual(content, 'v18.20.0', 'Default file should contain exact version');
+        done();
+      });
+    });
+
+    it('sorts versions by semver not alphabetically', (done) => {
+      // v20.9.0 vs v20.10.0: alphabetically 10 < 9, but semver 10 > 9
+      const versionsDir = path.join(TMP_DIR, 'installed');
+      mkdirRecursive(path.join(versionsDir, 'v20.9.0', 'bin'));
+      mkdirRecursive(path.join(versionsDir, 'v20.10.0', 'bin'));
+      const defaultPath = path.join(TMP_DIR, 'default');
+
+      if (fs.existsSync(defaultPath)) {
+        fs.unlinkSync(defaultPath);
+      }
+
+      spawn(CLI, ['default', '20'], OPTIONS, (err, res) => {
+        assert.ok(!err, `Should not error: ${err ? err.message : ''}`);
+        assert.ok(res.stdout.indexOf('v20.10.0') >= 0, 'Should resolve to v20.10.0 (semver highest)');
+        const content = fs.readFileSync(defaultPath, 'utf8').trim();
+        assert.strictEqual(content, 'v20.10.0', 'Default should be v20.10.0 not v20.9.0');
+        // Cleanup
+        rmRecursive(path.join(versionsDir, 'v20.9.0'));
+        rmRecursive(path.join(versionsDir, 'v20.10.0'));
+        done();
+      });
+    });
   });
 
   describe('local', () => {
@@ -93,25 +138,33 @@ describe('commands', () => {
   });
 
   describe('list', () => {
-    it('shows no versions when empty', (done) => {
-      spawn(CLI, ['list'], OPTIONS, (_err, res) => {
-        assert.ok(res.stdout.indexOf('No Node versions') >= 0 || res.stdout.indexOf('none') >= 0);
-        done();
-      });
-    });
-
     it('lists installed versions', (done) => {
       // Create fake version directories
       const versionsDir = path.join(TMP_DIR, 'installed');
-      mkdirRecursive(path.join(versionsDir, 'v18.19.0'));
-      mkdirRecursive(path.join(versionsDir, 'v20.10.0'));
+      mkdirRecursive(path.join(versionsDir, 'v17.9.0'));
+      mkdirRecursive(path.join(versionsDir, 'v19.1.0'));
 
       spawn(CLI, ['list'], OPTIONS, (err, res) => {
         if (err && (!res || !res.stdout)) {
           return done(new Error(`list command failed: ${err.message || err}${res && res.stderr ? ` stderr: ${res.stderr}` : ''}`));
         }
-        assert.ok(res && res.stdout && (res.stdout.indexOf('18.19.0') >= 0 || res.stdout.indexOf('v18') >= 0), 'Should list v18');
-        assert.ok(res && res.stdout && (res.stdout.indexOf('20.10.0') >= 0 || res.stdout.indexOf('v20') >= 0), 'Should list v20');
+        assert.ok(res && res.stdout && (res.stdout.indexOf('17.9.0') >= 0 || res.stdout.indexOf('v17') >= 0), 'Should list v17');
+        assert.ok(res && res.stdout && (res.stdout.indexOf('19.1.0') >= 0 || res.stdout.indexOf('v19') >= 0), 'Should list v19');
+        // Cleanup
+        rmRecursive(path.join(versionsDir, 'v17.9.0'));
+        rmRecursive(path.join(versionsDir, 'v19.1.0'));
+        done();
+      });
+    });
+
+    it('shows no versions when empty', (done) => {
+      // Ensure installed directory is empty for this test
+      const versionsDir = path.join(TMP_DIR, 'installed');
+      rmRecursive(versionsDir);
+      mkdirRecursive(versionsDir);
+
+      spawn(CLI, ['list'], OPTIONS, (_err, res) => {
+        assert.ok(res.stdout.indexOf('No Node versions') >= 0 || res.stdout.indexOf('none') >= 0);
         done();
       });
     });
@@ -180,6 +233,28 @@ describe('commands', () => {
         // Cleanup
         rmRecursive(path.join(versionsDir, 'v21.1.0'));
         rmRecursive(path.join(versionsDir, 'v21.2.0'));
+        done();
+      });
+    });
+
+    it('errors when trying to uninstall default version', (done) => {
+      // Create a fake installed version and set it as default
+      const versionsDir = path.join(TMP_DIR, 'installed');
+      const versionDir = path.join(versionsDir, 'v23.0.0');
+      mkdirRecursive(path.join(versionDir, 'bin'));
+      fs.writeFileSync(path.join(versionDir, 'bin', 'node'), '');
+
+      // Set this version as default
+      const defaultPath = path.join(TMP_DIR, 'default');
+      fs.writeFileSync(defaultPath, 'v23.0.0');
+
+      spawn(CLI, ['uninstall', 'v23.0.0'], OPTIONS, (err) => {
+        // Should error when trying to uninstall default version
+        assert.ok(err, 'Should error when trying to uninstall default version');
+        // Most importantly: verify version was NOT removed
+        assert.ok(fs.existsSync(versionDir), 'Version directory should NOT be removed when it is the default');
+        // Cleanup
+        rmRecursive(versionDir);
         done();
       });
     });
