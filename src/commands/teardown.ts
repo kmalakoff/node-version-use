@@ -1,4 +1,4 @@
-import exit from 'exit';
+import exit from 'exit-compat';
 import fs from 'fs';
 import { rmSync } from 'fs-remove-compat';
 import path from 'path';
