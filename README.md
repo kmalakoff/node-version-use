@@ -8,7 +8,7 @@ Cross-platform solution for using multiple versions of Node.js. Useful for compa
 npm install -g node-version-use
 ```
 
-On install, nvu automatically downloads platform-specific shims to `~/.nvu/bin/`. To enable transparent Node version switching, add to your shell profile:
+On install, nvu automatically downloads platform-specific binaries to `~/.nvu/bin/`. To enable transparent Node version switching, add to your shell profile:
 
 ```bash
 # For bash (~/.bashrc) or zsh (~/.zshrc):
@@ -55,13 +55,13 @@ nvu list
 nvu which
 ```
 
-#### Shim Management
+#### Binary Management
 
 ```bash
-# Install/reinstall shims
+# Install/reinstall binaries
 nvu setup
 
-# Remove shims
+# Remove binaries
 nvu teardown
 ```
 
@@ -89,7 +89,7 @@ nvu engines node --version
 
 ### How It Works
 
-nvu uses lightweight shim binaries that intercept `node`, `npm`, and `npx` commands. When you run `node`, the shim:
+nvu uses lightweight binaries that intercept `node`, `npm`, and `npx` commands. When you run `node`, the binary:
 
 1. Checks for `.nvurc` in current/parent directories
 2. Checks for `.nvmrc` in current/parent directories
@@ -100,7 +100,7 @@ This works in all contexts: terminals, IDEs, CI, scripts - without shell integra
 
 ### Version Resolution
 
-The shim resolves partial versions to installed versions:
+The binary resolves partial versions to installed versions:
 - `20` matches `v20.19.6`
 - `18.19` matches `v18.19.0`
 - `v22` matches `v22.0.0`
@@ -122,7 +122,7 @@ const results = await nvu('engines', 'node', ['--version'], { stdio: 'inherit' }
 ### Uninstalling
 
 ```bash
-# Remove shims
+# Remove binaries
 nvu teardown
 
 # Optionally remove all nvu data

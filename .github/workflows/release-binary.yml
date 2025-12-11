@@ -1,9 +1,9 @@
-name: Release Shim Binaries
+name: Release Binaries
 
 on:
   push:
     tags:
-      - 'shim-v*'
+      - 'binary-v*'
 
 permissions:
   contents: write
@@ -21,11 +21,11 @@ jobs:
           go-version: '1.21'
 
       - name: Build all platforms and create release archives
-        run: cd shim && make release
+        run: cd binary && make release
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            shim/build/*.tar.gz
-            shim/build/*.zip
+            binary/build/*.tar.gz
+            binary/build/*.zip

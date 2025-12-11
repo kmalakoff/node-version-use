@@ -20,8 +20,8 @@ export default function installCmd(args: string[]): void {
 
   const version = args[0].trim();
 
-  // Validate version format (basic check)
-  if (!version || version.startsWith('-')) {
+  // Validate version format (basic check, indexOf for Node 0.8+ compat)
+  if (!version || version.indexOf('-') === 0) {
     console.log('Usage: nvu install <version>');
     exit(1);
     return;

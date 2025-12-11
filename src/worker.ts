@@ -1,16 +1,16 @@
 import spawn, { type SpawnOptions } from 'cross-spawn-cb';
 import fs from 'fs';
 import resolveVersions, { type VersionOptions } from 'node-resolve-versions';
-import type { InstallOptions, InstallResult } from 'node-version-install';
+import type { InstallOptions } from 'node-version-install';
 import { spawnOptions as createSpawnOptions } from 'node-version-utils';
 import path from 'path';
 import Queue from 'queue-cb';
 import resolveBin from 'resolve-bin-sync';
 import spawnStreaming from 'spawn-streaming';
+import { createSession, formatArguments } from 'spawn-term';
 import { stringEndsWith } from './compat.ts';
 import { storagePath } from './constants.ts';
 import loadNodeVersionInstall from './lib/loadNodeVersionInstall.ts';
-import loadSpawnTerm from './lib/loadSpawnTerm.ts';
 
 import type { Options, UseCallback, UseOptions, UseResult } from './types.ts';
 
@@ -60,33 +60,8 @@ function resolveCommand(command: string, args: string[]): { command: string; arg
 }
 
 export default function worker(versionExpression: string, command: string, args: string[], options: UseOptions, callback: UseCallback): undefined {
-  // Load lazy dependencies in parallel
-  const loaderQueue = new Queue();
-  let installVersion: (version: string, opts: InstallOptions, cb: (err?: Error, results?: InstallResult[]) => void) => void;
-  let createSession:
-    | ((options?: { header?: string; showStatusBar?: boolean; interactive?: boolean }) => {
-        spawn: (command: string, args: string[], options: unknown, termOptions: unknown, callback: (err?: Error, res?: unknown) => void) => void;
-        close: () => void;
-        waitAndClose: (callback?: () => void) => void;
-      })
-    | undefined;
-  let formatArguments: (args: string[]) => string[] = (x) => x;
-
-  loaderQueue.defer((cb) =>
-    loadNodeVersionInstall((err, fn) => {
-      installVersion = fn;
-      cb(err);
-    })
-  );
-  loaderQueue.defer((cb) =>
-    loadSpawnTerm((err, mod) => {
-      createSession = mod?.createSession;
-      formatArguments = mod?.formatArguments || ((x) => x);
-      cb(err);
-    })
-  );
-
-  loaderQueue.await((loadErr) => {
+  // Load node-version-install lazily
+  loadNodeVersionInstall((loadErr, installVersion) => {
     if (loadErr) return callback(loadErr);
 
     resolveVersions(versionExpression, options as VersionOptions, (err?: Error, versions?: string[]) => {

@@ -1,8 +1,13 @@
 /**
  * Postinstall script for node-version-use
  *
- * Downloads the platform-specific shim binary and installs it to ~/.nvu/bin/
- * This enables transparent Node version switching via the shim.
+ * Downloads the platform-specific binary and installs it to ~/.nvu/bin/
+ * This enables transparent Node version switching.
+ *
+ * Uses safe atomic download pattern:
+ * 1. Download to temp file
+ * 2. Extract to temp directory
+ * 3. Atomic rename to final location
  *
  * Compatible with Node.js 0.8+
  */
@@ -22,12 +27,12 @@ var spawn = require('child_process').spawn;
 
 // Configuration
 var GITHUB_REPO = 'kmalakoff/node-version-use';
-var SHIM_VERSION = '1.0.3';
+var BINARY_VERSION = require('../package.json').binaryVersion;
 
 /**
  * Get the platform-specific binary name
  */
-function getShimBinaryName() {
+function getBinaryName() {
   var platform = os.platform();
   var arch = os.arch();
 
@@ -51,15 +56,15 @@ function getShimBinaryName() {
   }
 
   var ext = platform === 'win32' ? '.exe' : '';
-  return 'nvu-shim-' + platformName + '-' + archName + ext;
+  return 'nvu-binary-' + platformName + '-' + archName + ext;
 }
 
 /**
- * Get the download URL for the shim binary
+ * Get the download URL for the binary
  */
 function getDownloadUrl(binaryName) {
   var ext = os.platform() === 'win32' ? '.zip' : '.tar.gz';
-  return 'https://github.com/' + GITHUB_REPO + '/releases/download/shim-v' + SHIM_VERSION + '/' + binaryName + ext;
+  return 'https://github.com/' + GITHUB_REPO + '/releases/download/binary-v' + BINARY_VERSION + '/' + binaryName + ext;
 }
 
 /**
@@ -71,6 +76,52 @@ function copyFileSync(src, dest) {
 }
 
 /**
+ * Atomic rename with fallback to copy+delete for cross-device moves
+ * (compatible with Node 0.8)
+ */
+function atomicRename(src, dest, callback) {
+  fs.rename(src, dest, function (err) {
+    if (!err) {
+      callback(null);
+      return;
+    }
+
+    // Cross-device link error - fall back to copy + delete
+    if (err.code === 'EXDEV') {
+      try {
+        copyFileSync(src, dest);
+        fs.unlinkSync(src);
+        callback(null);
+      } catch (copyErr) {
+        callback(copyErr);
+      }
+      return;
+    }
+
+    callback(err);
+  });
+}
+
+/**
+ * Remove directory recursively (compatible with Node 0.8)
+ */
+function rmRecursive(dir) {
+  if (!fs.existsSync(dir)) return;
+
+  var files = fs.readdirSync(dir);
+  for (var i = 0; i < files.length; i++) {
+    var filePath = path.join(dir, files[i]);
+    var stat = fs.statSync(filePath);
+    if (stat.isDirectory()) {
+      rmRecursive(filePath);
+    } else {
+      fs.unlinkSync(filePath);
+    }
+  }
+  fs.rmdirSync(dir);
+}
+
+/**
  * Download a file from a URL (using get-remote for Node 0.8+ compatibility)
  */
 function downloadFile(url, destPath, callback) {
@@ -79,9 +130,9 @@ function downloadFile(url, destPath, callback) {
 }
 
 /**
- * Extract archive and install shims (callback-based)
+ * Extract archive to a directory (callback-based)
  */
-function extractAndInstall(archivePath, destDir, binaryName, callback) {
+function extractArchive(archivePath, destDir, callback) {
   var platform = os.platform();
 
   if (platform === 'win32') {
@@ -91,18 +142,6 @@ function extractAndInstall(archivePath, destDir, binaryName, callback) {
       if (code !== 0) {
         callback(new Error('Failed to extract archive'));
         return;
-      }
-      var extractedPath = path.join(destDir, binaryName);
-      if (fs.existsSync(extractedPath)) {
-        try {
-          copyFileSync(extractedPath, path.join(destDir, 'node.exe'));
-          copyFileSync(extractedPath, path.join(destDir, 'npm.exe'));
-          copyFileSync(extractedPath, path.join(destDir, 'npx.exe'));
-          fs.unlinkSync(extractedPath);
-        } catch (err) {
-          callback(err);
-          return;
-        }
       }
       callback(null);
     });
@@ -114,30 +153,115 @@ function extractAndInstall(archivePath, destDir, binaryName, callback) {
         callback(new Error('Failed to extract archive'));
         return;
       }
-      var extractedPath = path.join(destDir, binaryName);
-      if (fs.existsSync(extractedPath)) {
-        var nodePath = path.join(destDir, 'node');
-        var npmPath = path.join(destDir, 'npm');
-        var npxPath = path.join(destDir, 'npx');
-
-        try {
-          copyFileSync(extractedPath, nodePath);
-          copyFileSync(extractedPath, npmPath);
-          copyFileSync(extractedPath, npxPath);
-
-          fs.chmodSync(nodePath, 493); // 0755
-          fs.chmodSync(npmPath, 493);
-          fs.chmodSync(npxPath, 493);
-
-          fs.unlinkSync(extractedPath);
-        } catch (err) {
-          callback(err);
-          return;
-        }
-      }
       callback(null);
     });
   }
+}
+
+/**
+ * Install binaries using atomic rename pattern
+ * 1. Extract to temp directory
+ * 2. Copy binary to temp files in destination directory
+ * 3. Atomic rename temp files to final names
+ */
+function extractAndInstall(archivePath, destDir, binaryName, callback) {
+  var platform = os.platform();
+  var isWindows = platform === 'win32';
+  var ext = isWindows ? '.exe' : '';
+
+  // Create temp extraction directory
+  var tempExtractDir = path.join(getTmpDir(), 'nvu-extract-' + Date.now());
+  mkdirp.sync(tempExtractDir);
+
+  extractArchive(archivePath, tempExtractDir, function (extractErr) {
+    if (extractErr) {
+      rmRecursive(tempExtractDir);
+      callback(extractErr);
+      return;
+    }
+
+    var extractedPath = path.join(tempExtractDir, binaryName);
+    if (!fs.existsSync(extractedPath)) {
+      rmRecursive(tempExtractDir);
+      callback(new Error('Extracted binary not found: ' + binaryName));
+      return;
+    }
+
+    // Binary names to install
+    var binaries = ['node', 'npm', 'npx'];
+    var timestamp = Date.now();
+    var _pending = binaries.length;
+    var installError = null;
+
+    // Step 1: Copy extracted binary to temp files in destination directory
+    // This ensures the temp files are on the same filesystem for atomic rename
+    for (var i = 0; i < binaries.length; i++) {
+      var name = binaries[i];
+      var tempDest = path.join(destDir, name + '.tmp-' + timestamp + ext);
+      var _finalDest = path.join(destDir, name + ext);
+
+      try {
+        // Copy to temp file in destination directory
+        copyFileSync(extractedPath, tempDest);
+
+        // Set permissions on Unix
+        if (!isWindows) {
+          fs.chmodSync(tempDest, 493); // 0755
+        }
+      } catch (err) {
+        installError = err;
+        break;
+      }
+    }
+
+    if (installError) {
+      // Clean up any temp files we created
+      for (var j = 0; j < binaries.length; j++) {
+        var tempPath = path.join(destDir, binaries[j] + '.tmp-' + timestamp + ext);
+        if (fs.existsSync(tempPath)) {
+          try {
+            fs.unlinkSync(tempPath);
+          } catch (_e) {}
+        }
+      }
+      rmRecursive(tempExtractDir);
+      callback(installError);
+      return;
+    }
+
+    // Step 2: Atomic rename temp files to final names
+    var _renamesPending = binaries.length;
+    var renameError = null;
+
+    function doRename(index) {
+      if (index >= binaries.length) {
+        // All renames complete
+        rmRecursive(tempExtractDir);
+        callback(renameError);
+        return;
+      }
+
+      var name = binaries[index];
+      var tempDest = path.join(destDir, name + '.tmp-' + timestamp + ext);
+      var finalDest = path.join(destDir, name + ext);
+
+      // Remove existing file if present (for atomic replacement)
+      if (fs.existsSync(finalDest)) {
+        try {
+          fs.unlinkSync(finalDest);
+        } catch (_e) {}
+      }
+
+      atomicRename(tempDest, finalDest, function (err) {
+        if (err && !renameError) {
+          renameError = err;
+        }
+        doRename(index + 1);
+      });
+    }
+
+    doRename(0);
+  });
 }
 
 /**
@@ -150,9 +274,9 @@ function printInstructions(installed) {
   console.log('');
   console.log('============================================================');
   if (installed) {
-    console.log('  nvu shims installed to ~/.nvu/bin/');
+    console.log('  nvu binaries installed to ~/.nvu/bin/');
   } else {
-    console.log('  nvu installed (shims not yet available)');
+    console.log('  nvu installed (binaries not yet available)');
   }
   console.log('============================================================');
   console.log('');
@@ -195,12 +319,12 @@ function getTmpDir() {
  * Main installation function
  */
 function main() {
-  var binaryName = getShimBinaryName();
+  var binaryName = getBinaryName();
 
   if (!binaryName) {
-    console.log('postinstall: Unsupported platform/architecture for shim binary.');
+    console.log('postinstall: Unsupported platform/architecture for binary.');
     console.log('Platform: ' + os.platform() + ', Arch: ' + os.arch());
-    console.log('Shim not installed. You can still use nvu with explicit versions: nvu 18 npm test');
+    console.log('Binary not installed. You can still use nvu with explicit versions: nvu 18 npm test');
     exit(0);
     return;
   }
@@ -214,9 +338,9 @@ function main() {
 
   var downloadUrl = getDownloadUrl(binaryName);
   var ext = os.platform() === 'win32' ? '.zip' : '.tar.gz';
-  var tempPath = path.join(getTmpDir(), 'nvu-shim-' + Date.now() + ext);
+  var tempPath = path.join(getTmpDir(), 'nvu-binary-' + Date.now() + ext);
 
-  console.log('postinstall: Downloading shim binary for ' + os.platform() + '-' + os.arch() + '...');
+  console.log('postinstall: Downloading binary for ' + os.platform() + '-' + os.arch() + '...');
 
   downloadFile(downloadUrl, tempPath, function (downloadErr) {
     if (downloadErr) {
@@ -228,24 +352,24 @@ function main() {
       }
 
       if (downloadErr.message && downloadErr.message.indexOf('404') >= 0) {
-        console.log('postinstall: Shim binaries not yet published to GitHub releases.');
+        console.log('postinstall: Binaries not yet published to GitHub releases.');
         console.log('');
-        console.log('To build and install shims locally:');
-        console.log('  cd node_modules/node-version-use/shim');
+        console.log('To build and install binaries locally:');
+        console.log('  cd node_modules/node-version-use/binary');
         console.log('  make install');
         console.log('');
         console.log('Or wait for the next release which will include pre-built binaries.');
       } else {
-        console.log('postinstall warning: Failed to install shim: ' + (downloadErr.message || downloadErr));
+        console.log('postinstall warning: Failed to install binary: ' + (downloadErr.message || downloadErr));
         console.log('You can still use nvu with explicit versions: nvu 18 npm test');
-        console.log('To install shims manually: cd node_modules/node-version-use/shim && make install');
+        console.log('To install binaries manually: cd node_modules/node-version-use/binary && make install');
       }
       printInstructions(false);
       exit(0);
       return;
     }
 
-    console.log('postinstall: Extracting shim binary...');
+    console.log('postinstall: Extracting binary...');
 
     extractAndInstall(tempPath, binDir, binaryName, function (extractErr) {
       // Clean up temp file
@@ -256,14 +380,14 @@ function main() {
       }
 
       if (extractErr) {
-        console.log('postinstall warning: Failed to extract shim: ' + (extractErr.message || extractErr));
+        console.log('postinstall warning: Failed to extract binary: ' + (extractErr.message || extractErr));
         console.log('You can still use nvu with explicit versions: nvu 18 npm test');
         printInstructions(false);
         exit(0);
         return;
       }
 
-      console.log('postinstall: Shim installed successfully!');
+      console.log('postinstall: Binary installed successfully!');
       printInstructions(true);
       exit(0);
     });

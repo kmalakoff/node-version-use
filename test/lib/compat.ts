@@ -4,9 +4,38 @@
  */
 import fs from 'fs';
 import { safeRmSync } from 'fs-remove-compat';
+import os from 'os';
+import path from 'path';
 
 var hasCopyFileSync = typeof fs.copyFileSync === 'function';
 var hasRecursiveMkdir = +process.versions.node.split('.')[0] >= 10;
+var hasTmpdir = typeof os.tmpdir === 'function';
+
+/**
+ * Find project root by searching for package.json going up from cwd.
+ */
+function findProjectRoot(): string {
+  var dir = process.cwd();
+  while (dir !== path.dirname(dir)) {
+    if (fs.existsSync(path.join(dir, 'package.json'))) {
+      return dir;
+    }
+    dir = path.dirname(dir);
+  }
+  return process.cwd();
+}
+
+/**
+ * Get the system temp directory.
+ * Uses native os.tmpdir on Node 0.10+, falls back to os-shim.
+ */
+export function tmpdir(): string {
+  if (hasTmpdir) {
+    return os.tmpdir();
+  }
+  var osShim = require('os-shim');
+  return osShim.tmpdir();
+}
 
 /**
  * Recursively remove a directory and its contents.
@@ -65,4 +94,44 @@ export function stringStartsWith(str: string, search: string, position?: number)
   }
   position = position || 0;
   return str.indexOf(search, position) === position;
+}
+
+/**
+ * Get path to test binaries directory.
+ * These are locally-built binaries in .tmp/binary/bin/, isolated from ~/.nvu/bin/
+ */
+export function getTestBinaryBin(): string {
+  return path.join(findProjectRoot(), '.tmp', 'binary', 'bin');
+}
+
+/**
+ * Check if test binaries are available (built).
+ */
+export function hasTestBinaries(): boolean {
+  var binaryName = process.platform === 'win32' ? 'node.exe' : 'node';
+  return fs.existsSync(path.join(getTestBinaryBin(), binaryName));
+}
+
+/**
+ * Get PATH with test binaries prepended (and global binaries removed).
+ * Use this for integration tests that need to run through the binary.
+ */
+export function getTestBinaryPath(): string {
+  var testBinaryBin = getTestBinaryBin();
+  var filteredPath = (process.env.PATH || '')
+    .split(path.delimiter)
+    .filter((p) => p.indexOf('.nvu/bin') === -1)
+    .join(path.delimiter);
+  return testBinaryBin + path.delimiter + filteredPath;
+}
+
+/**
+ * Get PATH with global binaries removed (bypass all binaries).
+ * Use this for unit tests that should test CLI directly.
+ */
+export function getFilteredPath(): string {
+  return (process.env.PATH || '')
+    .split(path.delimiter)
+    .filter((p) => p.indexOf('.nvu/bin') === -1)
+    .join(path.delimiter);
 }

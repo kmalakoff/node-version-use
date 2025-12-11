@@ -15,8 +15,20 @@ import (
 // 2. .nvmrc in current or parent directories
 // 3. ~/.nvu/default (global default)
 
+// getNvuHome returns the nvu home directory, respecting NVU_HOME env var
+func getNvuHome() (string, error) {
+	if nvuHome := os.Getenv("NVU_HOME"); nvuHome != "" {
+		return nvuHome, nil
+	}
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(homeDir, ".nvu"), nil
+}
+
 func main() {
-	// Determine which binary we're shimming based on the executable name
+	// Determine which binary we're proxying based on the executable name
 	execName := filepath.Base(os.Args[0])
 	// Remove .exe suffix on Windows
 	execName = strings.TrimSuffix(execName, ".exe")
@@ -30,10 +42,10 @@ func main() {
 	var err error
 
 	if isNvuCli {
-		// For nvu CLI, use any available installed version
-		version, err = findAnyInstalledVersion()
+		// For nvu CLI, use the latest major installed version
+		version, err = findLatestMajorInstalledVersion()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "nvu shim error: no Node versions installed\n")
+			fmt.Fprintf(os.Stderr, "nvu error: no Node versions installed\n")
 			fmt.Fprintf(os.Stderr, "\nInstall Node manually first, or use system Node to run:\n")
 			fmt.Fprintf(os.Stderr, "  /usr/bin/node $(which nvu) install 20\n")
 			os.Exit(1)
@@ -42,7 +54,17 @@ func main() {
 		// Resolve the Node version to use
 		version, err = resolveVersion()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "nvu shim error: %s\n", err)
+			// No version configured - try system binary as fallback
+			systemBinary := findSystemBinary(execName)
+			if systemBinary != "" {
+				err = execBinary(systemBinary, os.Args)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "nvu error: failed to exec system %s: %s\n", execName, err)
+					os.Exit(1)
+				}
+				return // execBinary replaces the process on Unix
+			}
+			fmt.Fprintf(os.Stderr, "nvu error: %s\n", err)
 			fmt.Fprintf(os.Stderr, "\nTo fix this, either:\n")
 			fmt.Fprintf(os.Stderr, "  1. Create a .nvmrc file with a version: echo 20 > .nvmrc\n")
 			fmt.Fprintf(os.Stderr, "  2. Set a global default: nvu default 20\n")
@@ -53,7 +75,7 @@ func main() {
 	// Find the real binary path
 	binaryPath, err := findBinary(execName, version)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "nvu shim error: %s\n", err)
+		fmt.Fprintf(os.Stderr, "nvu error: %s\n", err)
 		fmt.Fprintf(os.Stderr, "\nNode %s may not be installed. Run: nvu install %s\n", version, version)
 		os.Exit(1)
 	}
@@ -61,7 +83,7 @@ func main() {
 	// Execute the real binary, replacing this process
 	err = execBinary(binaryPath, os.Args)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "nvu shim error: failed to exec %s: %s\n", binaryPath, err)
+		fmt.Fprintf(os.Stderr, "nvu error: failed to exec %s: %s\n", binaryPath, err)
 		os.Exit(1)
 	}
 }
@@ -80,12 +102,12 @@ func resolveVersion() (string, error) {
 	}
 
 	// 2. Check global default
-	homeDir, err := os.UserHomeDir()
+	nvuHome, err := getNvuHome()
 	if err != nil {
-		return "", fmt.Errorf("failed to get home directory: %w", err)
+		return "", fmt.Errorf("failed to get nvu home directory: %w", err)
 	}
 
-	defaultPath := filepath.Join(homeDir, ".nvu", "default")
+	defaultPath := filepath.Join(nvuHome, "default")
 	version, err = readVersionFile(defaultPath)
 	if err == nil && version != "" {
 		return version, nil
@@ -132,12 +154,12 @@ func readVersionFile(path string) (string, error) {
 
 // findBinary locates the actual binary for the given command and version
 func findBinary(name string, version string) (string, error) {
-	homeDir, err := os.UserHomeDir()
+	nvuHome, err := getNvuHome()
 	if err != nil {
-		return "", fmt.Errorf("failed to get home directory: %w", err)
+		return "", fmt.Errorf("failed to get nvu home directory: %w", err)
 	}
 
-	versionsDir := filepath.Join(homeDir, ".nvu", "installed")
+	versionsDir := filepath.Join(nvuHome, "installed")
 
 	// Resolve version to an installed version directory
 	resolvedVersion, err := resolveInstalledVersion(versionsDir, version)
@@ -271,20 +293,24 @@ func isRunningNvuCli() bool {
 	return false
 }
 
-// findAnyInstalledVersion returns any installed Node version
-func findAnyInstalledVersion() (string, error) {
-	homeDir, err := os.UserHomeDir()
+// findLatestMajorInstalledVersion returns the latest LTS (even major) installed Node version
+// LTS versions are even major numbers: 4, 6, 8, 10, 12, 14, 16, 18, 20, 22...
+// For 0.x versions, even minors are LTS: 0.8, 0.10, 0.12
+func findLatestMajorInstalledVersion() (string, error) {
+	nvuHome, err := getNvuHome()
 	if err != nil {
 		return "", err
 	}
 
-	versionsDir := filepath.Join(homeDir, ".nvu", "installed")
+	versionsDir := filepath.Join(nvuHome, "installed")
 	entries, err := os.ReadDir(versionsDir)
 	if err != nil {
 		return "", err
 	}
 
-	// Return the first installed version we find
+	// Find all valid installed versions
+	var ltsVersions []string
+	var allVersions []string
 	for _, entry := range entries {
 		if entry.IsDir() {
 			// Verify it has a node binary
@@ -293,10 +319,113 @@ func findAnyInstalledVersion() (string, error) {
 				nodePath = filepath.Join(versionsDir, entry.Name(), "node.exe")
 			}
 			if _, err := os.Stat(nodePath); err == nil {
-				return entry.Name(), nil
+				allVersions = append(allVersions, entry.Name())
+				if isLTSVersion(entry.Name()) {
+					ltsVersions = append(ltsVersions, entry.Name())
+				}
 			}
 		}
 	}
 
-	return "", fmt.Errorf("no installed versions found")
+	// Prefer LTS versions, fall back to any version
+	versions := ltsVersions
+	if len(versions) == 0 {
+		versions = allVersions
+	}
+	if len(versions) == 0 {
+		return "", fmt.Errorf("no installed versions found")
+	}
+
+	// Find the latest by major version
+	latest := versions[0]
+	for _, v := range versions[1:] {
+		if getMajorVersion(v) > getMajorVersion(latest) {
+			latest = v
+		}
+	}
+
+	return latest, nil
+}
+
+// isLTSVersion checks if a version is an LTS release (even major, or even minor for 0.x)
+func isLTSVersion(version string) bool {
+	major := getMajorVersion(version)
+
+	// For 0.x versions, check the minor version
+	if major == 0 {
+		minor := getMinorVersion(version)
+		return minor%2 == 0 // 0.8, 0.10, 0.12 are LTS
+	}
+
+	// For 1.x+, even majors are LTS
+	return major%2 == 0
+}
+
+// getMajorVersion extracts the major version number from a version string
+func getMajorVersion(version string) int {
+	version = strings.TrimPrefix(version, "v")
+	parts := strings.Split(version, ".")
+	if len(parts) > 0 {
+		var major int
+		fmt.Sscanf(parts[0], "%d", &major)
+		return major
+	}
+	return 0
+}
+
+// getMinorVersion extracts the minor version number from a version string
+func getMinorVersion(version string) int {
+	version = strings.TrimPrefix(version, "v")
+	parts := strings.Split(version, ".")
+	if len(parts) > 1 {
+		var minor int
+		fmt.Sscanf(parts[1], "%d", &minor)
+		return minor
+	}
+	return 0
+}
+
+// findSystemBinary looks for a system-installed binary (not the nvu binary)
+func findSystemBinary(name string) string {
+	// Get our own executable path to avoid finding ourselves
+	selfPath, _ := os.Executable()
+	selfDir := filepath.Dir(selfPath)
+
+	// Common system binary locations
+	candidates := []string{
+		"/usr/local/bin/" + name,
+		"/usr/bin/" + name,
+		"/opt/homebrew/bin/" + name,
+	}
+
+	// Also check PATH, but skip our own directory
+	if pathEnv := os.Getenv("PATH"); pathEnv != "" {
+		for _, dir := range strings.Split(pathEnv, string(os.PathListSeparator)) {
+			// Skip our own directory
+			if dir == selfDir {
+				continue
+			}
+			candidate := filepath.Join(dir, name)
+			if runtime.GOOS == "windows" {
+				candidate = filepath.Join(dir, name+".exe")
+			}
+			// Check if it exists and is not a symlink to us
+			if info, err := os.Stat(candidate); err == nil && !info.IsDir() {
+				// Make sure it's not our binary
+				realPath, _ := filepath.EvalSymlinks(candidate)
+				if realPath != selfPath && !strings.Contains(realPath, ".nvu/bin") {
+					return candidate
+				}
+			}
+		}
+	}
+
+	// Check explicit candidates
+	for _, candidate := range candidates {
+		if info, err := os.Stat(candidate); err == nil && !info.IsDir() {
+			return candidate
+		}
+	}
+
+	return ""
 }

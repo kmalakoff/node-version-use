@@ -28,8 +28,8 @@ export default function defaultCmd(args: string[]): void {
 
   var version = args[0].trim();
 
-  // Validate version format (basic check)
-  if (!version || version.startsWith('-')) {
+  // Validate version format (basic check, indexOf for Node 0.8+ compat)
+  if (!version || version.indexOf('-') === 0) {
     console.log('Usage: nvu default <version>');
     console.log('Example: nvu default 20');
     exit(1);

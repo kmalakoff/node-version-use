@@ -11,8 +11,8 @@ import path from 'path';
 export default function localCmd(args: string[]): void {
   const cwd = process.cwd();
 
-  // Check for --nvurc flag
-  const useNvurc = args.includes('--nvurc');
+  // Check for --nvurc flag (indexOf for Node 0.8+ compat)
+  const useNvurc = args.indexOf('--nvurc') !== -1;
   const filteredArgs = args.filter((arg) => arg !== '--nvurc');
 
   const fileName = useNvurc ? '.nvurc' : '.nvmrc';
@@ -46,8 +46,8 @@ export default function localCmd(args: string[]): void {
 
   const version = filteredArgs[0].trim();
 
-  // Validate version format (basic check)
-  if (!version || version.startsWith('-')) {
+  // Validate version format (basic check, indexOf for Node 0.8+ compat)
+  if (!version || version.indexOf('-') === 0) {
     console.log('Usage: nvu local <version>');
     console.log('Example: nvu local 20');
     exit(1);
