@@ -38,10 +38,7 @@
   ],
   "scripts": {
     "build": "tsds build",
-    "build:binary": "node scripts/build-binaries.ts",
-    "build:binary:test": "make -C binary install-test",
     "clean": "rm -rf .tmp dist",
-    "clean:binary": "make -C binary clean && rm -rf .tmp/binary",
     "format": "tsds format",
     "postinstall": "node scripts/postinstall.cjs",
     "prepublishOnly": "tsds validate",
@@ -54,7 +51,6 @@
     "cross-spawn-cb": "^2.4.10",
     "exit": "^0.1.2",
     "fs-remove-compat": "^0.2.1",
-    "get-remote": "^2.2.8",
     "getopts-compat": "^2.2.6",
     "homedir-polyfill": "^1.0.3",
     "install-module-linked": "^1.3.11",

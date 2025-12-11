@@ -20,25 +20,18 @@ The npm package version and Go binary version are tracked separately in `package
    npm version patch  # or minor, major
    ```
 
-3. If binary changes are needed, bump `binaryVersion` in `package.json` and build binaries:
+3. If binary changes are needed, bump `binaryVersion` in `package.json` and push a tag:
    ```bash
-   node scripts/build-binaries.ts
+   git tag binary-v1.0.1 && git push origin binary-v1.0.1
    ```
+   GitHub Actions automatically builds and publishes binaries for all platforms.
 
-4. Create GitHub release with tag `binary-vX.Y.Z` and upload archives from `binary/build/`:
-   - `nvu-binary-darwin-arm64.tar.gz`
-   - `nvu-binary-darwin-x64.tar.gz`
-   - `nvu-binary-linux-x64.tar.gz`
-   - `nvu-binary-linux-arm64.tar.gz`
-   - `nvu-binary-win32-x64.zip`
-   - `nvu-binary-win32-arm64.zip`
-
-5. Publish to npm:
+4. Publish to npm:
    ```bash
    npm publish
    ```
 
-6. Push tags:
+5. Push version tag:
    ```bash
    git push --follow-tags
    ```
@@ -47,42 +40,43 @@ The npm package version and Go binary version are tracked separately in `package
 
 ### Testing
 
-Tests automatically build binaries to `.tmp/binary/bin/` on first run (requires Go):
+Binaries are downloaded from GitHub releases during `npm install`:
 
 ```bash
-npm test          # Builds test binaries if needed, then runs all tests
-npm run clean     # Clear all temp files including test binaries
+npm install       # Downloads binaries to ~/.nvu/bin/
+npm test          # Runs all tests using downloaded binaries
+npm run clean     # Clear all temp files
 ```
-
-If Go is not available, binary integration tests are skipped gracefully.
 
 ### Test Isolation
 
-Tests use complete isolation from your global `~/.nvu/` directory:
+Tests use `NVU_HOME` environment variable for isolation:
 
-- **Test binaries:** `.tmp/binary/bin/` (locally-built, never touches ~/.nvu/)
+- **Binaries:** `~/.nvu/bin/` (downloaded from releases)
 - **Test NVU_HOME:** `.tmp/commands/` or `.tmp/binary-test/`
-- **Production binaries:** `~/.nvu/bin/` (only via `make install` in binary/)
 
-### Manual Binary Building
+### Binary Development (requires Go)
+
+For local Go binary development:
 
 ```bash
-# Build test binaries only (for isolated testing)
-npm run build:binary:test
+# Build for current platform
+cd binary && make local
 
-# Build release binaries for all platforms
-node scripts/build-binaries.ts
+# Build all platforms
+cd binary && make release
 
-# Install to global ~/.nvu/bin (production use)
+# Install to ~/.nvu/bin
 cd binary && make install
 ```
 
 ### Binary Development Workflow
 
 1. Make changes to `binary/main.go`
-2. Run `npm run clean:binary` to clear cached test binaries
-3. Run `npm test` - binaries rebuild automatically
-4. Integration tests in `test/unit/binary.test.ts` verify behavior
+2. Build locally: `cd binary && make local`
+3. Install: `cd binary && make install`
+4. Run tests: `npm test`
+5. When ready, bump `binaryVersion` in package.json and push tag
 
 ## Pre-Release Smoke Test Checklist
 
