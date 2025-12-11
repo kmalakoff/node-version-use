@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import { mkdirpSync } from '../compat.ts';
 import { storagePath } from '../constants.ts';
+import { findInstalledVersions } from '../lib/findInstalledVersions.ts';
+import loadNodeVersionInstall from '../lib/loadNodeVersionInstall.ts';
 
 /**
  * nvu default [version]
@@ -12,6 +14,7 @@ import { storagePath } from '../constants.ts';
  */
 export default function defaultCmd(args: string[]): void {
   var defaultFilePath = path.join(storagePath, 'default');
+  var versionsPath = path.join(storagePath, 'installed');
 
   // If no version provided, display current default
   if (args.length === 0) {
@@ -41,8 +44,88 @@ export default function defaultCmd(args: string[]): void {
     mkdirpSync(storagePath);
   }
 
-  // Write the default version
-  fs.writeFileSync(defaultFilePath, `${version}\n`, 'utf8');
-  console.log(`Default Node version set to: ${version}`);
+  // Check if any installed versions match
+  var matches = findInstalledVersions(versionsPath, version);
+
+  if (matches.length > 0) {
+    // Version is installed - resolve to exact and set default
+    setDefaultToExact(defaultFilePath, matches);
+  } else {
+    // Version not installed - auto-install it
+    console.log(`Node ${version} is not installed. Installing...`);
+    autoInstallAndSetDefault(version, versionsPath, defaultFilePath);
+  }
+}
+
+/**
+ * Set the default to the highest matching installed version
+ */
+function setDefaultToExact(defaultFilePath: string, matches: string[]): void {
+  // matches are sorted by findInstalledVersions, take the last (highest)
+  var exactVersion = matches[matches.length - 1];
+
+  // Ensure it has v prefix for consistency
+  if (exactVersion.indexOf('v') !== 0) {
+    exactVersion = `v${exactVersion}`;
+  }
+
+  // Write the exact version
+  fs.writeFileSync(defaultFilePath, `${exactVersion}\n`, 'utf8');
+  console.log(`Default Node version set to: ${exactVersion}`);
+
   exit(0);
+}
+
+/**
+ * Auto-install the version and then set it as default
+ */
+function autoInstallAndSetDefault(version: string, versionsPath: string, defaultFilePath: string): void {
+  loadNodeVersionInstall((err, nodeVersionInstall) => {
+    if (err || !nodeVersionInstall) {
+      console.error('Failed to load node-version-install:', err ? err.message : 'Module not available');
+      exit(1);
+      return;
+    }
+
+    nodeVersionInstall(
+      version,
+      {
+        installPath: versionsPath,
+      },
+      (installErr, results) => {
+        if (installErr) {
+          console.error(`Failed to install Node ${version}:`, installErr.message);
+          exit(1);
+          return;
+        }
+
+        // Get the installed version from results
+        var installedVersion: string;
+        if (results && results.length > 0) {
+          installedVersion = results[0].version;
+        } else {
+          // Fallback: re-scan installed versions
+          var matches = findInstalledVersions(versionsPath, version);
+          if (matches.length === 0) {
+            console.error('Installation completed but version not found');
+            exit(1);
+            return;
+          }
+          installedVersion = matches[matches.length - 1];
+        }
+
+        // Ensure it has v prefix for consistency
+        if (installedVersion.indexOf('v') !== 0) {
+          installedVersion = `v${installedVersion}`;
+        }
+
+        // Write the exact version
+        fs.writeFileSync(defaultFilePath, `${installedVersion}\n`, 'utf8');
+        console.log(`Node ${installedVersion} installed successfully.`);
+        console.log(`Default Node version set to: ${installedVersion}`);
+
+        exit(0);
+      }
+    );
+  });
 }
