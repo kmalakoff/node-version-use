@@ -51,7 +51,8 @@ export default function listCmd(_args: string[]): void {
   });
 
   console.log('Installed Node versions:');
-  for (const version of versions) {
+  for (let i = 0; i < versions.length; i++) {
+    const version = versions[i];
     const isDefault = version === defaultVersion || `v${version}` === defaultVersion || version === `v${defaultVersion}`;
     const marker = isDefault ? ' (default)' : '';
     console.log(`  ${version}${marker}`);

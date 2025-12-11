@@ -11,7 +11,7 @@ var __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : ur
 /**
  * nvu setup
  *
- * Install/reinstall nvu shims to ~/.nvu/bin
+ * Install/reinstall nvu binaries to ~/.nvu/bin
  * This runs the same logic as the postinstall script.
  */
 export default function setupCmd(_args: string[]): void {

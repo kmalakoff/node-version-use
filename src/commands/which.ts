@@ -7,12 +7,12 @@ import { storagePath } from '../constants.ts';
  * nvu which
  *
  * Show which Node binary would be used based on current directory.
- * This simulates what the shim would do.
+ * This simulates what the nvu binary would do.
  */
 export default function whichCmd(_args: string[]): void {
   const cwd = process.cwd();
 
-  // Resolve version using the same logic as the shim
+  // Resolve version using the same logic as the nvu binary
   const version = resolveVersion(cwd);
 
   if (!version) {
@@ -59,7 +59,7 @@ export default function whichCmd(_args: string[]): void {
 }
 
 /**
- * Resolve version from config files (mirrors shim logic)
+ * Resolve version from config files (mirrors nvu binary logic)
  */
 function resolveVersion(cwd: string): string | null {
   // Walk up directories looking for .nvurc or .nvmrc

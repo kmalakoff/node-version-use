@@ -2,10 +2,10 @@ import exit from 'exit';
 import fs from 'fs';
 import getopts from 'getopts-compat';
 import path from 'path';
+import { createSession, figures, formatArguments } from 'spawn-term';
 import url from 'url';
 import { isCommand, runCommand } from './commands/index.ts';
 import run from './index.ts';
-import loadSpawnTerm from './lib/loadSpawnTerm.ts';
 import type { UseError, UseOptions, UseResult } from './types.ts';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
@@ -34,8 +34,8 @@ function printHelp(name: string): void {
   console.log('  uninstall <version> Remove an installed Node version');
   console.log('  list               List installed Node versions');
   console.log('  which              Show which Node version would be used');
-  console.log('  setup              Install/reinstall shims to ~/.nvu/bin');
-  console.log('  teardown           Remove shims from ~/.nvu/bin');
+  console.log('  setup              Install/reinstall binaries to ~/.nvu/bin');
+  console.log('  teardown           Remove binaries from ~/.nvu/bin');
   console.log('');
   console.log('Options:');
   console.log('  -v, --version      Print version number');
@@ -108,23 +108,17 @@ export default (argv: string[], name: string): undefined => {
     const errors = results.filter((result) => !!result.error);
 
     if (!options.silent) {
-      // Load spawn-term to get figures/formatArguments for output formatting
-      loadSpawnTerm((_loadErr, mod) => {
-        const { createSession, figures, formatArguments } = mod || { createSession: undefined, figures: { tick: '✓', cross: '✗' }, formatArguments: (x: string[]) => x };
-        if (!createSession) {
-          console.log('\n======================');
-          results.forEach((res) => {
-            console.log(`${res.error ? figures.cross : figures.tick} ${res.version}${res.error ? ` Error: ${res.error.message}` : ''}`);
-          });
-          console.log('\n----------------------');
-          console.log(`${name} ${formatArguments(args).join(' ')}`);
-          console.log(`${figures.tick} ${results.length - errors.length} succeeded`);
-          if (errors.length) console.log(`${figures.cross} ${errors.length} failed`);
-        }
-        exit(err || errors.length ? ERROR_CODE : 0);
-      });
-    } else {
-      exit(err || errors.length ? ERROR_CODE : 0);
+      if (!createSession) {
+        console.log('\n======================');
+        results.forEach((res) => {
+          console.log(`${res.error ? figures.cross : figures.tick} ${res.version}${res.error ? ` Error: ${res.error.message}` : ''}`);
+        });
+        console.log('\n----------------------');
+        console.log(`${name} ${formatArguments(args).join(' ')}`);
+        console.log(`${figures.tick} ${results.length - errors.length} succeeded`);
+        if (errors.length) console.log(`${figures.cross} ${errors.length} failed`);
+      }
     }
+    exit(err || errors.length ? ERROR_CODE : 0);
   });
 };
