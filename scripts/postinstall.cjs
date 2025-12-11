@@ -16,7 +16,6 @@ var fs = require('fs');
 var path = require('path');
 var os = require('os');
 var exit = require('exit');
-var getRemote = require('get-remote');
 
 // Polyfills for old Node versions
 var mkdirp = require('mkdirp-classic');
@@ -30,9 +29,9 @@ var GITHUB_REPO = 'kmalakoff/node-version-use';
 var BINARY_VERSION = require('../package.json').binaryVersion;
 
 /**
- * Get the platform-specific binary name
+ * Get the platform-specific archive base name (without extension)
  */
-function getBinaryName() {
+function getArchiveBaseName() {
   var platform = os.platform();
   var arch = os.arch();
 
@@ -55,16 +54,23 @@ function getBinaryName() {
     return null;
   }
 
-  var ext = platform === 'win32' ? '.exe' : '';
-  return 'nvu-binary-' + platformName + '-' + archName + ext;
+  return 'nvu-binary-' + platformName + '-' + archName;
 }
 
 /**
- * Get the download URL for the binary
+ * Get the extracted binary name (includes .exe on Windows)
  */
-function getDownloadUrl(binaryName) {
+function getExtractedBinaryName(archiveBaseName) {
+  var ext = os.platform() === 'win32' ? '.exe' : '';
+  return archiveBaseName + ext;
+}
+
+/**
+ * Get the download URL for the binary archive
+ */
+function getDownloadUrl(archiveBaseName) {
   var ext = os.platform() === 'win32' ? '.zip' : '.tar.gz';
-  return 'https://github.com/' + GITHUB_REPO + '/releases/download/binary-v' + BINARY_VERSION + '/' + binaryName + ext;
+  return 'https://github.com/' + GITHUB_REPO + '/releases/download/binary-v' + BINARY_VERSION + '/' + archiveBaseName + ext;
 }
 
 /**
@@ -122,11 +128,75 @@ function rmRecursive(dir) {
 }
 
 /**
- * Download a file from a URL (using get-remote for Node 0.8+ compatibility)
+ * Get temp directory (compatible with Node 0.8)
+ */
+function getTmpDir() {
+  return typeof os.tmpdir === 'function' ? os.tmpdir() : process.env.TMPDIR || process.env.TMP || process.env.TEMP || '/tmp';
+}
+
+/**
+ * Download using curl (macOS, Linux, Windows 10+)
+ */
+function downloadWithCurl(url, destPath, callback) {
+  var curl = spawn('curl', ['-L', '-f', '-s', '-o', destPath, url]);
+
+  curl.on('close', function (code) {
+    if (code !== 0) {
+      // curl exit codes: 22 = HTTP error (4xx/5xx), 56 = receive error (often 404 with -f)
+      if (code === 22 || code === 56) {
+        callback(new Error('HTTP 404'));
+      } else {
+        callback(new Error('curl failed with exit code ' + code));
+      }
+      return;
+    }
+    callback(null);
+  });
+
+  curl.on('error', function (err) {
+    callback(err);
+  });
+}
+
+/**
+ * Download using PowerShell (Windows 7+ fallback)
+ */
+function downloadWithPowerShell(url, destPath, callback) {
+  var psCommand = 'Invoke-WebRequest -Uri "' + url + '" -OutFile "' + destPath + '" -UseBasicParsing';
+  var ps = spawn('powershell', ['-NoProfile', '-Command', psCommand]);
+
+  ps.on('close', function (code) {
+    if (code !== 0) {
+      callback(new Error('PowerShell download failed with exit code ' + code));
+      return;
+    }
+    callback(null);
+  });
+
+  ps.on('error', function (err) {
+    callback(err);
+  });
+}
+
+/**
+ * Download a file - tries curl first, falls back to PowerShell on Windows
+ * Node 0.8's OpenSSL doesn't support TLS 1.2+ required by GitHub
  */
 function downloadFile(url, destPath, callback) {
-  var writeStream = fs.createWriteStream(destPath);
-  getRemote(url).pipe(writeStream, callback);
+  downloadWithCurl(url, destPath, function (err) {
+    if (!err) {
+      callback(null);
+      return;
+    }
+
+    // If curl failed and we're on Windows, try PowerShell
+    if (os.platform() === 'win32' && err.message && err.message.indexOf('ENOENT') >= 0) {
+      downloadWithPowerShell(url, destPath, callback);
+      return;
+    }
+
+    callback(err);
+  });
 }
 
 /**
@@ -309,25 +379,20 @@ function printInstructions(installed) {
 }
 
 /**
- * Get temp directory (compatible with Node 0.8)
- */
-function getTmpDir() {
-  return typeof os.tmpdir === 'function' ? os.tmpdir() : process.env.TMPDIR || process.env.TMP || process.env.TEMP || '/tmp';
-}
-
-/**
  * Main installation function
  */
 function main() {
-  var binaryName = getBinaryName();
+  var archiveBaseName = getArchiveBaseName();
 
-  if (!binaryName) {
+  if (!archiveBaseName) {
     console.log('postinstall: Unsupported platform/architecture for binary.');
     console.log('Platform: ' + os.platform() + ', Arch: ' + os.arch());
     console.log('Binary not installed. You can still use nvu with explicit versions: nvu 18 npm test');
     exit(0);
     return;
   }
+
+  var extractedBinaryName = getExtractedBinaryName(archiveBaseName);
 
   var nvuDir = path.join(homedir, '.nvu');
   var binDir = path.join(nvuDir, 'bin');
@@ -336,7 +401,7 @@ function main() {
   mkdirp.sync(nvuDir);
   mkdirp.sync(binDir);
 
-  var downloadUrl = getDownloadUrl(binaryName);
+  var downloadUrl = getDownloadUrl(archiveBaseName);
   var ext = os.platform() === 'win32' ? '.zip' : '.tar.gz';
   var tempPath = path.join(getTmpDir(), 'nvu-binary-' + Date.now() + ext);
 
@@ -371,7 +436,7 @@ function main() {
 
     console.log('postinstall: Extracting binary...');
 
-    extractAndInstall(tempPath, binDir, binaryName, function (extractErr) {
+    extractAndInstall(tempPath, binDir, extractedBinaryName, function (extractErr) {
       // Clean up temp file
       if (fs.existsSync(tempPath)) {
         try {

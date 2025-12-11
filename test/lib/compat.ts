@@ -14,7 +14,7 @@ var hasTmpdir = typeof os.tmpdir === 'function';
 /**
  * Find project root by searching for package.json going up from cwd.
  */
-function findProjectRoot(): string {
+function _findProjectRoot(): string {
   var dir = process.cwd();
   while (dir !== path.dirname(dir)) {
     if (fs.existsSync(path.join(dir, 'package.json'))) {
@@ -97,15 +97,26 @@ export function stringStartsWith(str: string, search: string, position?: number)
 }
 
 /**
- * Get path to test binaries directory.
- * These are locally-built binaries in .tmp/binary/bin/, isolated from ~/.nvu/bin/
+ * Get homedir (compatible with Node 0.8)
  */
-export function getTestBinaryBin(): string {
-  return path.join(findProjectRoot(), '.tmp', 'binary', 'bin');
+function getHomedir(): string {
+  if (typeof os.homedir === 'function') {
+    return os.homedir();
+  }
+  var homedirPolyfill = require('homedir-polyfill');
+  return homedirPolyfill();
 }
 
 /**
- * Check if test binaries are available (built).
+ * Get path to binaries directory (~/.nvu/bin).
+ * These are downloaded from GitHub releases by postinstall.
+ */
+export function getTestBinaryBin(): string {
+  return path.join(getHomedir(), '.nvu', 'bin');
+}
+
+/**
+ * Check if binaries are available (downloaded by postinstall).
  */
 export function hasTestBinaries(): boolean {
   var binaryName = process.platform === 'win32' ? 'node.exe' : 'node';
@@ -113,16 +124,16 @@ export function hasTestBinaries(): boolean {
 }
 
 /**
- * Get PATH with test binaries prepended (and global binaries removed).
+ * Get PATH with nvu binaries prepended.
  * Use this for integration tests that need to run through the binary.
  */
 export function getTestBinaryPath(): string {
-  var testBinaryBin = getTestBinaryBin();
+  var binaryBin = getTestBinaryBin();
   var filteredPath = (process.env.PATH || '')
     .split(path.delimiter)
     .filter((p) => p.indexOf('.nvu/bin') === -1)
     .join(path.delimiter);
-  return testBinaryBin + path.delimiter + filteredPath;
+  return binaryBin + path.delimiter + filteredPath;
 }
 
 /**

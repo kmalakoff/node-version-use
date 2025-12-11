@@ -37,7 +37,7 @@ function createFakeNodeVersion(version: string): void {
 describe('binary', () => {
   before(function () {
     if (!hasTestBinaries()) {
-      console.log('Test binaries not built (Go not available?), skipping binary tests');
+      console.log('Binaries not found. Run: npm install (postinstall downloads from releases)');
       this.skip();
       return;
     }
@@ -158,8 +158,10 @@ describe('binary', () => {
   });
 
   describe('binary routing', () => {
+    const ext = process.platform === 'win32' ? '.exe' : '';
+
     it('npm binary exists and runs', (done) => {
-      const binaryPath = path.join(getTestBinaryBin(), 'npm');
+      const binaryPath = path.join(getTestBinaryBin(), `npm${ext}`);
       assert.ok(fs.existsSync(binaryPath), 'npm binary should exist');
 
       spawn(binaryPath, ['--version'], OPTIONS, (err, res) => {
@@ -170,7 +172,7 @@ describe('binary', () => {
     });
 
     it('npx binary exists and runs', (done) => {
-      const binaryPath = path.join(getTestBinaryBin(), 'npx');
+      const binaryPath = path.join(getTestBinaryBin(), `npx${ext}`);
       assert.ok(fs.existsSync(binaryPath), 'npx binary should exist');
 
       spawn(binaryPath, ['--version'], OPTIONS, (err, res) => {
