@@ -2,6 +2,7 @@ import exit from 'exit-compat';
 import fs from 'fs';
 import path from 'path';
 import { storagePath } from '../constants.ts';
+import { findInstalledVersions } from '../lib/findInstalledVersions.ts';
 
 /**
  * nvu which
@@ -25,26 +26,22 @@ export default function whichCmd(_args: string[]): void {
     return;
   }
 
-  // Check if the version is installed
-  const versionsPath = path.join(storagePath, 'installed');
-  const versionPath = path.join(versionsPath, version);
-  const versionPathWithV = path.join(versionsPath, `v${version}`);
-  const versionPathWithoutV = path.join(versionsPath, version.replace(/^v/, ''));
+  // Resolve partial version to exact installed version
+  var versionsPath = path.join(storagePath, 'installed');
+  var matches = findInstalledVersions(versionsPath, version);
+  var resolvedVersion = matches.length > 0 ? matches[matches.length - 1] : null;
 
-  let actualVersionPath = '';
-  if (fs.existsSync(versionPath)) {
-    actualVersionPath = versionPath;
-  } else if (fs.existsSync(versionPathWithV)) {
-    actualVersionPath = versionPathWithV;
-  } else if (fs.existsSync(versionPathWithoutV)) {
-    actualVersionPath = versionPathWithoutV;
+  // Display version (show resolution if different)
+  if (resolvedVersion && resolvedVersion !== version && resolvedVersion !== `v${version}`) {
+    console.log(`Version: ${version} \u2192 ${resolvedVersion}`);
+  } else {
+    console.log(`Version: ${resolvedVersion || version}`);
   }
-
-  console.log(`Version: ${version}`);
   console.log(`Source: ${getVersionSource(cwd)}`);
 
-  if (actualVersionPath) {
-    const nodePath = path.join(actualVersionPath, 'bin', 'node');
+  if (resolvedVersion) {
+    var actualVersionPath = path.join(versionsPath, resolvedVersion);
+    var nodePath = path.join(actualVersionPath, 'bin', 'node');
     console.log(`Binary: ${nodePath}`);
     if (fs.existsSync(nodePath)) {
       console.log('Status: Installed');

@@ -258,7 +258,7 @@ function extractAndInstall(archivePath, destDir, binaryName, callback) {
     }
 
     // Binary names to install
-    var binaries = ['node', 'npm', 'npx'];
+    var binaries = ['node', 'npm', 'npx', 'corepack'];
     var timestamp = Date.now();
     var _pending = binaries.length;
     var installError = null;
