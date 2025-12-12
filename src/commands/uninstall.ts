@@ -19,11 +19,11 @@ export default function uninstallCmd(args: string[]): void {
     return;
   }
 
-  var version = args[0].trim();
-  var versionsPath = path.join(storagePath, 'installed');
+  const version = args[0].trim();
+  const versionsPath = path.join(storagePath, 'installed');
 
   // Find all matching installed versions
-  var matches = findInstalledVersions(versionsPath, version);
+  const matches = findInstalledVersions(versionsPath, version);
 
   if (matches.length === 0) {
     console.log(`Node ${version} is not installed.`);
@@ -36,7 +36,7 @@ export default function uninstallCmd(args: string[]): void {
 
   if (matches.length > 1) {
     console.log(`Multiple versions match "${version}":`);
-    for (var i = 0; i < matches.length; i++) {
+    for (let i = 0; i < matches.length; i++) {
       console.log(`  ${matches[i]}`);
     }
     console.log('');
@@ -45,17 +45,17 @@ export default function uninstallCmd(args: string[]): void {
     return;
   }
 
-  var installedVersion = matches[0];
-  var versionPath = path.join(versionsPath, installedVersion);
+  const installedVersion = matches[0];
+  const versionPath = path.join(versionsPath, installedVersion);
 
   // Check if this is the current default (exact match since we store exact versions)
-  var defaultPath = path.join(storagePath, 'default');
+  const defaultPath = path.join(storagePath, 'default');
   if (fs.existsSync(defaultPath)) {
-    var defaultVersion = fs.readFileSync(defaultPath, 'utf8').trim();
+    const defaultVersion = fs.readFileSync(defaultPath, 'utf8').trim();
 
     // Normalize both for comparison
-    var normalizedDefault = defaultVersion.replace(/^v/, '');
-    var normalizedInstalled = installedVersion.replace(/^v/, '');
+    const normalizedDefault = defaultVersion.replace(/^v/, '');
+    const normalizedInstalled = installedVersion.replace(/^v/, '');
 
     if (normalizedInstalled === normalizedDefault) {
       console.error(`Cannot uninstall default version ${installedVersion}.`);
@@ -84,12 +84,12 @@ export default function uninstallCmd(args: string[]): void {
  * List installed versions for user reference
  */
 function listInstalledVersions(versionsPath: string): void {
-  var versions = getAllInstalledVersions(versionsPath);
+  const versions = getAllInstalledVersions(versionsPath);
 
   if (versions.length === 0) {
     console.log('  (none)');
   } else {
-    for (var i = 0; i < versions.length; i++) {
+    for (let i = 0; i < versions.length; i++) {
       console.log(`  ${versions[i]}`);
     }
   }

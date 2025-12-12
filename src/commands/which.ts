@@ -27,9 +27,9 @@ export default function whichCmd(_args: string[]): void {
   }
 
   // Resolve partial version to exact installed version
-  var versionsPath = path.join(storagePath, 'installed');
-  var matches = findInstalledVersions(versionsPath, version);
-  var resolvedVersion = matches.length > 0 ? matches[matches.length - 1] : null;
+  const versionsPath = path.join(storagePath, 'installed');
+  const matches = findInstalledVersions(versionsPath, version);
+  const resolvedVersion = matches.length > 0 ? matches[matches.length - 1] : null;
 
   // Display version (show resolution if different)
   if (resolvedVersion && resolvedVersion !== version && resolvedVersion !== `v${version}`) {
@@ -40,8 +40,8 @@ export default function whichCmd(_args: string[]): void {
   console.log(`Source: ${getVersionSource(cwd)}`);
 
   if (resolvedVersion) {
-    var actualVersionPath = path.join(versionsPath, resolvedVersion);
-    var nodePath = path.join(actualVersionPath, 'bin', 'node');
+    const actualVersionPath = path.join(versionsPath, resolvedVersion);
+    const nodePath = path.join(actualVersionPath, 'bin', 'node');
     console.log(`Binary: ${nodePath}`);
     if (fs.existsSync(nodePath)) {
       console.log('Status: Installed');

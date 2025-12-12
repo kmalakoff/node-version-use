@@ -13,13 +13,13 @@ import loadNodeVersionInstall from '../lib/loadNodeVersionInstall.ts';
  * This is used when no .nvmrc or .nvurc is found in the project.
  */
 export default function defaultCmd(args: string[]): void {
-  var defaultFilePath = path.join(storagePath, 'default');
-  var versionsPath = path.join(storagePath, 'installed');
+  const defaultFilePath = path.join(storagePath, 'default');
+  const versionsPath = path.join(storagePath, 'installed');
 
   // If no version provided, display current default
   if (args.length === 0) {
     if (fs.existsSync(defaultFilePath)) {
-      var currentVersion = fs.readFileSync(defaultFilePath, 'utf8').trim();
+      const currentVersion = fs.readFileSync(defaultFilePath, 'utf8').trim();
       console.log(`Current default: ${currentVersion}`);
     } else {
       console.log('No default version set.');
@@ -29,7 +29,7 @@ export default function defaultCmd(args: string[]): void {
     return;
   }
 
-  var version = args[0].trim();
+  const version = args[0].trim();
 
   // Validate version format (basic check, indexOf for Node 0.8+ compat)
   if (!version || version.indexOf('-') === 0) {
@@ -45,7 +45,7 @@ export default function defaultCmd(args: string[]): void {
   }
 
   // Check if any installed versions match
-  var matches = findInstalledVersions(versionsPath, version);
+  const matches = findInstalledVersions(versionsPath, version);
 
   if (matches.length > 0) {
     // Version is installed - resolve to exact and set default
@@ -62,7 +62,7 @@ export default function defaultCmd(args: string[]): void {
  */
 function setDefaultToExact(defaultFilePath: string, matches: string[]): void {
   // matches are sorted by findInstalledVersions, take the last (highest)
-  var exactVersion = matches[matches.length - 1];
+  let exactVersion = matches[matches.length - 1];
 
   // Ensure it has v prefix for consistency
   if (exactVersion.indexOf('v') !== 0) {
@@ -100,12 +100,12 @@ function autoInstallAndSetDefault(version: string, versionsPath: string, default
         }
 
         // Get the installed version from results
-        var installedVersion: string;
+        let installedVersion: string;
         if (results && results.length > 0) {
           installedVersion = results[0].version;
         } else {
           // Fallback: re-scan installed versions
-          var matches = findInstalledVersions(versionsPath, version);
+          const matches = findInstalledVersions(versionsPath, version);
           if (matches.length === 0) {
             console.error('Installation completed but version not found');
             exit(1);
