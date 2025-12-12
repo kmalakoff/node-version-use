@@ -108,9 +108,7 @@ nvu engines tsds test:node --no-timeouts
 
 ### 4. Postinstall Compatibility
 ```bash
-nvu 0.8 node scripts/postinstall.cjs
-nvu 0.10 node scripts/postinstall.cjs
-nvu 0.12 node scripts/postinstall.cjs
+nvu engines node assets/postinstall.cjs
 ```
 - [ ] Runs without syntax errors
 - [ ] Gracefully handles 404 (binaries not published)
