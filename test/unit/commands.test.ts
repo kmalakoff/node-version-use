@@ -8,16 +8,17 @@ import { safeRm } from 'fs-remove-compat';
 import path from 'path';
 import url from 'url';
 
-import { mkdirRecursive, rmRecursive } from '../lib/compat.ts';
+import { getFilteredPath, mkdirRecursive, rmRecursive } from '../lib/compat.ts';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.js');
-const TMP_DIR = path.join(__dirname, '..', '..', '.tmp-commands');
+const TMP_DIR = path.join(__dirname, '..', '..', '.tmp', 'commands');
 
 const OPTIONS = {
   encoding: 'utf8' as BufferEncoding,
   env: {
     ...process.env,
+    PATH: getFilteredPath(), // Remove ~/.nvu/bin to use system node
     NVU_HOME: TMP_DIR, // Override nvu home for testing
   },
 };

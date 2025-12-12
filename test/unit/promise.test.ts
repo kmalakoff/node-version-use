@@ -38,6 +38,7 @@ describe('promise', () => {
 
   describe('clean directories', () => {
     before((cb) => safeRm(TMP_DIR, cb));
+    after((cb) => safeRm(TMP_DIR, cb));
 
     describe('happy path', () => {
       it('one version - 12', async () => {
