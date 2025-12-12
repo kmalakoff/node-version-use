@@ -1,0 +1,425 @@
+"use strict";
+/**
+ * Postinstall script for node-version-use
+ *
+ * Downloads the platform-specific binary and installs it to ~/.nvu/bin/
+ * This enables transparent Node version switching.
+ *
+ * Uses safe atomic download pattern:
+ * 1. Download to temp file
+ * 2. Extract to temp directory
+ * 3. Atomic rename to final location
+ */ var spawn = require('child_process').spawn;
+var exit = require('exit-compat');
+var fs = require('fs');
+var mkdirp = require('mkdirp-classic');
+var os = require('os');
+var path = require('path');
+var hasHomedir = typeof os.homedir === 'function';
+function homedir() {
+    if (hasHomedir) {
+        return os.homedir();
+    }
+    var home = require('homedir-polyfill');
+    return home();
+}
+module.exports = {
+    homedir: homedir
+};
+// Configuration
+var GITHUB_REPO = 'kmalakoff/node-version-use';
+// Path is relative to dist/cjs/scripts/ at runtime
+var BINARY_VERSION = require(path.join(__dirname, '..', 'package.json')).binaryVersion;
+/**
+ * Get the platform-specific archive base name (without extension)
+ */ function getArchiveBaseName() {
+    var platform = os.platform();
+    var arch = os.arch();
+    var platformMap = {
+        darwin: 'darwin',
+        linux: 'linux',
+        win32: 'win32'
+    };
+    var archMap = {
+        x64: 'x64',
+        arm64: 'arm64',
+        amd64: 'x64'
+    };
+    var platformName = platformMap[platform];
+    var archName = archMap[arch];
+    if (!platformName || !archName) {
+        return null;
+    }
+    return "nvu-binary-".concat(platformName, "-").concat(archName);
+}
+/**
+ * Get the extracted binary name (includes .exe on Windows)
+ */ function getExtractedBinaryName(archiveBaseName) {
+    var ext = os.platform() === 'win32' ? '.exe' : '';
+    return archiveBaseName + ext;
+}
+/**
+ * Get the download URL for the binary archive
+ */ function getDownloadUrl(archiveBaseName) {
+    var ext = os.platform() === 'win32' ? '.zip' : '.tar.gz';
+    return "https://github.com/".concat(GITHUB_REPO, "/releases/download/binary-v").concat(BINARY_VERSION, "/").concat(archiveBaseName).concat(ext);
+}
+/**
+ * Copy file
+ */ function copyFileSync(src, dest) {
+    var content = fs.readFileSync(src);
+    fs.writeFileSync(dest, content);
+}
+/**
+ * Atomic rename with fallback to copy+delete for cross-device moves
+ */ function atomicRename(src, dest, callback) {
+    fs.rename(src, dest, function(err) {
+        if (!err) {
+            callback(null);
+            return;
+        }
+        // Cross-device link error - fall back to copy + delete
+        if (err.code === 'EXDEV') {
+            try {
+                copyFileSync(src, dest);
+                fs.unlinkSync(src);
+                callback(null);
+            } catch (copyErr) {
+                callback(copyErr);
+            }
+            return;
+        }
+        callback(err);
+    });
+}
+/**
+ * Remove directory recursively
+ */ function rmRecursive(dir) {
+    if (!fs.existsSync(dir)) return;
+    var files = fs.readdirSync(dir);
+    for(var i = 0; i < files.length; i++){
+        var filePath = path.join(dir, files[i]);
+        var stat = fs.statSync(filePath);
+        if (stat.isDirectory()) {
+            rmRecursive(filePath);
+        } else {
+            fs.unlinkSync(filePath);
+        }
+    }
+    fs.rmdirSync(dir);
+}
+/**
+ * Get temp directory
+ */ function getTmpDir() {
+    return typeof os.tmpdir === 'function' ? os.tmpdir() : process.env.TMPDIR || process.env.TMP || process.env.TEMP || '/tmp';
+}
+/**
+ * Download using curl (macOS, Linux, Windows 10+)
+ */ function downloadWithCurl(downloadUrl, destPath, callback) {
+    var curl = spawn('curl', [
+        '-L',
+        '-f',
+        '-s',
+        '-o',
+        destPath,
+        downloadUrl
+    ]);
+    curl.on('close', function(code) {
+        if (code !== 0) {
+            // curl exit codes: 22 = HTTP error (4xx/5xx), 56 = receive error (often 404 with -f)
+            if (code === 22 || code === 56) {
+                callback(new Error('HTTP 404'));
+            } else {
+                callback(new Error("curl failed with exit code ".concat(code)));
+            }
+            return;
+        }
+        callback(null);
+    });
+    curl.on('error', function(err) {
+        callback(err);
+    });
+}
+/**
+ * Download using PowerShell (Windows 7+ fallback)
+ */ function downloadWithPowerShell(downloadUrl, destPath, callback) {
+    var psCommand = 'Invoke-WebRequest -Uri "'.concat(downloadUrl, '" -OutFile "').concat(destPath, '" -UseBasicParsing');
+    var ps = spawn('powershell', [
+        '-NoProfile',
+        '-Command',
+        psCommand
+    ]);
+    ps.on('close', function(code) {
+        if (code !== 0) {
+            callback(new Error("PowerShell download failed with exit code ".concat(code)));
+            return;
+        }
+        callback(null);
+    });
+    ps.on('error', function(err) {
+        callback(err);
+    });
+}
+/**
+ * Download a file - tries curl first, falls back to PowerShell on Windows
+ * Node 0.8's OpenSSL doesn't support TLS 1.2+ required by GitHub
+ */ function downloadFile(downloadUrl, destPath, callback) {
+    downloadWithCurl(downloadUrl, destPath, function(err) {
+        var _err_message;
+        if (!err) {
+            callback(null);
+            return;
+        }
+        // If curl failed and we're on Windows, try PowerShell
+        if (os.platform() === 'win32' && (err === null || err === void 0 ? void 0 : (_err_message = err.message) === null || _err_message === void 0 ? void 0 : _err_message.indexOf('ENOENT')) >= 0) {
+            downloadWithPowerShell(downloadUrl, destPath, callback);
+            return;
+        }
+        callback(err);
+    });
+}
+/**
+ * Extract archive to a directory (callback-based)
+ */ function extractArchive(archivePath, destDir, callback) {
+    var platform = os.platform();
+    if (platform === 'win32') {
+        // Windows: extract zip using PowerShell
+        var ps = spawn('powershell', [
+            '-Command',
+            "Expand-Archive -Path '".concat(archivePath, "' -DestinationPath '").concat(destDir, "' -Force")
+        ]);
+        ps.on('close', function(code) {
+            if (code !== 0) {
+                callback(new Error('Failed to extract archive'));
+                return;
+            }
+            callback(null);
+        });
+    } else {
+        // Unix: extract tar.gz
+        var tar = spawn('tar', [
+            '-xzf',
+            archivePath,
+            '-C',
+            destDir
+        ]);
+        tar.on('close', function(code) {
+            if (code !== 0) {
+                callback(new Error('Failed to extract archive'));
+                return;
+            }
+            callback(null);
+        });
+    }
+}
+/**
+ * Install binaries using atomic rename pattern
+ * 1. Extract to temp directory
+ * 2. Copy binary to temp files in destination directory
+ * 3. Atomic rename temp files to final names
+ */ function extractAndInstall(archivePath, destDir, binaryName, callback) {
+    var platform = os.platform();
+    var isWindows = platform === 'win32';
+    var ext = isWindows ? '.exe' : '';
+    // Create temp extraction directory
+    var tempExtractDir = path.join(getTmpDir(), "nvu-extract-".concat(Date.now()));
+    mkdirp.sync(tempExtractDir);
+    extractArchive(archivePath, tempExtractDir, function(extractErr) {
+        if (extractErr) {
+            rmRecursive(tempExtractDir);
+            callback(extractErr);
+            return;
+        }
+        var extractedPath = path.join(tempExtractDir, binaryName);
+        if (!fs.existsSync(extractedPath)) {
+            rmRecursive(tempExtractDir);
+            callback(new Error("Extracted binary not found: ".concat(binaryName)));
+            return;
+        }
+        // Binary names to install
+        var binaries = [
+            'node',
+            'npm',
+            'npx',
+            'corepack'
+        ];
+        var timestamp = Date.now();
+        var installError = null;
+        // Step 1: Copy extracted binary to temp files in destination directory
+        // This ensures the temp files are on the same filesystem for atomic rename
+        for(var i = 0; i < binaries.length; i++){
+            var name = binaries[i];
+            var tempDest = path.join(destDir, "".concat(name, ".tmp-").concat(timestamp).concat(ext));
+            try {
+                // Copy to temp file in destination directory
+                copyFileSync(extractedPath, tempDest);
+                // Set permissions on Unix
+                if (!isWindows) {
+                    fs.chmodSync(tempDest, 493);
+                }
+            } catch (err) {
+                installError = err;
+                break;
+            }
+        }
+        if (installError) {
+            // Clean up any temp files we created
+            for(var j = 0; j < binaries.length; j++){
+                var tempPath = path.join(destDir, "".concat(binaries[j], ".tmp-").concat(timestamp).concat(ext));
+                if (fs.existsSync(tempPath)) {
+                    try {
+                        fs.unlinkSync(tempPath);
+                    } catch (_e) {
+                    // ignore cleanup errors
+                    }
+                }
+            }
+            rmRecursive(tempExtractDir);
+            callback(installError);
+            return;
+        }
+        // Step 2: Atomic rename temp files to final names
+        var renameError = null;
+        function doRename(index) {
+            if (index >= binaries.length) {
+                // All renames complete
+                rmRecursive(tempExtractDir);
+                callback(renameError);
+                return;
+            }
+            var name = binaries[index];
+            var tempDest = path.join(destDir, "".concat(name, ".tmp-").concat(timestamp).concat(ext));
+            var finalDest = path.join(destDir, "".concat(name).concat(ext));
+            // Remove existing file if present (for atomic replacement)
+            if (fs.existsSync(finalDest)) {
+                try {
+                    fs.unlinkSync(finalDest);
+                } catch (_e) {
+                // ignore cleanup errors
+                }
+            }
+            atomicRename(tempDest, finalDest, function(err) {
+                if (err && !renameError) {
+                    renameError = err;
+                }
+                doRename(index + 1);
+            });
+        }
+        doRename(0);
+    });
+}
+/**
+ * Print setup instructions
+ */ function printInstructions(installed) {
+    var homedirPath = homedir();
+    var nvuBinPath = path.join(homedirPath, '.nvu', 'bin');
+    var platform = os.platform();
+    console.log('');
+    console.log('============================================================');
+    if (installed) {
+        console.log('  nvu binaries installed to ~/.nvu/bin/');
+    } else {
+        console.log('  nvu installed (binaries not yet available)');
+    }
+    console.log('============================================================');
+    console.log('');
+    console.log('To enable transparent Node version switching, add to your shell profile:');
+    console.log('');
+    if (platform === 'win32') {
+        console.log('  PowerShell (add to $PROFILE):');
+        console.log('    $env:PATH = "'.concat(nvuBinPath, ';$env:PATH"'));
+        console.log('');
+        console.log('  CMD (run as administrator):');
+        console.log('    setx PATH "'.concat(nvuBinPath, ';%PATH%"'));
+    } else {
+        console.log('  # For bash (~/.bashrc):');
+        console.log('    export PATH="$HOME/.nvu/bin:$PATH"');
+        console.log('');
+        console.log('  # For zsh (~/.zshrc):');
+        console.log('    export PATH="$HOME/.nvu/bin:$PATH"');
+        console.log('');
+        console.log('  # For fish (~/.config/fish/config.fish):');
+        console.log('    set -gx PATH $HOME/.nvu/bin $PATH');
+    }
+    console.log('');
+    console.log('Then restart your terminal or source your shell profile.');
+    console.log('');
+    console.log("Without this, 'nvu 18 npm test' still works - you just won't have");
+    console.log("transparent 'node' command override.");
+    console.log('============================================================');
+}
+/**
+ * Main installation function
+ */ function main() {
+    var archiveBaseName = getArchiveBaseName();
+    if (!archiveBaseName) {
+        console.log('postinstall: Unsupported platform/architecture for binary.');
+        console.log("Platform: ".concat(os.platform(), ", Arch: ").concat(os.arch()));
+        console.log('Binary not installed. You can still use nvu with explicit versions: nvu 18 npm test');
+        exit(0);
+        return;
+    }
+    var extractedBinaryName = getExtractedBinaryName(archiveBaseName);
+    var homedirPath = homedir();
+    var nvuDir = path.join(homedirPath, '.nvu');
+    var binDir = path.join(nvuDir, 'bin');
+    // Create directories
+    mkdirp.sync(nvuDir);
+    mkdirp.sync(binDir);
+    var downloadUrl = getDownloadUrl(archiveBaseName);
+    var ext = os.platform() === 'win32' ? '.zip' : '.tar.gz';
+    var tempPath = path.join(getTmpDir(), "nvu-binary-".concat(Date.now()).concat(ext));
+    console.log("postinstall: Downloading binary for ".concat(os.platform(), "-").concat(os.arch(), "..."));
+    downloadFile(downloadUrl, tempPath, function(downloadErr) {
+        if (downloadErr) {
+            var _downloadErr_message;
+            // Clean up temp file if it exists
+            if (fs.existsSync(tempPath)) {
+                try {
+                    fs.unlinkSync(tempPath);
+                } catch (_e) {
+                // ignore cleanup errors
+                }
+            }
+            if (((_downloadErr_message = downloadErr.message) === null || _downloadErr_message === void 0 ? void 0 : _downloadErr_message.indexOf('404')) >= 0) {
+                console.log('postinstall: Binaries not yet published to GitHub releases.');
+                console.log('');
+                console.log('To build and install binaries locally:');
+                console.log('  cd node_modules/node-version-use/binary');
+                console.log('  make install');
+                console.log('');
+                console.log('Or wait for the next release which will include pre-built binaries.');
+            } else {
+                console.log("postinstall warning: Failed to install binary: ".concat(downloadErr.message || downloadErr));
+                console.log('You can still use nvu with explicit versions: nvu 18 npm test');
+                console.log('To install binaries manually: cd node_modules/node-version-use/binary && make install');
+            }
+            printInstructions(false);
+            exit(0);
+            return;
+        }
+        console.log('postinstall: Extracting binary...');
+        extractAndInstall(tempPath, binDir, extractedBinaryName, function(extractErr) {
+            // Clean up temp file
+            if (fs.existsSync(tempPath)) {
+                try {
+                    fs.unlinkSync(tempPath);
+                } catch (_e) {
+                // ignore cleanup errors
+                }
+            }
+            if (extractErr) {
+                console.log("postinstall warning: Failed to extract binary: ".concat(extractErr.message || extractErr));
+                console.log('You can still use nvu with explicit versions: nvu 18 npm test');
+                printInstructions(false);
+                exit(0);
+                return;
+            }
+            console.log('postinstall: Binary installed successfully!');
+            printInstructions(true);
+            exit(0);
+        });
+    });
+}
+main();
+/* CJS INTEROP */ if (exports.__esModule && exports.default) { try { Object.defineProperty(exports.default, '__esModule', { value: true }); for (var key in exports) { exports.default[key] = exports[key]; } } catch (_) {}; module.exports = exports.default; }

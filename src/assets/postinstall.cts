@@ -10,24 +10,28 @@
  * 3. Atomic rename to final location
  */
 
-import { spawn } from 'child_process';
-import exit from 'exit-compat';
-import fs from 'fs';
-import mkdirp from 'mkdirp-classic';
-import Module from 'module';
-import os from 'os';
-import path from 'path';
-import url from 'url';
-import { homedir } from '../compat.ts';
+const { spawn } = require('child_process');
+const exit = require('exit-compat');
+const fs = require('fs');
+const mkdirp = require('mkdirp-classic');
+const os = require('os');
+const path = require('path');
 
-// CJS/ESM compatibility
-const _require = typeof require === 'undefined' ? Module.createRequire(import.meta.url) : require;
-const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
+const hasHomedir = typeof os.homedir === 'function';
+function homedir(): string {
+  if (hasHomedir) {
+    return os.homedir();
+  }
+  var home = require('homedir-polyfill');
+  return home();
+}
+
+module.exports = { homedir };
 
 // Configuration
 const GITHUB_REPO = 'kmalakoff/node-version-use';
 // Path is relative to dist/cjs/scripts/ at runtime
-const BINARY_VERSION = _require(path.join(__dirname, '..', '..', '..', 'package.json')).binaryVersion;
+const BINARY_VERSION = require(path.join(__dirname, '..', 'package.json')).binaryVersion;
 
 type Callback = (err?: Error | null) => void;
 

@@ -34,15 +34,15 @@
   "files": [
     "bin",
     "dist",
-    "scripts"
+    "assets"
   ],
   "scripts": {
     "build": "tsds build",
+    "build:assets": "tsds build && mkdir -p assets && cp -R dist/cjs/assets/*.cjs assets/",
     "clean": "rm -rf .tmp dist",
     "format": "tsds format",
-    "postinstall": "node scripts/postinstall.cjs",
+    "postinstall": "node assets/postinstall.cjs",
     "prepublishOnly": "tsds validate",
-    "pretest": "node scripts/ensure-test-binaries.ts",
     "test": "tsds test:node --no-timeouts",
     "test:engines": "nvu engines tsds test:node --no-timeouts",
     "version": "tsds version"
@@ -53,7 +53,7 @@
     "fs-remove-compat": "^0.2.1",
     "getopts-compat": "^2.2.6",
     "homedir-polyfill": "^1.0.3",
-    "install-module-linked": "^1.3.12",
+    "install-module-linked": "^1.3.13",
     "mkdirp-classic": "^0.5.3",
     "node-resolve-versions": "^1.3.11",
     "node-version-utils": "^1.3.15",
@@ -70,8 +70,8 @@
     "fs-remove-compat": "^0.2.1",
     "is-version": "^1.0.7",
     "mkdirp-classic": "^0.5.3",
-    "node-version-install": "^1.5.0",
-    "node-version-use": "^2.1.3",
+    "node-version-install": "^1.5.1",
+    "node-version-use": "^2.1.4",
     "os-shim": "^0.1.3",
     "pinkie-promise": "^2.0.1",
     "ts-dev-stack": "^1.21.3",
