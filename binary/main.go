@@ -33,6 +33,9 @@ func main() {
 	// Remove .exe suffix on Windows
 	execName = strings.TrimSuffix(execName, ".exe")
 
+	// Core binaries that always exist in Node installations
+	isCoreNodeBinary := execName == "node" || execName == "npm" || execName == "npx"
+
 	// Check if we're running the nvu CLI itself - if so, use any available version
 	// This prevents chicken-and-egg problems where nvu can't run because the
 	// configured version isn't installed yet
@@ -75,9 +78,32 @@ func main() {
 	// Find the real binary path
 	binaryPath, err := findBinary(execName, version)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "nvu error: %s\n", err)
-		fmt.Fprintf(os.Stderr, "\nNode %s may not be installed. Run: nvu install %s\n", version, version)
-		os.Exit(1)
+		// For non-core binaries (global packages), the binary might not exist
+		// in the current Node version - try to find it in any installed version
+		if !isCoreNodeBinary {
+			binaryPath, err = findGlobalPackageBinary(execName)
+		}
+		if err != nil {
+			if isCoreNodeBinary {
+				fmt.Fprintf(os.Stderr, "nvu error: %s\n", err)
+				fmt.Fprintf(os.Stderr, "\nNode %s may not be installed. Run: nvu install %s\n", version, version)
+			} else {
+				fmt.Fprintf(os.Stderr, "nvu error: '%s' not found\n", execName)
+			}
+			os.Exit(1)
+		}
+	}
+
+	// Check if this is npm install/uninstall -g, and if so, handle shim creation/removal after
+	if execName == "npm" {
+		if isGlobalInstall() {
+			runNpmAndCreateShims(binaryPath, os.Args)
+			return
+		}
+		if isGlobalUninstall() {
+			runNpmAndRemoveShims(binaryPath, os.Args)
+			return
+		}
 	}
 
 	// Execute the real binary, replacing this process
@@ -383,6 +409,272 @@ func getMinorVersion(version string) int {
 		return minor
 	}
 	return 0
+}
+
+// isGlobalInstall checks if the current npm command is a global install
+func isGlobalInstall() bool {
+	hasGlobal := false
+	hasInstall := false
+	for _, arg := range os.Args[1:] {
+		if arg == "-g" || arg == "--global" {
+			hasGlobal = true
+		}
+		if arg == "install" || arg == "i" || arg == "add" {
+			hasInstall = true
+		}
+	}
+	return hasGlobal && hasInstall
+}
+
+// isGlobalUninstall checks if the current npm command is a global uninstall
+func isGlobalUninstall() bool {
+	hasGlobal := false
+	hasUninstall := false
+	for _, arg := range os.Args[1:] {
+		if arg == "-g" || arg == "--global" {
+			hasGlobal = true
+		}
+		if arg == "uninstall" || arg == "remove" || arg == "rm" || arg == "r" || arg == "un" || arg == "unlink" {
+			hasUninstall = true
+		}
+	}
+	return hasGlobal && hasUninstall
+}
+
+// findGlobalPackageBinary looks for a binary in the default Node version's bin directory
+func findGlobalPackageBinary(name string) (string, error) {
+	nvuHome, err := getNvuHome()
+	if err != nil {
+		return "", err
+	}
+
+	// Read default version
+	defaultPath := filepath.Join(nvuHome, "default")
+	defaultVersion, err := readVersionFile(defaultPath)
+	if err != nil || defaultVersion == "" {
+		return "", fmt.Errorf("no default version set")
+	}
+
+	versionsDir := filepath.Join(nvuHome, "installed")
+	resolvedVersion, err := resolveInstalledVersion(versionsDir, defaultVersion)
+	if err != nil {
+		return "", err
+	}
+
+	// Look for the binary
+	var binaryPath string
+	if runtime.GOOS == "windows" {
+		binaryPath = filepath.Join(versionsDir, resolvedVersion, "bin", name+".exe")
+		if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
+			binaryPath = filepath.Join(versionsDir, resolvedVersion, name+".cmd")
+		}
+	} else {
+		binaryPath = filepath.Join(versionsDir, resolvedVersion, "bin", name)
+	}
+
+	if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
+		return "", fmt.Errorf("binary not found: %s", name)
+	}
+
+	return binaryPath, nil
+}
+
+// runNpmAndCreateShims runs npm and then creates shims for any new global binaries
+func runNpmAndCreateShims(npmPath string, args []string) {
+	nvuHome, err := getNvuHome()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "nvu error: %s\n", err)
+		os.Exit(1)
+	}
+
+	// Get list of binaries before npm install
+	binDir := filepath.Join(nvuHome, "bin")
+	defaultPath := filepath.Join(nvuHome, "default")
+	defaultVersion, _ := readVersionFile(defaultPath)
+
+	var nodeBinDir string
+	if defaultVersion != "" {
+		versionsDir := filepath.Join(nvuHome, "installed")
+		if resolved, err := resolveInstalledVersion(versionsDir, defaultVersion); err == nil {
+			nodeBinDir = filepath.Join(versionsDir, resolved, "bin")
+		}
+	}
+
+	binariesBefore := make(map[string]bool)
+	if nodeBinDir != "" {
+		if entries, err := os.ReadDir(nodeBinDir); err == nil {
+			for _, e := range entries {
+				binariesBefore[e.Name()] = true
+			}
+		}
+	}
+
+	// Run npm
+	cmd := exec.Command(npmPath, args[1:]...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Env = os.Environ()
+
+	err = cmd.Run()
+	exitCode := 0
+	if err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			exitCode = exitError.ExitCode()
+		} else {
+			fmt.Fprintf(os.Stderr, "nvu error: failed to run npm: %s\n", err)
+			os.Exit(1)
+		}
+	}
+
+	// If npm failed, don't create shims
+	if exitCode != 0 {
+		os.Exit(exitCode)
+	}
+
+	// Get list of binaries after npm install
+	if nodeBinDir == "" {
+		os.Exit(0)
+	}
+
+	entries, err := os.ReadDir(nodeBinDir)
+	if err != nil {
+		os.Exit(0)
+	}
+
+	// Find new binaries and create shims
+	shimSource := filepath.Join(binDir, "node") // Use node shim as template
+	if runtime.GOOS == "windows" {
+		shimSource = filepath.Join(binDir, "node.exe")
+	}
+
+	for _, e := range entries {
+		name := e.Name()
+		// Skip our routing shims (node/npm/npx) - don't overwrite them
+		if name == "node" || name == "npm" || name == "npx" {
+			continue
+		}
+
+		// Create shim by copying the node shim
+		shimDest := filepath.Join(binDir, name)
+		if runtime.GOOS == "windows" {
+			shimDest = filepath.Join(binDir, name+".exe")
+		}
+
+		// Skip if shim already exists
+		if _, err := os.Stat(shimDest); err == nil {
+			continue
+		}
+
+		// Copy the shim binary
+		if err := copyFile(shimSource, shimDest); err != nil {
+			continue
+		}
+
+		// Make executable on Unix
+		if runtime.GOOS != "windows" {
+			os.Chmod(shimDest, 0755)
+		}
+
+	}
+
+	os.Exit(0)
+}
+
+// copyFile copies a file from src to dst
+func copyFile(src, dst string) error {
+	data, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(dst, data, 0755)
+}
+
+// runNpmAndRemoveShims runs npm uninstall and then removes shims for removed binaries
+func runNpmAndRemoveShims(npmPath string, args []string) {
+	nvuHome, err := getNvuHome()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "nvu error: %s\n", err)
+		os.Exit(1)
+	}
+
+	// Get list of binaries before npm uninstall
+	binDir := filepath.Join(nvuHome, "bin")
+	defaultPath := filepath.Join(nvuHome, "default")
+	defaultVersion, _ := readVersionFile(defaultPath)
+
+	var nodeBinDir string
+	if defaultVersion != "" {
+		versionsDir := filepath.Join(nvuHome, "installed")
+		if resolved, err := resolveInstalledVersion(versionsDir, defaultVersion); err == nil {
+			nodeBinDir = filepath.Join(versionsDir, resolved, "bin")
+		}
+	}
+
+	binariesBefore := make(map[string]bool)
+	if nodeBinDir != "" {
+		if entries, err := os.ReadDir(nodeBinDir); err == nil {
+			for _, e := range entries {
+				binariesBefore[e.Name()] = true
+			}
+		}
+	}
+
+	// Run npm
+	cmd := exec.Command(npmPath, args[1:]...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Env = os.Environ()
+
+	err = cmd.Run()
+	exitCode := 0
+	if err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			exitCode = exitError.ExitCode()
+		} else {
+			fmt.Fprintf(os.Stderr, "nvu error: failed to run npm: %s\n", err)
+			os.Exit(1)
+		}
+	}
+
+	// If npm failed, don't remove shims
+	if exitCode != 0 {
+		os.Exit(exitCode)
+	}
+
+	// Get list of binaries after npm uninstall
+	if nodeBinDir == "" {
+		os.Exit(0)
+	}
+
+	binariesAfter := make(map[string]bool)
+	if entries, err := os.ReadDir(nodeBinDir); err == nil {
+		for _, e := range entries {
+			binariesAfter[e.Name()] = true
+		}
+	}
+
+	// Find removed binaries and delete their shims
+	for name := range binariesBefore {
+		if binariesAfter[name] {
+			continue // Still exists
+		}
+		if name == "node" || name == "npm" || name == "npx" || name == "corepack" {
+			continue // Core binaries
+		}
+
+		// Remove the shim
+		shimPath := filepath.Join(binDir, name)
+		if runtime.GOOS == "windows" {
+			shimPath = filepath.Join(binDir, name+".exe")
+		}
+
+		if err := os.Remove(shimPath); err == nil {
+		}
+	}
+
+	os.Exit(0)
 }
 
 // findSystemBinary looks for a system-installed binary (not the nvu binary)
