@@ -10,7 +10,7 @@ import { storagePath } from '../constants.ts';
  * List all installed Node versions.
  */
 export default function listCmd(_args: string[]): void {
-  var versionsPath = path.join(storagePath, 'installed');
+  const versionsPath = path.join(storagePath, 'installed');
 
   // Check if versions directory exists
   if (!fs.existsSync(versionsPath)) {
@@ -21,8 +21,8 @@ export default function listCmd(_args: string[]): void {
   }
 
   // Read all directories in versions folder
-  var entries = readdirWithTypes(versionsPath);
-  var versions = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+  const entries = readdirWithTypes(versionsPath);
+  const versions = entries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
 
   if (versions.length === 0) {
     console.log('No Node versions installed.');

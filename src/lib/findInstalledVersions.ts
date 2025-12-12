@@ -7,13 +7,13 @@ import { readdirWithTypes } from '../compat.ts';
  * Returns: negative if a < b, positive if a > b, 0 if equal
  */
 function compareVersions(a: string, b: string): number {
-  var aParts = a.replace(/^v/, '').split('.');
-  var bParts = b.replace(/^v/, '').split('.');
-  var len = Math.max(aParts.length, bParts.length);
+  const aParts = a.replace(/^v/, '').split('.');
+  const bParts = b.replace(/^v/, '').split('.');
+  const len = Math.max(aParts.length, bParts.length);
 
-  for (var i = 0; i < len; i++) {
-    var aNum = parseInt(aParts[i], 10) || 0;
-    var bNum = parseInt(bParts[i], 10) || 0;
+  for (let i = 0; i < len; i++) {
+    const aNum = parseInt(aParts[i], 10) || 0;
+    const bNum = parseInt(bParts[i], 10) || 0;
     if (aNum !== bNum) {
       return aNum - bNum;
     }
@@ -30,14 +30,14 @@ export function findInstalledVersions(versionsPath: string, version: string): st
     return [];
   }
 
-  var normalizedVersion = version.replace(/^v/, '');
-  var matches: string[] = [];
+  const normalizedVersion = version.replace(/^v/, '');
+  const matches: string[] = [];
 
   // Try exact matches first
-  var exactMatches = [version, `v${normalizedVersion}`, normalizedVersion];
-  for (var i = 0; i < exactMatches.length; i++) {
-    var v = exactMatches[i];
-    var versionPath = path.join(versionsPath, v);
+  const exactMatches = [version, `v${normalizedVersion}`, normalizedVersion];
+  for (let i = 0; i < exactMatches.length; i++) {
+    const v = exactMatches[i];
+    const versionPath = path.join(versionsPath, v);
     if (fs.existsSync(versionPath) && fs.statSync(versionPath).isDirectory()) {
       if (matches.indexOf(v) === -1) {
         matches.push(v);
@@ -51,11 +51,11 @@ export function findInstalledVersions(versionsPath: string, version: string): st
   }
 
   // Try partial match (e.g., "20" matches "v20.19.6")
-  var entries = readdirWithTypes(versionsPath);
-  for (var j = 0; j < entries.length; j++) {
-    var entry = entries[j];
+  const entries = readdirWithTypes(versionsPath);
+  for (let j = 0; j < entries.length; j++) {
+    const entry = entries[j];
     if (!entry.isDirectory()) continue;
-    var dirVersion = entry.name.replace(/^v/, '');
+    const dirVersion = entry.name.replace(/^v/, '');
     if (dirVersion.indexOf(`${normalizedVersion}.`) === 0) {
       matches.push(entry.name);
     }
@@ -75,9 +75,9 @@ export function getAllInstalledVersions(versionsPath: string): string[] {
     return [];
   }
 
-  var entries = readdirWithTypes(versionsPath);
-  var versions: string[] = [];
-  for (var i = 0; i < entries.length; i++) {
+  const entries = readdirWithTypes(versionsPath);
+  const versions: string[] = [];
+  for (let i = 0; i < entries.length; i++) {
     if (entries[i].isDirectory()) {
       versions.push(entries[i].name);
     }

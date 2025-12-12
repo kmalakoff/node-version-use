@@ -7,15 +7,15 @@ import { safeRmSync } from 'fs-remove-compat';
 import os from 'os';
 import path from 'path';
 
-var hasCopyFileSync = typeof fs.copyFileSync === 'function';
-var hasRecursiveMkdir = +process.versions.node.split('.')[0] >= 10;
-var hasTmpdir = typeof os.tmpdir === 'function';
+const hasCopyFileSync = typeof fs.copyFileSync === 'function';
+const hasRecursiveMkdir = +process.versions.node.split('.')[0] >= 10;
+const hasTmpdir = typeof os.tmpdir === 'function';
 
 /**
  * Find project root by searching for package.json going up from cwd.
  */
 function _findProjectRoot(): string {
-  var dir = process.cwd();
+  let dir = process.cwd();
   while (dir !== path.dirname(dir)) {
     if (fs.existsSync(path.join(dir, 'package.json'))) {
       return dir;
@@ -33,7 +33,7 @@ export function tmpdir(): string {
   if (hasTmpdir) {
     return os.tmpdir();
   }
-  var osShim = require('os-shim');
+  const osShim = require('os-shim');
   return osShim.tmpdir();
 }
 
@@ -52,7 +52,7 @@ export function mkdirRecursive(dir: string): void {
   if (hasRecursiveMkdir) {
     fs.mkdirSync(dir, { recursive: true });
   } else {
-    var mkdirp = require('mkdirp-classic');
+    const mkdirp = require('mkdirp-classic');
     mkdirp.sync(dir);
   }
 }
@@ -65,7 +65,7 @@ export function copyFileSync(src: string, dest: string): void {
   if (hasCopyFileSync) {
     fs.copyFileSync(src, dest);
   } else {
-    var copy = require('fs-copy-compat');
+    const copy = require('fs-copy-compat');
     copy.copyFileSync(src, dest);
   }
 }
@@ -78,7 +78,7 @@ export function arrayFind<T>(arr: T[], predicate: (item: T, index: number, arr: 
   if (typeof arr.find === 'function') {
     return arr.find(predicate);
   }
-  for (var i = 0; i < arr.length; i++) {
+  for (let i = 0; i < arr.length; i++) {
     if (predicate(arr[i], i, arr)) return arr[i];
   }
   return undefined;
@@ -103,7 +103,7 @@ function getHomedir(): string {
   if (typeof os.homedir === 'function') {
     return os.homedir();
   }
-  var homedirPolyfill = require('homedir-polyfill');
+  const homedirPolyfill = require('homedir-polyfill');
   return homedirPolyfill();
 }
 
@@ -119,7 +119,7 @@ export function getTestBinaryBin(): string {
  * Check if binaries are available (downloaded by postinstall).
  */
 export function hasTestBinaries(): boolean {
-  var binaryName = process.platform === 'win32' ? 'node.exe' : 'node';
+  const binaryName = process.platform === 'win32' ? 'node.exe' : 'node';
   return fs.existsSync(path.join(getTestBinaryBin(), binaryName));
 }
 
@@ -128,8 +128,8 @@ export function hasTestBinaries(): boolean {
  * Use this for integration tests that need to run through the binary.
  */
 export function getTestBinaryPath(): string {
-  var binaryBin = getTestBinaryBin();
-  var filteredPath = (process.env.PATH || '')
+  const binaryBin = getTestBinaryBin();
+  const filteredPath = (process.env.PATH || '')
     .split(path.delimiter)
     .filter((p) => p.indexOf('.nvu/bin') === -1)
     .join(path.delimiter);
