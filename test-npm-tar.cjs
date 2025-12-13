@@ -1,5 +1,5 @@
 const fs = require('fs');
-const path = require('path');
+const _path = require('path');
 const { spawn } = require('child_process');
 const { validateNpmExtraction } = require('./test-extraction-utils.cjs');
 
@@ -17,7 +17,7 @@ async function testNpmTar() {
     console.log(`Downloading npm ${npmVersion}...`);
     const curl = spawn('curl', ['-L', '-o', fileName, downloadUrl]);
 
-    curl.stdout.on('data', (data) => {
+    curl.stdout.on('data', (_data) => {
       process.stdout.write('.');
     });
 
@@ -53,7 +53,6 @@ async function testNpmTar() {
     const isValid = validateNpmExtraction(extractPath, 'linux');
 
     return isValid;
-
   } catch (error) {
     console.error('Test failed:', error.message);
     return false;
@@ -75,12 +74,14 @@ async function testNpmTar() {
 
 // Run the test if executed directly
 if (require.main === module) {
-  testNpmTar().then(success => {
-    process.exit(success ? 0 : 1);
-  }).catch(error => {
-    console.error('Test failed with exception:', error);
-    process.exit(1);
-  });
+  testNpmTar()
+    .then((success) => {
+      process.exit(success ? 0 : 1);
+    })
+    .catch((error) => {
+      console.error('Test failed with exception:', error);
+      process.exit(1);
+    });
 }
 
 module.exports = { testNpmTar };

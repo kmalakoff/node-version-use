@@ -1,5 +1,5 @@
 const fs = require('fs');
-const path = require('path');
+const _path = require('path');
 const { spawn } = require('child_process');
 const { validateNpmExtraction } = require('./test-extraction-utils.cjs');
 
@@ -17,7 +17,7 @@ async function testNpmFastExtract() {
     console.log(`Downloading npm ${npmVersion}...`);
     const curl = spawn('curl', ['-L', '-o', fileName, downloadUrl]);
 
-    curl.stdout.on('data', (data) => {
+    curl.stdout.on('data', (_data) => {
       process.stdout.write('.');
     });
 
@@ -67,7 +67,6 @@ async function testNpmFastExtract() {
     const isValid = validateNpmExtraction(extractPath);
 
     return isValid;
-
   } catch (error) {
     console.error('Test failed:', error.message);
     return false;
@@ -89,12 +88,14 @@ async function testNpmFastExtract() {
 
 // Run the test if executed directly
 if (require.main === module) {
-  testNpmFastExtract().then(success => {
-    process.exit(success ? 0 : 1);
-  }).catch(error => {
-    console.error('Test failed with exception:', error);
-    process.exit(1);
-  });
+  testNpmFastExtract()
+    .then((success) => {
+      process.exit(success ? 0 : 1);
+    })
+    .catch((error) => {
+      console.error('Test failed with exception:', error);
+      process.exit(1);
+    });
 }
 
 module.exports = { testNpmFastExtract };

@@ -27,7 +27,7 @@ async function testNodeTar() {
     console.log(`Downloading Node.js ${nodeVersion}...`);
     const curl = spawn('curl', ['-L', '-o', downloadPath, downloadUrl]);
 
-    curl.stdout.on('data', (data) => {
+    curl.stdout.on('data', (_data) => {
       process.stdout.write('.');
     });
 
@@ -64,7 +64,6 @@ async function testNodeTar() {
     const isValid = validateNodeExtraction(extractedDir);
 
     return isValid;
-
   } catch (error) {
     console.error('Test failed:', error.message);
     return false;
@@ -83,12 +82,14 @@ async function testNodeTar() {
 
 // Run the test if executed directly
 if (require.main === module) {
-  testNodeTar().then(success => {
-    process.exit(success ? 0 : 1);
-  }).catch(error => {
-    console.error('Test failed with exception:', error);
-    process.exit(1);
-  });
+  testNodeTar()
+    .then((success) => {
+      process.exit(success ? 0 : 1);
+    })
+    .catch((error) => {
+      console.error('Test failed with exception:', error);
+      process.exit(1);
+    });
 }
 
 module.exports = { testNodeTar };

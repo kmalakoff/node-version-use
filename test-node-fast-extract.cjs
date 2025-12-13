@@ -27,7 +27,7 @@ async function testNodeFastExtract() {
     console.log(`Downloading Node.js ${nodeVersion}...`);
     const curl = spawn('curl', ['-L', '-o', downloadPath, downloadUrl]);
 
-    curl.stdout.on('data', (data) => {
+    curl.stdout.on('data', (_data) => {
       process.stdout.write('.');
     });
 
@@ -78,7 +78,6 @@ async function testNodeFastExtract() {
     const isValid = validateNodeExtraction(extractedDir);
 
     return isValid;
-
   } catch (error) {
     console.error('Test failed:', error.message);
     return false;
@@ -97,12 +96,14 @@ async function testNodeFastExtract() {
 
 // Run the test if executed directly
 if (require.main === module) {
-  testNodeFastExtract().then(success => {
-    process.exit(success ? 0 : 1);
-  }).catch(error => {
-    console.error('Test failed with exception:', error);
-    process.exit(1);
-  });
+  testNodeFastExtract()
+    .then((success) => {
+      process.exit(success ? 0 : 1);
+    })
+    .catch((error) => {
+      console.error('Test failed with exception:', error);
+      process.exit(1);
+    });
 }
 
 module.exports = { testNodeFastExtract };
