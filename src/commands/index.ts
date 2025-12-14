@@ -24,7 +24,6 @@ export function isCommand(name: string): boolean {
 
 export function runCommand(name: string, args: string[]): void {
   const cmd = commands[name];
-  if (cmd) {
-    cmd(args);
-  }
+  if (cmd) cmd(args);
+  else console.error(`Unknown command: ${name}`);
 }
