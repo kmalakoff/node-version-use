@@ -14,6 +14,7 @@ import { getTestBinaryBin, getTestBinaryPath, hasTestBinaries, mkdirRecursive, r
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const TMP_DIR = path.join(__dirname, '..', '..', '.tmp', 'binary-test');
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 
 const OPTIONS = {
   encoding: 'utf8' as BufferEncoding,
@@ -158,7 +159,7 @@ describe('binary', () => {
   });
 
   describe('binary routing', () => {
-    const ext = process.platform === 'win32' ? '.exe' : '';
+    const ext = isWindows ? '.exe' : '';
 
     it('npm binary exists and runs', (done) => {
       const binaryPath = path.join(getTestBinaryBin(), `npm${ext}`);

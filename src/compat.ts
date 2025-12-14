@@ -11,13 +11,17 @@ import path from 'path';
 const _require = typeof require === 'undefined' ? _Module.createRequire(import.meta.url) : require;
 
 const hasHomedir = typeof os.homedir === 'function';
-
 export function homedir(): string {
-  if (hasHomedir) {
-    return os.homedir();
-  }
-  const home = _require('homedir-polyfill');
+  if (hasHomedir) return os.homedir();
+  const home = require('homedir-polyfill');
   return home();
+}
+
+const hasTmpdir = typeof os.tmpdir === 'function';
+export function tmpdir(): string {
+  if (hasTmpdir) return os.tmpdir();
+  const osShim = require('os-shim');
+  return osShim.tmpdir();
 }
 
 /**

@@ -4,6 +4,8 @@ import { rmSync } from 'fs-remove-compat';
 import path from 'path';
 import { storagePath } from '../constants.ts';
 
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+
 /**
  * nvu teardown
  *
@@ -13,7 +15,7 @@ export default function teardownCmd(_args: string[]): void {
   const binDir = path.join(storagePath, 'bin');
 
   const binaries = ['node', 'npm', 'npx'];
-  const ext = process.platform === 'win32' ? '.exe' : '';
+  const ext = isWindows ? '.exe' : '';
 
   let removed = 0;
   for (let i = 0; i < binaries.length; i++) {

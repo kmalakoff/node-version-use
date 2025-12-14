@@ -1,13 +1,14 @@
-import { execSync } from 'child_process';
 import exit from 'exit-compat';
 import fs from 'fs';
+import getopts from 'getopts-compat';
+import Module from 'module';
 import path from 'path';
-import url from 'url';
-import { mkdirpSync, readdirWithTypes } from '../compat.ts';
+import { readdirWithTypes } from '../compat.ts';
 import { storagePath } from '../constants.ts';
 import { findInstalledVersions } from '../lib/findInstalledVersions.ts';
 
-const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
+const _require = typeof require === 'undefined' ? Module.createRequire(import.meta.url) : require;
+const { installBinaries, printInstructions } = _require('../assets/installBinaries.cjs');
 
 /**
  * nvu setup [--shims]
@@ -16,45 +17,24 @@ const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : 
  * With --shims: create shims for existing global packages
  */
 export default function setupCmd(args: string[]): void {
-  const binDir = path.join(storagePath, 'bin');
+  const options = getopts(args, { boolean: ['force'] });
 
-  // Create directories
-  if (!fs.existsSync(storagePath)) {
-    mkdirpSync(storagePath);
-  }
-  if (!fs.existsSync(binDir)) {
-    mkdirpSync(binDir);
-  }
-
-  // Check for --shims flag
-  let hasShimsFlag = false;
-  for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--shims') {
-      hasShimsFlag = true;
-      break;
+  installBinaries(options, (err, installed) => {
+    if (err) {
+      console.error(`Setup failed: ${err.message || err}`);
+      exit(1);
+      return;
     }
-  }
 
-  if (hasShimsFlag) {
-    createShimsForGlobalPackages(binDir);
-    return;
-  }
+    printInstructions();
+    if (!installed) console.log('Use --force to reinstall.');
 
-  // Find the postinstall script relative to this module
-  const postinstallPath = path.join(__dirname, '..', '..', '..', 'scripts', 'postinstall.cjs');
-
-  if (fs.existsSync(postinstallPath)) {
-    // Run the postinstall script
-    try {
-      execSync(`node "${postinstallPath}"`, { stdio: 'inherit' });
-    } catch (_err) {
-      // postinstall handles its own errors gracefully
+    if (options.force) {
+      const binDir = path.join(storagePath, 'bin');
+      createShimsForGlobalPackages(binDir);
+      return;
     }
-  } else {
-    console.log('Setup script not found.');
-    console.log('Try reinstalling: npm install -g node-version-use');
-    exit(1);
-  }
+  });
 }
 
 /**
@@ -108,10 +88,7 @@ function createShimsForGlobalPackages(binDir: string): void {
     const name = entry.name;
 
     // Skip our routing shims (node/npm/npx) - don't overwrite them
-    if (name === 'node' || name === 'npm' || name === 'npx') {
-      continue;
-    }
-
+    if (name === 'node' || name === 'npm' || name === 'npx') continue;
     const shimPath = path.join(binDir, name);
 
     // Skip if shim already exists
@@ -133,6 +110,6 @@ function createShimsForGlobalPackages(binDir: string): void {
   }
 
   console.log('');
-  console.log(`Done. Created ${created} shims, skipped ${skipped} (already exist).`);
+  console.log(`Done. Created ${created} shims, skipped ${skipped} (already exists).`);
   exit(0);
 }
