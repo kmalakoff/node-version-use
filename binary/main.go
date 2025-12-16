@@ -48,9 +48,24 @@ func main() {
 		// For nvu CLI, use the latest major installed version
 		version, err = findLatestMajorInstalledVersion()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "nvu error: no Node versions installed\n")
-			fmt.Fprintf(os.Stderr, "\nInstall Node manually first, or use system Node to run:\n")
-			fmt.Fprintf(os.Stderr, "  /usr/bin/node $(which nvu) install 20\n")
+			// Fall back to system node for bootstrapping
+			systemNode := findSystemBinary("node")
+			if systemNode != "" {
+				// Strip ~/.nvu/bin from PATH so child processes (like npm) use system binaries
+				// This prevents chicken-and-egg problems during bootstrapping
+				cleanPath := getPathWithoutNvuBin()
+				err = execBinaryWithEnv(systemNode, os.Args, map[string]string{"PATH": cleanPath})
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "nvu error: failed to exec system node: %s\n", err)
+					os.Exit(1)
+				}
+				return // execBinaryWithEnv replaces the process on Unix
+			}
+			// No system node available
+			fmt.Fprintf(os.Stderr, "nvu error: no Node versions installed and no system Node found in PATH\n")
+			fmt.Fprintf(os.Stderr, "\nTo bootstrap nvu:\n")
+			fmt.Fprintf(os.Stderr, "  1. Install Node.js from https://nodejs.org\n")
+			fmt.Fprintf(os.Stderr, "  2. Run: nvu install 20\n")
 			os.Exit(1)
 		}
 	} else {
@@ -496,7 +511,12 @@ func runNpmAndCreateShims(npmPath string, args []string) {
 	if defaultVersion != "" {
 		versionsDir := filepath.Join(nvuHome, "installed")
 		if resolved, err := resolveInstalledVersion(versionsDir, defaultVersion); err == nil {
-			nodeBinDir = filepath.Join(versionsDir, resolved, "bin")
+			// On Windows, binaries are at root; on Unix, in bin/
+			if runtime.GOOS == "windows" {
+				nodeBinDir = filepath.Join(versionsDir, resolved)
+			} else {
+				nodeBinDir = filepath.Join(versionsDir, resolved, "bin")
+			}
 		}
 	}
 
@@ -550,15 +570,29 @@ func runNpmAndCreateShims(npmPath string, args []string) {
 
 	for _, e := range entries {
 		name := e.Name()
-		// Skip our routing shims (node/npm/npx) - don't overwrite them
-		if name == "node" || name == "npm" || name == "npx" {
+		// Get base name without extension for comparison
+		baseName := getBaseName(name)
+
+		// Skip our routing shims (node/npm/npx/corepack) - don't overwrite them
+		if baseName == "node" || baseName == "npm" || baseName == "npx" || baseName == "corepack" {
 			continue
 		}
 
-		// Create shim by copying the node shim
-		shimDest := filepath.Join(binDir, name)
+		// Skip non-executable files on Windows
 		if runtime.GOOS == "windows" {
-			shimDest = filepath.Join(binDir, name+".exe")
+			ext := strings.ToLower(filepath.Ext(name))
+			if ext != ".exe" && ext != ".cmd" && ext != ".bat" {
+				continue
+			}
+		}
+
+		// Create shim by copying the node shim
+		var shimDest string
+		if runtime.GOOS == "windows" {
+			// Use .exe extension for shim regardless of source extension
+			shimDest = filepath.Join(binDir, baseName+".exe")
+		} else {
+			shimDest = filepath.Join(binDir, name)
 		}
 
 		// Skip if shim already exists
@@ -579,6 +613,15 @@ func runNpmAndCreateShims(npmPath string, args []string) {
 	}
 
 	os.Exit(0)
+}
+
+// getBaseName returns the filename without extension
+func getBaseName(name string) string {
+	ext := filepath.Ext(name)
+	if ext != "" {
+		return name[:len(name)-len(ext)]
+	}
+	return name
 }
 
 // copyFile copies a file from src to dst
@@ -607,7 +650,12 @@ func runNpmAndRemoveShims(npmPath string, args []string) {
 	if defaultVersion != "" {
 		versionsDir := filepath.Join(nvuHome, "installed")
 		if resolved, err := resolveInstalledVersion(versionsDir, defaultVersion); err == nil {
-			nodeBinDir = filepath.Join(versionsDir, resolved, "bin")
+			// On Windows, binaries are at root; on Unix, in bin/
+			if runtime.GOOS == "windows" {
+				nodeBinDir = filepath.Join(versionsDir, resolved)
+			} else {
+				nodeBinDir = filepath.Join(versionsDir, resolved, "bin")
+			}
 		}
 	}
 
@@ -660,14 +708,19 @@ func runNpmAndRemoveShims(npmPath string, args []string) {
 		if binariesAfter[name] {
 			continue // Still exists
 		}
-		if name == "node" || name == "npm" || name == "npx" || name == "corepack" {
+		// Get base name without extension for comparison
+		baseName := getBaseName(name)
+		if baseName == "node" || baseName == "npm" || baseName == "npx" || baseName == "corepack" {
 			continue // Core binaries
 		}
 
 		// Remove the shim
-		shimPath := filepath.Join(binDir, name)
+		var shimPath string
 		if runtime.GOOS == "windows" {
-			shimPath = filepath.Join(binDir, name+".exe")
+			// On Windows, shims are .exe files named after the base name
+			shimPath = filepath.Join(binDir, baseName+".exe")
+		} else {
+			shimPath = filepath.Join(binDir, name)
 		}
 
 		if err := os.Remove(shimPath); err == nil {
@@ -677,47 +730,135 @@ func runNpmAndRemoveShims(npmPath string, args []string) {
 	os.Exit(0)
 }
 
-// findSystemBinary looks for a system-installed binary (not the nvu binary)
+// findSystemBinary looks for a system-installed binary in PATH (not the nvu binary)
 func findSystemBinary(name string) string {
 	// Get our own executable path to avoid finding ourselves
 	selfPath, _ := os.Executable()
 	selfDir := filepath.Dir(selfPath)
 
-	// Common system binary locations
-	candidates := []string{
-		"/usr/local/bin/" + name,
-		"/usr/bin/" + name,
-		"/opt/homebrew/bin/" + name,
+	// Build the nvu bin path pattern for exclusion (OS-appropriate separators)
+	nvuBinPattern := filepath.Join(".nvu", "bin")
+
+	// Search PATH for the binary
+	pathEnv := os.Getenv("PATH")
+	if pathEnv == "" {
+		return ""
 	}
 
-	// Also check PATH, but skip our own directory
-	if pathEnv := os.Getenv("PATH"); pathEnv != "" {
-		for _, dir := range strings.Split(pathEnv, string(os.PathListSeparator)) {
-			// Skip our own directory
-			if dir == selfDir {
-				continue
-			}
-			candidate := filepath.Join(dir, name)
-			if runtime.GOOS == "windows" {
-				candidate = filepath.Join(dir, name+".exe")
-			}
-			// Check if it exists and is not a symlink to us
-			if info, err := os.Stat(candidate); err == nil && !info.IsDir() {
-				// Make sure it's not our binary
-				realPath, _ := filepath.EvalSymlinks(candidate)
-				if realPath != selfPath && !strings.Contains(realPath, ".nvu/bin") {
-					return candidate
-				}
-			}
+	for _, dir := range strings.Split(pathEnv, string(os.PathListSeparator)) {
+		if dir == "" {
+			continue
 		}
-	}
 
-	// Check explicit candidates
-	for _, candidate := range candidates {
-		if info, err := os.Stat(candidate); err == nil && !info.IsDir() {
-			return candidate
+		// Skip our own directory (case-insensitive on Windows)
+		if pathsEqual(dir, selfDir) {
+			continue
 		}
+
+		// Build candidate path with appropriate extension
+		candidate := filepath.Join(dir, name)
+		if runtime.GOOS == "windows" {
+			candidate = filepath.Join(dir, name+".exe")
+		}
+
+		// Check if it exists and is executable
+		info, err := os.Stat(candidate)
+		if err != nil || info.IsDir() {
+			continue
+		}
+
+		// Make sure it's not our binary (resolve symlinks)
+		realPath, _ := filepath.EvalSymlinks(candidate)
+		if pathsEqual(realPath, selfPath) {
+			continue
+		}
+
+		// Skip anything in .nvu/bin
+		if strings.Contains(realPath, nvuBinPattern) {
+			continue
+		}
+
+		return candidate
 	}
 
 	return ""
+}
+
+// pathsEqual compares two paths, case-insensitive on Windows
+func pathsEqual(a, b string) bool {
+	if runtime.GOOS == "windows" {
+		return strings.EqualFold(a, b)
+	}
+	return a == b
+}
+
+// getPathWithoutNvuBin returns PATH with ~/.nvu/bin removed
+// This is used during bootstrapping to ensure child processes use system binaries
+func getPathWithoutNvuBin() string {
+	nvuBinPattern := filepath.Join(".nvu", "bin")
+	pathEnv := os.Getenv("PATH")
+	if pathEnv == "" {
+		return ""
+	}
+
+	var cleanDirs []string
+	for _, dir := range strings.Split(pathEnv, string(os.PathListSeparator)) {
+		if dir == "" {
+			continue
+		}
+		// Skip directories containing .nvu/bin (or .nvu\bin on Windows)
+		if strings.Contains(dir, nvuBinPattern) {
+			continue
+		}
+		cleanDirs = append(cleanDirs, dir)
+	}
+
+	return strings.Join(cleanDirs, string(os.PathListSeparator))
+}
+
+// execBinaryWithEnv replaces the current process with the target binary, with custom env vars
+func execBinaryWithEnv(binaryPath string, args []string, envOverrides map[string]string) error {
+	// Build environment with overrides
+	env := os.Environ()
+	for key, value := range envOverrides {
+		// Remove existing key if present
+		newEnv := make([]string, 0, len(env))
+		keyPrefix := key + "="
+		for _, e := range env {
+			if !strings.HasPrefix(e, keyPrefix) && !strings.HasPrefix(strings.ToUpper(e), strings.ToUpper(keyPrefix)) {
+				newEnv = append(newEnv, e)
+			}
+		}
+		// Add new value
+		newEnv = append(newEnv, key+"="+value)
+		env = newEnv
+	}
+
+	if runtime.GOOS == "windows" {
+		return execWindowsWithEnv(binaryPath, args, env)
+	}
+	return execUnixWithEnv(binaryPath, args, env)
+}
+
+func execUnixWithEnv(binaryPath string, args []string, env []string) error {
+	args[0] = binaryPath
+	return syscall.Exec(binaryPath, args, env)
+}
+
+func execWindowsWithEnv(binaryPath string, args []string, env []string) error {
+	cmd := exec.Command(binaryPath, args[1:]...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Env = env
+
+	err := cmd.Run()
+	if err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			os.Exit(exitError.ExitCode())
+		}
+		return err
+	}
+	os.Exit(0)
+	return nil
 }
