@@ -85,10 +85,11 @@ export default function worker(versionExpression: string, command: string, args:
 
       versions.forEach((version: string) => {
         queue.defer((cb) => {
-          installVersion(version, installOptions, (_err, installs) => {
+          installVersion(version, installOptions, (err, installs) => {
             const install = installs && installs.length === 1 ? installs[0] : null;
-            if (!install) {
-              results.push({ install, command, version, error: new Error(`Unexpected version results for version ${version}. Install ${JSON.stringify(installs)}`), result: null });
+            if (err || !install) {
+              const error = err || new Error(`Unexpected version results for version ${version}. Install ${JSON.stringify(installs)}`);
+              results.push({ install, command, version, error, result: null });
               return cb();
             }
             const spawnOptions = createSpawnOptions(install.installPath, options as SpawnOptions);
