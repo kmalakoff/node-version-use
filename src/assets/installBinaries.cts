@@ -85,12 +85,9 @@ function copyFileSync(src: string, dest: string): void {
 /**
  * Atomic rename with fallback to copy+delete for cross-device moves
  */
-function atomicRename(src: string, dest: string, callback: Callback): void {
+function atomicRename(src: string, dest: string, callback: Callback) {
   fs.rename(src, dest, (err) => {
-    if (!err) {
-      callback(null);
-      return;
-    }
+    if (!err) return callback(null);
 
     // Cross-device link error - fall back to copy + delete
     if ((err as NodeJS.ErrnoException).code === 'EXDEV') {
@@ -111,7 +108,7 @@ function atomicRename(src: string, dest: string, callback: Callback): void {
 /**
  * Extract archive to a directory (callback-based)
  */
-function extractArchive(archivePath: string, dest: string, callback: Callback): void {
+function extractArchive(archivePath: string, dest: string, callback: Callback) {
   const Iterator = isWindows ? require('zip-iterator') : require('tar-iterator');
   const stream = isWindows ? fs.createReadStream(archivePath) : fs.createReadStream(archivePath).pipe(require('zlib').createGunzip());
   let iterator = new Iterator(stream);
@@ -151,7 +148,7 @@ function extractArchive(archivePath: string, dest: string, callback: Callback): 
  * 2. Copy binary to temp files in destination directory
  * 3. Atomic rename temp files to final names
  */
-function extractAndInstall(archivePath: string, destDir: string, binaryName: string, callback: Callback): void {
+function extractAndInstall(archivePath: string, destDir: string, binaryName: string, callback: Callback) {
   const ext = isWindows ? '.exe' : '';
 
   // Create temp extraction directory
@@ -240,7 +237,7 @@ function extractAndInstall(archivePath: string, destDir: string, binaryName: str
  * Print setup instructions
  */
 module.exports.printInstructions = function printInstructions(): void {
-  const nvuBinPath = path.join(storagePath, 'bin');
+  const _nvuBinPath = path.join(storagePath, 'bin');
 
   console.log('nvu binaries installed in ~/.nvu/bin/');
 
@@ -255,11 +252,14 @@ module.exports.printInstructions = function printInstructions(): void {
   console.log('============================================================');
   console.log('');
   if (isWindows) {
-    console.log('  PowerShell (add to $PROFILE):');
-    console.log(`    $env:PATH = "${nvuBinPath};$env:PATH"`);
+    console.log('  # Edit your PowerShell profile');
+    console.log('  # Open with: notepad $PROFILE');
+    console.log('  # Add this line:');
+    console.log('    $env:PATH = "$HOME\\.nvu\\bin;$env:APPDATA\\npm;$env:PATH"');
     console.log('');
-    console.log('  CMD (run as administrator):');
-    console.log(`    setx PATH "${nvuBinPath};%PATH%"`);
+    console.log('  # This adds:');
+    console.log('  #   ~/.nvu/bin     - node/npm version switching shims');
+    console.log('  #   %APPDATA%/npm  - globally installed npm packages (like nvu)');
   } else {
     console.log('  # For bash (~/.bashrc):');
     console.log('   echo \'export PATH="$HOME/.nvu/bin:$PATH"\' >> ~/.bashrc');
@@ -326,10 +326,7 @@ module.exports.installBinaries = function installBinaries(options, callback): vo
 
     extractAndInstall(tempPath, binDir, extractedBinaryName, (err) => {
       removeIfExistsSync(tempPath);
-      if (err) {
-        callback(err);
-        return;
-      }
+      if (err) return callback(err);
 
       // save binary version for upgrade checks
       fs.writeFileSync(path.join(binDir, 'version.txt'), BINARY_VERSION, 'utf8');

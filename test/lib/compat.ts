@@ -9,31 +9,10 @@ import path from 'path';
 
 const hasCopyFileSync = typeof fs.copyFileSync === 'function';
 const hasRecursiveMkdir = +process.versions.node.split('.')[0] >= 10;
-const hasTmpdir = typeof os.tmpdir === 'function';
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 
-/**
- * Find project root by searching for package.json going up from cwd.
- */
-function _findProjectRoot(): string {
-  let dir = process.cwd();
-  while (dir !== path.dirname(dir)) {
-    if (fs.existsSync(path.join(dir, 'package.json'))) {
-      return dir;
-    }
-    dir = path.dirname(dir);
-  }
-  return process.cwd();
-}
-
-/**
- * Get the system temp directory.
- * Uses native os.tmpdir on Node 0.10+, falls back to os-shim.
- */
 export function tmpdir(): string {
-  if (hasTmpdir) return os.tmpdir();
-  const osShim = require('os-shim');
-  return osShim.tmpdir();
+  return typeof os.tmpdir === 'function' ? os.tmpdir() : require('os-shim').tmpdir();
 }
 
 /**

@@ -33,6 +33,13 @@ func main() {
 	// Remove .exe suffix on Windows
 	execName = strings.TrimSuffix(execName, ".exe")
 
+	// If this binary is named 'nvu', we need to find and run the actual nvu CLI
+	// This handles the case where an nvu shim was incorrectly created
+	if execName == "nvu" {
+		runNvuCli()
+		return
+	}
+
 	// Core binaries that always exist in Node installations
 	isCoreNodeBinary := execName == "node" || execName == "npm" || execName == "npx"
 
@@ -573,8 +580,8 @@ func runNpmAndCreateShims(npmPath string, args []string) {
 		// Get base name without extension for comparison
 		baseName := getBaseName(name)
 
-		// Skip our routing shims (node/npm/npx/corepack) - don't overwrite them
-		if baseName == "node" || baseName == "npm" || baseName == "npx" || baseName == "corepack" {
+		// Skip our routing shims (node/npm/npx/corepack/nvu) - don't overwrite them
+		if baseName == "node" || baseName == "npm" || baseName == "npx" || baseName == "corepack" || baseName == "nvu" {
 			continue
 		}
 
@@ -710,7 +717,7 @@ func runNpmAndRemoveShims(npmPath string, args []string) {
 		}
 		// Get base name without extension for comparison
 		baseName := getBaseName(name)
-		if baseName == "node" || baseName == "npm" || baseName == "npx" || baseName == "corepack" {
+		if baseName == "node" || baseName == "npm" || baseName == "npx" || baseName == "corepack" || baseName == "nvu" {
 			continue // Core binaries
 		}
 
@@ -861,4 +868,139 @@ func execWindowsWithEnv(binaryPath string, args []string, env []string) error {
 	}
 	os.Exit(0)
 	return nil
+}
+
+// runNvuCli handles the case where this binary is named 'nvu'
+// It finds the actual nvu CLI script and runs it via node
+func runNvuCli() {
+	// Find a node binary to use
+	nodePath, err := findNodeForNvu()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "nvu error: %s\n", err)
+		os.Exit(1)
+	}
+
+	// Find the nvu CLI script
+	nvuScript, err := findNvuScript()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "nvu error: %s\n", err)
+		os.Exit(1)
+	}
+
+	// Build args: node <script> <original args minus argv0>
+	args := append([]string{nodePath, nvuScript}, os.Args[1:]...)
+
+	// Execute node with the script
+	err = execBinary(nodePath, args)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "nvu error: failed to exec node: %s\n", err)
+		os.Exit(1)
+	}
+}
+
+// findNodeForNvu finds a node binary to use for running the nvu CLI
+func findNodeForNvu() (string, error) {
+	nvuHome, err := getNvuHome()
+	if err != nil {
+		return "", err
+	}
+
+	// Try to find node in installed versions
+	versionsDir := filepath.Join(nvuHome, "installed")
+	entries, err := os.ReadDir(versionsDir)
+	if err == nil {
+		for _, entry := range entries {
+			if entry.IsDir() {
+				var nodePath string
+				if runtime.GOOS == "windows" {
+					nodePath = filepath.Join(versionsDir, entry.Name(), "node.exe")
+				} else {
+					nodePath = filepath.Join(versionsDir, entry.Name(), "bin", "node")
+				}
+				if _, err := os.Stat(nodePath); err == nil {
+					return nodePath, nil
+				}
+			}
+		}
+	}
+
+	// Fall back to system node
+	systemNode := findSystemBinary("node")
+	if systemNode != "" {
+		return systemNode, nil
+	}
+
+	return "", fmt.Errorf("no Node.js found - install with: nvu install 20")
+}
+
+// findNvuScript finds the nvu CLI script location
+func findNvuScript() (string, error) {
+	// First, try to find nvu in npm's global prefix
+	// Run npm to get the global prefix
+	npmPath := findSystemBinary("npm")
+	if npmPath == "" {
+		// Try to find npm in our installed versions
+		nvuHome, err := getNvuHome()
+		if err == nil {
+			versionsDir := filepath.Join(nvuHome, "installed")
+			entries, _ := os.ReadDir(versionsDir)
+			for _, entry := range entries {
+				if entry.IsDir() {
+					var candidate string
+					if runtime.GOOS == "windows" {
+						candidate = filepath.Join(versionsDir, entry.Name(), "npm.cmd")
+					} else {
+						candidate = filepath.Join(versionsDir, entry.Name(), "bin", "npm")
+					}
+					if _, err := os.Stat(candidate); err == nil {
+						npmPath = candidate
+						break
+					}
+				}
+			}
+		}
+	}
+
+	if npmPath != "" {
+		// Get npm prefix
+		cmd := exec.Command(npmPath, "prefix", "-g")
+		output, err := cmd.Output()
+		if err == nil {
+			prefix := strings.TrimSpace(string(output))
+			var scriptPath string
+			if runtime.GOOS == "windows" {
+				scriptPath = filepath.Join(prefix, "node_modules", "node-version-use", "bin", "cli.js")
+			} else {
+				scriptPath = filepath.Join(prefix, "lib", "node_modules", "node-version-use", "bin", "cli.js")
+			}
+			if _, err := os.Stat(scriptPath); err == nil {
+				return scriptPath, nil
+			}
+		}
+	}
+
+	// Try common npm global locations
+	homeDir, _ := os.UserHomeDir()
+	possiblePaths := []string{}
+
+	if runtime.GOOS == "windows" {
+		possiblePaths = append(possiblePaths,
+			filepath.Join(os.Getenv("APPDATA"), "npm", "node_modules", "node-version-use", "bin", "cli.js"),
+			filepath.Join(homeDir, "AppData", "Roaming", "npm", "node_modules", "node-version-use", "bin", "cli.js"),
+		)
+	} else {
+		possiblePaths = append(possiblePaths,
+			filepath.Join(homeDir, ".npm-global", "lib", "node_modules", "node-version-use", "bin", "cli.js"),
+			"/usr/local/lib/node_modules/node-version-use/bin/cli.js",
+			"/usr/lib/node_modules/node-version-use/bin/cli.js",
+		)
+	}
+
+	for _, p := range possiblePaths {
+		if _, err := os.Stat(p); err == nil {
+			return p, nil
+		}
+	}
+
+	return "", fmt.Errorf("nvu CLI script not found - reinstall with: npm install -g node-version-use")
 }

@@ -29,10 +29,7 @@ function loadModule(moduleName, callback) {
 }
 
 export default function loadNodeVersionInstall(callback: (err: Error | null, installVersion: InstallVersionFn) => void): void {
-  if (cached !== undefined) {
-    callback(null, cached);
-    return;
-  }
+  if (cached !== undefined) return callback(null, cached);
 
   installModule(moduleName, nodeModules, {}, (err) => {
     if (err) return callback(err, null);
