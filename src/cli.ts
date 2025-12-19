@@ -55,7 +55,7 @@ function printHelp(name: string): void {
   console.log(`  ${name} local 18                    Create .nvmrc with Node 18`);
 }
 
-export default (argv: string[], name: string): undefined => {
+export default (argv: string[], name: string): void => {
   const options = getopts(argv, {
     alias: { range: 'r', desc: 'd', expanded: 'e', streaming: 's', silent: 'si', version: 'v', help: 'h' },
     default: { range: 'major,even', interactive: true },
@@ -98,7 +98,7 @@ export default (argv: string[], name: string): undefined => {
   }
 
   options.stdio = 'inherit'; // pass through stdio
-  run(args[0], args[1], args.slice(2), options as unknown as UseOptions, (err: UseError, results: UseResult[]): undefined => {
+  run(args[0], args[1], args.slice(2), options as unknown as UseOptions, (err: UseError, results: UseResult[]): void => {
     if (err && !err.results) {
       console.log(err.message);
       exit(ERROR_CODE);

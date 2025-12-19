@@ -65,10 +65,7 @@ function removeIfExistsSync(filePath) {
  * Atomic rename with fallback to copy+delete for cross-device moves
  */ function atomicRename(src, dest, callback) {
     fs.rename(src, dest, function(err) {
-        if (!err) {
-            callback(null);
-            return;
-        }
+        if (!err) return callback(null);
         // Cross-device link error - fall back to copy + delete
         if (err.code === 'EXDEV') {
             try {
@@ -199,7 +196,7 @@ function removeIfExistsSync(filePath) {
 /**
  * Print setup instructions
  */ module.exports.printInstructions = function printInstructions() {
-    var nvuBinPath = path.join(storagePath, 'bin');
+    var _nvuBinPath = path.join(storagePath, 'bin');
     console.log('nvu binaries installed in ~/.nvu/bin/');
     var pathKey = envPathKey();
     var envPath = process.env[pathKey] || '';
@@ -211,11 +208,14 @@ function removeIfExistsSync(filePath) {
     console.log('============================================================');
     console.log('');
     if (isWindows) {
-        console.log('  PowerShell (add to $PROFILE):');
-        console.log('    $env:PATH = "'.concat(nvuBinPath, ';$env:PATH"'));
+        console.log('  # Edit your PowerShell profile');
+        console.log('  # Open with: notepad $PROFILE');
+        console.log('  # Add this line:');
+        console.log('    $env:PATH = "$HOME\\.nvu\\bin;$env:APPDATA\\npm;$env:PATH"');
         console.log('');
-        console.log('  CMD (run as administrator):');
-        console.log('    setx PATH "'.concat(nvuBinPath, ';%PATH%"'));
+        console.log('  # This adds:');
+        console.log('  #   ~/.nvu/bin     - node/npm version switching shims');
+        console.log('  #   %APPDATA%/npm  - globally installed npm packages (like nvu)');
     } else {
         console.log('  # For bash (~/.bashrc):');
         console.log('   echo \'export PATH="$HOME/.nvu/bin:$PATH"\' >> ~/.bashrc');
@@ -270,10 +270,7 @@ function removeIfExistsSync(filePath) {
         console.log('Extracting binary...');
         extractAndInstall(tempPath, binDir, extractedBinaryName, function(err) {
             removeIfExistsSync(tempPath);
-            if (err) {
-                callback(err);
-                return;
-            }
+            if (err) return callback(err);
             // save binary version for upgrade checks
             fs.writeFileSync(path.join(binDir, 'version.txt'), BINARY_VERSION, 'utf8');
             console.log('Binary installed successfully!');

@@ -48,14 +48,14 @@
     "version": "tsds version"
   },
   "dependencies": {
-    "cross-spawn-cb": "^2.0.0",
+    "cross-spawn-cb": "^3.0.0",
     "env-path-key": "^1.0.0",
     "exit-compat": "^1.0.0",
     "fs-remove-compat": "^1.0.0",
     "get-file-compat": "^2.0.0",
     "getopts-compat": "^2.2.6",
     "homedir-polyfill": "^1.0.3",
-    "install-module-linked": "^1.3.17",
+    "install-module-linked": "^1.3.16",
     "mkdirp-classic": "^0.5.2",
     "module-root-sync": "^2.0.2",
     "node-resolve-versions": "^1.0.0",
@@ -80,7 +80,7 @@
     "os-shim": "^0.1.0",
     "pinkie-promise": "*",
     "ts-dev-stack": "*",
-    "tsds-config": "*"
+    "tsds-config": "^1.0.4"
   },
   "engines": {
     "node": ">=0.8"

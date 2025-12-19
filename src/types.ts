@@ -25,4 +25,4 @@ export interface Options {
 }
 export type UseOptions = Options & InstallOptions & VersionOptions & SpawnOptions;
 
-export type UseCallback = (err?: UseError | Error, results?: UseResult[]) => undefined;
+export type UseCallback = (err?: UseError | Error, results?: UseResult[]) => void;

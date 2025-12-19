@@ -59,16 +59,13 @@ function resolveCommand(command: string, args: string[]): { command: string; arg
   return { command, args };
 }
 
-export default function worker(versionExpression: string, command: string, args: string[], options: UseOptions, callback: UseCallback): undefined {
+export default function worker(versionExpression: string, command: string, args: string[], options: UseOptions, callback: UseCallback): void {
   // Load node-version-install lazily
   loadNodeVersionInstall((loadErr, installVersion) => {
     if (loadErr) return callback(loadErr);
 
     resolveVersions(versionExpression, options as VersionOptions, (err?: Error, versions?: string[]) => {
-      if (err) {
-        callback(err);
-        return;
-      }
+      if (err) return callback(err);
       if (!versions.length) {
         callback(new Error(`No versions found from expression: ${versionExpression}`));
         return;
@@ -95,7 +92,7 @@ export default function worker(versionExpression: string, command: string, args:
             const spawnOptions = createSpawnOptions(install.installPath, options as SpawnOptions);
             const prefix = install.version;
 
-            function next(err?, res?): undefined {
+            function next(err?, res?): void {
               if (err && err.message.indexOf('ExperimentalWarning') >= 0) {
                 res = err;
                 err = null;
