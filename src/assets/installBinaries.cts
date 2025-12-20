@@ -50,6 +50,48 @@ function removeIfExistsSync(filePath: string): void {
 }
 
 /**
+ * On Windows, rename a file out of the way instead of deleting.
+ * This works even if the file is currently running.
+ */
+function moveOutOfWay(filePath: string): void {
+  if (!fs.existsSync(filePath)) return;
+
+  const timestamp = Date.now();
+  const oldPath = `${filePath}.old-${timestamp}`;
+
+  try {
+    fs.renameSync(filePath, oldPath);
+  } catch (_e) {
+    // If rename fails, try delete as fallback (works on Unix)
+    try {
+      fs.unlinkSync(filePath);
+    } catch (_e2) {
+      // ignore - will fail on atomic rename instead
+    }
+  }
+}
+
+/**
+ * Clean up old .old-* files from previous installs
+ */
+function cleanupOldFiles(dir: string): void {
+  try {
+    const entries = fs.readdirSync(dir);
+    for (const entry of entries) {
+      if (entry.includes('.old-')) {
+        try {
+          fs.unlinkSync(path.join(dir, entry));
+        } catch (_e) {
+          // ignore - file may still be in use
+        }
+      }
+    }
+  } catch (_e) {
+    // ignore if dir doesn't exist
+  }
+}
+
+/**
  * Get the platform-specific archive base name (without extension)
  */
 function getArchiveBaseName(): string | null {
@@ -218,8 +260,8 @@ function extractAndInstall(archivePath: string, destDir: string, binaryName: str
       const tempDest = path.join(destDir, `${name}.tmp-${timestamp}${ext}`);
       const finalDest = path.join(destDir, `${name}${ext}`);
 
-      // Remove existing file if present (for atomic replacement)
-      removeIfExistsSync(finalDest);
+      // Move existing file out of the way (works even if running on Windows)
+      moveOutOfWay(finalDest);
 
       atomicRename(tempDest, finalDest, (err) => {
         if (err && !renameError) {
@@ -309,6 +351,9 @@ module.exports.installBinaries = function installBinaries(options, callback): vo
   // Create directories
   mkdirp.sync(storagePath);
   mkdirp.sync(binDir);
+
+  // Clean up old .old-* files from previous installs
+  cleanupOldFiles(binDir);
 
   const downloadUrl = `https://github.com/${GITHUB_REPO}/releases/download/binary-v${BINARY_VERSION}/${archiveBaseName}${isWindows ? '.zip' : '.tar.gz'}`;
   const tempPath = path.join(tmpdir(), `nvu-binary-${Date.now()}${isWindows ? '.zip' : '.tar.gz'}`);
