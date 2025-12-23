@@ -1,6 +1,6 @@
 {
   "name": "node-version-use",
-  "version": "2.1.10",
+  "version": "2.3.0",
   "description": "Cross-platform solution for using multiple versions of node. Useful for compatibility testing",
   "keywords": [
     "node",
@@ -59,6 +59,7 @@
     "mkdirp-classic": "^0.5.2",
     "module-root-sync": "^2.0.2",
     "node-resolve-versions": "^1.0.0",
+    "node-version-install": "^1.0.5",
     "node-version-utils": "^1.0.2",
     "queue-cb": "^1.0.0",
     "resolve-bin-sync": "^1.0.12",
@@ -75,7 +76,6 @@
     "fs-remove-compat": "^1.0.0",
     "is-version": "^1.0.9",
     "mkdirp-classic": "^0.5.2",
-    "node-version-install": "^1.0.5",
     "node-version-use": "*",
     "os-shim": "^0.1.0",
     "pinkie-promise": "*",
