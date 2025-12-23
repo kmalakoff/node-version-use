@@ -24,7 +24,6 @@ export function tmpdir(): string {
  * - Falls back to lastIndexOf on Node 0.8-3.x
  */
 const hasEndsWith = typeof String.prototype.endsWith === 'function';
-
 export function stringEndsWith(str: string, search: string, position?: number): boolean {
   if (hasEndsWith) {
     return str.endsWith(search, position);

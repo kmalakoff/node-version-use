@@ -37,6 +37,59 @@ function removeIfExistsSync(filePath) {
     }
 }
 /**
+ * On Windows, rename a file out of the way instead of deleting.
+ * This works even if the file is currently running.
+ */ function moveOutOfWay(filePath) {
+    if (!fs.existsSync(filePath)) return;
+    var timestamp = Date.now();
+    var oldPath = "".concat(filePath, ".old-").concat(timestamp);
+    try {
+        fs.renameSync(filePath, oldPath);
+    } catch (_e) {
+        // If rename fails, try delete as fallback (works on Unix)
+        try {
+            fs.unlinkSync(filePath);
+        } catch (_e2) {
+        // ignore - will fail on atomic rename instead
+        }
+    }
+}
+/**
+ * Clean up old .old-* files from previous installs
+ */ function cleanupOldFiles(dir) {
+    try {
+        var entries = fs.readdirSync(dir);
+        var _iteratorNormalCompletion = true, _didIteratorError = false, _iteratorError = undefined;
+        try {
+            for(var _iterator = entries[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true){
+                var entry = _step.value;
+                if (entry.includes('.old-')) {
+                    try {
+                        fs.unlinkSync(path.join(dir, entry));
+                    } catch (_e) {
+                    // ignore - file may still be in use
+                    }
+                }
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally{
+            try {
+                if (!_iteratorNormalCompletion && _iterator.return != null) {
+                    _iterator.return();
+                }
+            } finally{
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
+        }
+    } catch (_e) {
+    // ignore if dir doesn't exist
+    }
+}
+/**
  * Get the platform-specific archive base name (without extension)
  */ function getArchiveBaseName() {
     var platform = process.platform, arch = process.arch;
@@ -181,8 +234,8 @@ function removeIfExistsSync(filePath) {
             var name = binaries[index];
             var tempDest = path.join(destDir, "".concat(name, ".tmp-").concat(timestamp).concat(ext));
             var finalDest = path.join(destDir, "".concat(name).concat(ext));
-            // Remove existing file if present (for atomic replacement)
-            removeIfExistsSync(finalDest);
+            // Move existing file out of the way (works even if running on Windows)
+            moveOutOfWay(finalDest);
             atomicRename(tempDest, finalDest, function(err) {
                 if (err && !renameError) {
                     renameError = err;
@@ -258,6 +311,8 @@ function removeIfExistsSync(filePath) {
     // Create directories
     mkdirp.sync(storagePath);
     mkdirp.sync(binDir);
+    // Clean up old .old-* files from previous installs
+    cleanupOldFiles(binDir);
     var downloadUrl = "https://github.com/".concat(GITHUB_REPO, "/releases/download/binary-v").concat(BINARY_VERSION, "/").concat(archiveBaseName).concat(isWindows ? '.zip' : '.tar.gz');
     var tempPath = path.join(tmpdir(), "nvu-binary-".concat(Date.now()).concat(isWindows ? '.zip' : '.tar.gz'));
     console.log("Downloading binary for ".concat(process.platform, "-").concat(process.arch, "..."));
