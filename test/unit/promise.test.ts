@@ -15,7 +15,7 @@ const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process
 const NODE = isWindows ? 'node.exe' : 'node';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
-const TMP_DIR = path.join(path.join(__dirname, '..', '..', '.tmp', 'promise'));
+const TMP_DIR = path.join(__dirname, '..', '..', '.tmp', 'promise');
 const OPTIONS = {
   storagePath: TMP_DIR,
   encoding: 'utf8' as BufferEncoding,

@@ -3,7 +3,7 @@ import type { InstallOptions, InstallResult } from 'node-version-install';
 import path from 'path';
 import url from 'url';
 
-const _dirname = path.dirname(typeof __dirname !== 'undefined' ? __dirname : url.fileURLToPath(import.meta.url));
+const _dirname = path.dirname(typeof __filename === 'undefined' ? url.fileURLToPath(import.meta.url) : __filename);
 const nodeModules = path.join(_dirname, '..', '..', '..', 'node_modules');
 const moduleName = 'node-version-install';
 

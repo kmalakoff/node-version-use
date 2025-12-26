@@ -8,40 +8,40 @@ import { safeRm } from 'fs-remove-compat';
 import path from 'path';
 import url from 'url';
 
-import { getFilteredPath, mkdirRecursive, rmRecursive } from '../lib/compat.ts';
+import { getTestBinaryPath, hasTestBinaries, mkdirRecursive, rmRecursive } from '../lib/compat.ts';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.js');
 const TMP_DIR = path.join(__dirname, '..', '..', '.tmp', 'commands');
-const _isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 
 const OPTIONS = {
   encoding: 'utf8' as BufferEncoding,
   env: {
     ...process.env,
-    PATH: getFilteredPath(), // Remove ~/.nvu/bin to use system node
-    NVU_HOME: TMP_DIR, // Override nvu home for testing
+    PATH: getTestBinaryPath(),
+    NVU_HOME: TMP_DIR,
   },
 };
 
 describe('commands', () => {
-  before((cb) => {
-    safeRm(TMP_DIR, () => {
-      mkdirRecursive(TMP_DIR);
-      mkdirRecursive(path.join(TMP_DIR, 'installed'));
-      cb();
-    });
+  before(function () {
+    if (!hasTestBinaries()) {
+      console.log('Binaries not found. Run: npm install (postinstall downloads from releases)');
+      this.skip();
+      return;
+    }
+
+    if (fs.existsSync(TMP_DIR)) rmRecursive(TMP_DIR);
+    mkdirRecursive(TMP_DIR);
   });
 
   after((cb) => safeRm(TMP_DIR, cb));
 
   describe('default', () => {
     it('shows no default when not set', (done) => {
-      spawn(CLI, ['default'], OPTIONS, (err, res) => {
-        if (err) {
-          // Expected - no default set
-          assert.ok(res.stdout.indexOf('No default') >= 0 || res.stderr.indexOf('No default') >= 0);
-        }
+      spawn(CLI, ['default'], OPTIONS, (err) => {
+        if (err) return done(err);
         done();
       });
     });
@@ -51,8 +51,8 @@ describe('commands', () => {
       // Manually create default file to test reading
       fs.writeFileSync(defaultPath, '20');
 
-      spawn(CLI, ['default'], OPTIONS, (_err, res) => {
-        // Should show the default
+      spawn(CLI, ['default'], OPTIONS, (err, res) => {
+        if (err) return done(err);
         assert.ok(res.stdout.indexOf('20') >= 0);
         done();
       });
@@ -71,7 +71,7 @@ describe('commands', () => {
       }
 
       spawn(CLI, ['default', '18'], OPTIONS, (err, res) => {
-        assert.ok(!err, `Should not error: ${err ? err.message : ''}`);
+        if (err) return done(err);
         assert.ok(res.stdout.indexOf('v18.20.0') >= 0, 'Should resolve to highest matching version');
         // Verify file contains exact version
         const content = fs.readFileSync(defaultPath, 'utf8').trim();
@@ -92,7 +92,7 @@ describe('commands', () => {
       }
 
       spawn(CLI, ['default', '20'], OPTIONS, (err, res) => {
-        assert.ok(!err, `Should not error: ${err ? err.message : ''}`);
+        if (err) return done(err);
         assert.ok(res.stdout.indexOf('v20.10.0') >= 0, 'Should resolve to v20.10.0 (semver highest)');
         const content = fs.readFileSync(defaultPath, 'utf8').trim();
         assert.strictEqual(content, 'v20.10.0', 'Default should be v20.10.0 not v20.9.0');
@@ -109,11 +109,8 @@ describe('commands', () => {
       const testDir = path.join(TMP_DIR, 'test-project');
       mkdirRecursive(testDir);
 
-      spawn(CLI, ['local', '18'], { ...OPTIONS, cwd: testDir }, (err, res) => {
-        if (err && (!res || !res.stdout)) {
-          // Debug: show what error occurred
-          return done(new Error(`local command failed: ${err.message || err}${res && res.stderr ? ` stderr: ${res.stderr}` : ''}`));
-        }
+      spawn(CLI, ['local', '18'], { ...OPTIONS, cwd: testDir }, (err, _res) => {
+        if (err) return done(err);
         const nvmrcPath = path.join(testDir, '.nvmrc');
         assert.ok(fs.existsSync(nvmrcPath), '.nvmrc should be created');
         const content = fs.readFileSync(nvmrcPath, 'utf8').trim();
@@ -126,10 +123,8 @@ describe('commands', () => {
       const testDir = path.join(TMP_DIR, 'test-project-nvurc');
       mkdirRecursive(testDir);
 
-      spawn(CLI, ['local', '20', '--nvurc'], { ...OPTIONS, cwd: testDir }, (err, res) => {
-        if (err && (!res || !res.stdout)) {
-          return done(new Error(`local --nvurc command failed: ${err.message || err}${res && res.stderr ? ` stderr: ${res.stderr}` : ''}`));
-        }
+      spawn(CLI, ['local', '20', '--nvurc'], { ...OPTIONS, cwd: testDir }, (err, _res) => {
+        if (err) return done(err);
         const nvurcPath = path.join(testDir, '.nvurc');
         assert.ok(fs.existsSync(nvurcPath), '.nvurc should be created');
         const content = fs.readFileSync(nvurcPath, 'utf8').trim();
@@ -147,9 +142,7 @@ describe('commands', () => {
       mkdirRecursive(path.join(versionsDir, 'v19.1.0'));
 
       spawn(CLI, ['list'], OPTIONS, (err, res) => {
-        if (err && (!res || !res.stdout)) {
-          return done(new Error(`list command failed: ${err.message || err}${res && res.stderr ? ` stderr: ${res.stderr}` : ''}`));
-        }
+        if (err) return done(err);
         assert.ok(res && res.stdout && (res.stdout.indexOf('17.9.0') >= 0 || res.stdout.indexOf('v17') >= 0), 'Should list v17');
         assert.ok(res && res.stdout && (res.stdout.indexOf('19.1.0') >= 0 || res.stdout.indexOf('v19') >= 0), 'Should list v19');
         // Cleanup
@@ -165,7 +158,8 @@ describe('commands', () => {
       rmRecursive(versionsDir);
       mkdirRecursive(versionsDir);
 
-      spawn(CLI, ['list'], OPTIONS, (_err, res) => {
+      spawn(CLI, ['list'], OPTIONS, (err, res) => {
+        if (err) return done(err);
         assert.ok(res.stdout.indexOf('No Node versions') >= 0 || res.stdout.indexOf('none') >= 0);
         done();
       });
@@ -195,8 +189,27 @@ describe('commands', () => {
       fs.writeFileSync(path.join(testDir, '.nvmrc'), '16');
 
       spawn(CLI, ['which'], { ...OPTIONS, cwd: testDir }, (err, res) => {
-        assert.ok(!err, 'Should not error when .nvmrc exists');
+        if (err) return done(err);
         assert.ok(res && res.stdout.indexOf('16') >= 0);
+        done();
+      });
+    });
+
+    it('shows system version from default', (done) => {
+      if (isWindows) {
+        done();
+        return;
+      }
+      const testDir = path.join(TMP_DIR, 'test-which-system');
+      mkdirRecursive(testDir);
+      // Set default to system
+      const defaultPath = path.join(TMP_DIR, 'default');
+      fs.writeFileSync(defaultPath, 'system');
+
+      spawn(CLI, ['which'], { ...OPTIONS, cwd: testDir }, (err, res) => {
+        if (err) return done(err);
+        assert.ok(res && res.stdout.indexOf('system') >= 0, 'Should show system version');
+        assert.ok(res && res.stdout.indexOf('Binary:') >= 0, 'Should show binary path');
         done();
       });
     });
@@ -218,7 +231,7 @@ describe('commands', () => {
       fs.writeFileSync(path.join(versionDir, 'bin', 'node'), '');
 
       spawn(CLI, ['uninstall', 'v22.0.0'], OPTIONS, (err, _res) => {
-        assert.ok(!err, `Should not error: ${err ? err.message : ''}`);
+        if (err) return done(err);
         assert.ok(!fs.existsSync(versionDir), 'Version directory should be removed');
         done();
       });
@@ -272,10 +285,8 @@ describe('commands', () => {
       fs.writeFileSync(path.join(binDir, `npm${ext}`), '');
       fs.writeFileSync(path.join(binDir, `npx${ext}`), '');
 
-      spawn(CLI, ['teardown'], OPTIONS, (err, res) => {
-        if (err && (!res || !res.stdout)) {
-          return done(new Error(`teardown command failed: ${err.message || err}${res && res.stderr ? ` stderr: ${res.stderr}` : ''}`));
-        }
+      spawn(CLI, ['teardown'], OPTIONS, (err, _res) => {
+        if (err) return done(err);
         assert.ok(!fs.existsSync(path.join(binDir, `node${ext}`)), 'node binary should be removed');
         assert.ok(!fs.existsSync(path.join(binDir, `npm${ext}`)), 'npm binary should be removed');
         assert.ok(!fs.existsSync(path.join(binDir, `npx${ext}`)), 'npx binary should be removed');

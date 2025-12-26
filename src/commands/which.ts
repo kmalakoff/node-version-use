@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { storagePath } from '../constants.ts';
 import { findInstalledVersions } from '../lib/findInstalledVersions.ts';
+import { resolveSystemBinary } from '../lib/resolveSystemBinary.ts';
 
 /**
  * nvu which
@@ -23,6 +24,21 @@ export default function whichCmd(_args: string[]): void {
     console.log('  nvu local <version>   - Set version for this project');
     console.log('  nvu default <version> - Set global default');
     exit(1);
+    return;
+  }
+
+  // Handle "system" version specially
+  if (version === 'system') {
+    console.log('Version: system');
+    console.log(`Source: ${getVersionSource(cwd)}`);
+    const systemNode = resolveSystemBinary('node');
+    console.log(`Binary: ${systemNode || 'not found'}`);
+    if (systemNode) {
+      console.log('Status: Available');
+    } else {
+      console.log('Status: Not found (install Node.js on your system)');
+    }
+    exit(0);
     return;
   }
 
