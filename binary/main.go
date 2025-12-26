@@ -956,7 +956,8 @@ func runNvuCli() {
 	// Execute script directly - shebang will find node in modified PATH
 	if runtime.GOOS == "windows" {
 		// Windows: spawn and wait (can't use syscall.Exec)
-		cmd := exec.Command(nvuScript, os.Args[1:]...)
+		// Windows can't execute .js files directly, need to use node
+		cmd := exec.Command(nodePath, args...)
 		cmd.Env = env
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
