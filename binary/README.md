@@ -14,7 +14,8 @@ This directory contains the Go source code for the nvu binary shim. The shim is 
 │   ├── npx(.exe)           # Shim - proxies to nvu-managed npx
 │   ├── corepack(.exe)      # Shim - proxies to nvu-managed corepack
 │   ├── tsc(.exe)           # Shim - created after npm install -g typescript
-│   └── nvu(.exe)           # Shim - special handling, runs nvu CLI
+│   ├── nvu(.exe)           # Shim - special handling, runs nvu CLI
+│   └── nvu.json            # Metadata file (binaryVersion, etc.)
 ├── installed/
 │   ├── v18.20.8/
 │   │   ├── bin/            # Unix: actual binaries
