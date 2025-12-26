@@ -46,7 +46,7 @@ func main() {
 	version, err := resolveVersion()
 	if err != nil {
 		// No version configured - try system binary as fallback
-		systemBinary := findSystemBinary(execName)
+		systemBinary := resolveSystemBinary(execName)
 		if systemBinary != "" {
 			err = execBinary(systemBinary, os.Args)
 			if err != nil {
@@ -65,7 +65,7 @@ func main() {
 
 	// Handle "system" version - use system binary directly
 	if version == "system" {
-		systemBinary := findSystemBinary(execName)
+		systemBinary := resolveSystemBinary(execName)
 		if systemBinary == "" {
 			fmt.Fprintf(os.Stderr, "nvu error: system %s not found\n", execName)
 			os.Exit(1)
@@ -341,7 +341,7 @@ func routeToDefaultBinary(name string) (string, error) {
 
 	// "system" or empty means use system binary
 	if defaultVersion == "" || defaultVersion == "system" {
-		systemPath := findSystemBinary(name)
+		systemPath := resolveSystemBinary(name)
 		if systemPath != "" {
 			return systemPath, nil
 		}
@@ -392,7 +392,7 @@ func runNpmAndCreateShims(npmPath string, args []string) {
 	var nodeBinDir string
 	if defaultVersion == "system" {
 		// For system default, use system npm's prefix to find binaries
-		systemNpmPath := findSystemBinary("npm")
+		systemNpmPath := resolveSystemBinary("npm")
 		if systemNpmPath != "" {
 			cmd := exec.Command(systemNpmPath, "prefix", "-g")
 			output, err := cmd.Output()
@@ -563,7 +563,7 @@ func runNpmAndRemoveShims(npmPath string, args []string) {
 	var nodeBinDir string
 	if defaultVersion == "system" {
 		// For system default, use system npm's prefix to find binaries
-		systemNpmPath := findSystemBinary("npm")
+		systemNpmPath := resolveSystemBinary("npm")
 		if systemNpmPath != "" {
 			cmd := exec.Command(systemNpmPath, "prefix", "-g")
 			output, err := cmd.Output()
@@ -676,8 +676,9 @@ func runNpmAndRemoveShims(npmPath string, args []string) {
 	os.Exit(0)
 }
 
-// findSystemBinary looks for a system-installed binary in PATH (not the nvu binary)
-func findSystemBinary(name string) string {
+// resolveSystemBinary looks for a system-installed binary in PATH (not the nvu binary)
+// NOTE: Keep in sync with Node.js resolveSystemBinary
+func resolveSystemBinary(name string) string {
 	// Get our own executable path to avoid finding ourselves
 	selfPath, _ := os.Executable()
 	selfDir := filepath.Dir(selfPath)
@@ -715,8 +716,8 @@ func findSystemBinary(name string) string {
 			continue
 		}
 
-		// Skip anything in .nvu/bin
-		if strings.Contains(realPath, nvuBinPattern) {
+		// Skip anything in .nvu/bin or ~/.nvu/installed/*/bin (nvu version directories)
+		if strings.Contains(realPath, nvuBinPattern) || strings.Contains(realPath, filepath.Join(".nvu", "installed")) {
 			continue
 		}
 
@@ -858,14 +859,14 @@ func runNvuCli() {
 
 	if version == "system" {
 		// Use system node and find nvu in system npm's global modules
-		nodePath = findSystemBinary("node")
+		nodePath = resolveSystemBinary("node")
 		if nodePath == "" {
 			fmt.Fprintf(os.Stderr, "nvu error: system node not found\n")
 			os.Exit(1)
 		}
 
 		// Find system npm and use `npm root -g` to locate global modules
-		npmPath := findSystemBinary("npm")
+		npmPath := resolveSystemBinary("npm")
 		if npmPath == "" {
 			fmt.Fprintf(os.Stderr, "nvu error: system npm not found\n")
 			os.Exit(1)

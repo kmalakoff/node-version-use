@@ -1,7 +1,3 @@
-/**
- * Resolve system binaries by searching PATH while excluding ~/.nvu/bin
- * This mirrors the Go binary's findSystemBinary() function
- */
 import envPathKey from 'env-path-key';
 import fs from 'fs';
 import path from 'path';
@@ -9,6 +5,7 @@ import { homedir } from '../compat.ts';
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 const nvuBinDir = path.join(homedir(), '.nvu', 'bin');
+const nvuInstalledDir = path.join(homedir(), '.nvu', 'installed');
 const pathKey = envPathKey(); // PATH or Path or similar
 const pathDelimiter = path.delimiter ? path.delimiter : isWindows ? ';' : ':';
 
@@ -21,20 +18,22 @@ function pathsEqual(a: string, b: string): boolean {
 }
 
 /**
- * Check if a path is within the nvu bin directory
+ * Check if a path is within the nvu bin directory or installed versions
  */
-function isInNvuBin(filePath: string): boolean {
+function isInNvuDir(filePath: string): boolean {
   try {
     const realPath = fs.realpathSync(filePath);
-    return realPath.indexOf(path.join('.nvu', 'bin')) >= 0 || pathsEqual(path.dirname(realPath), nvuBinDir);
+    // Check for .nvu/bin or .nvu/installed
+    return realPath.indexOf(path.join('.nvu', 'bin')) >= 0 || realPath.indexOf(path.join('.nvu', 'installed')) >= 0 || pathsEqual(path.dirname(realPath), nvuBinDir) || pathsEqual(path.dirname(realPath), nvuInstalledDir);
   } catch (_e) {
     return false;
   }
 }
 
 /**
- * Find a system binary by searching PATH, excluding ~/.nvu/bin
+ * Find a system binary by searching PATH, excluding ~/.nvu/bin and version directories
  * Returns the full path to the binary, or null if not found
+ * NOTE: Keep in sync with Node.js resolveSystemBinary
  */
 export function resolveSystemBinary(name: string): string | null {
   const pathEnv = process.env[pathKey] || '';
@@ -56,8 +55,8 @@ export function resolveSystemBinary(name: string): string | null {
         const stat = fs.statSync(candidate);
         if (!stat.isFile()) continue;
 
-        // Make sure it's not in ~/.nvu/bin (via symlink)
-        if (isInNvuBin(candidate)) continue;
+        // Make sure it's not in ~/.nvu/bin or ~/.nvu/installed/*/bin
+        if (isInNvuDir(candidate)) continue;
 
         return candidate;
       } catch (_e) {
@@ -70,7 +69,7 @@ export function resolveSystemBinary(name: string): string | null {
 }
 
 /**
- * Get PATH with ~/.nvu/bin removed
+ * Get PATH with ~/.nvu/bin and version directories removed
  * Used to create an environment for spawning system commands
  */
 export function getPathWithoutNvuBin(): string {
@@ -83,6 +82,7 @@ export function getPathWithoutNvuBin(): string {
     if (!dir) continue;
     if (pathsEqual(dir, nvuBinDir)) continue;
     if (dir.indexOf(path.join('.nvu', 'bin')) >= 0) continue;
+    if (dir.indexOf(path.join('.nvu', 'installed')) >= 0) continue;
     filtered.push(dir);
   }
 
