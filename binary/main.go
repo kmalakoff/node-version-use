@@ -686,11 +686,7 @@ func findSystemBinary(name string) string {
 	nvuBinPattern := filepath.Join(".nvu", "bin")
 
 	// Search PATH for the binary
-	pathEnv := os.Getenv("PATH")
-	if pathEnv == "" {
-		return ""
-	}
-
+	pathEnv := getPathEnv()
 	for _, dir := range strings.Split(pathEnv, string(os.PathListSeparator)) {
 		if dir == "" {
 			continue
@@ -738,14 +734,23 @@ func pathsEqual(a, b string) bool {
 	return a == b
 }
 
+// getPathEnv returns the PATH environment variable value
+func getPathEnv() string {
+	// Check PATH first (Unix), then Path (Windows)
+	if pathEnv := os.Getenv("PATH"); pathEnv != "" {
+		return pathEnv
+	}
+	if pathEnv := os.Getenv("Path"); pathEnv != "" {
+		return pathEnv
+	}
+	return "PATH"
+}
+
 // getPathWithoutNvuBin returns PATH with ~/.nvu/bin removed
 // This is used during bootstrapping to ensure child processes use system binaries
 func getPathWithoutNvuBin() string {
 	nvuBinPattern := filepath.Join(".nvu", "bin")
-	pathEnv := os.Getenv("PATH")
-	if pathEnv == "" {
-		return ""
-	}
+	pathEnv := getPathEnv()
 
 	var cleanDirs []string
 	for _, dir := range strings.Split(pathEnv, string(os.PathListSeparator)) {
@@ -760,6 +765,30 @@ func getPathWithoutNvuBin() string {
 	}
 
 	return strings.Join(cleanDirs, string(os.PathListSeparator))
+}
+
+// getPathWithoutNvuBinWithPrepend returns PATH with ~/.nvu/bin removed, with nodeDir prepended
+// This is used when running with system version to ensure child processes use system binaries
+func getPathWithoutNvuBinWithPrepend(nodeDir string) string {
+	nvuBinPattern := filepath.Join(".nvu", "bin")
+	pathEnv := getPathEnv()
+	if pathEnv == "" {
+		return nodeDir
+	}
+
+	var cleanDirs []string
+	for _, dir := range strings.Split(pathEnv, string(os.PathListSeparator)) {
+		if dir == "" {
+			continue
+		}
+		// Skip directories containing .nvu/bin (or .nvu\bin on Windows)
+		if strings.Contains(dir, nvuBinPattern) {
+			continue
+		}
+		cleanDirs = append(cleanDirs, dir)
+	}
+
+	return nodeDir + string(os.PathListSeparator) + strings.Join(cleanDirs, string(os.PathListSeparator))
 }
 
 // execBinaryWithEnv replaces the current process with the target binary, with custom env vars
@@ -895,8 +924,16 @@ func runNvuCli() {
 
 	// Prepend node's bin directory to PATH so shebang finds the real node, not the nvu shim
 	nodeDir := filepath.Dir(nodePath)
-	currentPath := os.Getenv("PATH")
-	newPath := nodeDir + string(os.PathListSeparator) + currentPath
+	currentPath := getPathEnv()
+
+	// When using system version, we need to remove ~/.nvu/bin from PATH
+	// so child processes don't use the nvu shims
+	var newPath string
+	if version == "system" {
+		newPath = getPathWithoutNvuBinWithPrepend(nodeDir)
+	} else {
+		newPath = nodeDir + string(os.PathListSeparator) + currentPath
+	}
 
 	// Build args: script becomes argv[0], original args follow
 	args := append([]string{nvuScript}, os.Args[1:]...)

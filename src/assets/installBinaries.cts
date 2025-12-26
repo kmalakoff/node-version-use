@@ -238,6 +238,7 @@ function extractArchive(archivePath: string, dest: string, callback: Callback) {
  * 3. Atomic rename temp files to final names
  */
 function extractAndInstall(archivePath: string, destDir: string, binaryName: string, callback: Callback) {
+  const binaries = ['nvu', 'node', 'npm', 'npx', 'corepack'];
   const ext = isWindows ? '.exe' : '';
 
   // Create temp extraction directory
@@ -259,7 +260,6 @@ function extractAndInstall(archivePath: string, destDir: string, binaryName: str
     }
 
     // Binary names to install
-    const binaries = ['node', 'npm', 'npx', 'corepack'];
     const timestamp = Date.now();
     let installError: Error | null = null;
 
@@ -330,7 +330,7 @@ module.exports.printInstructions = function printInstructions(): void {
 
   console.log('nvu binaries installed in ~/.nvu/bin/');
 
-  const pathKey = envPathKey();
+  const pathKey = envPathKey(); // PATH or Path or similar
   const envPath = process.env[pathKey] || '';
   if (envPath.indexOf('.nvu/bin') >= 0) return; // path exists
 

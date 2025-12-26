@@ -2,20 +2,21 @@
  * Resolve system binaries by searching PATH while excluding ~/.nvu/bin
  * This mirrors the Go binary's findSystemBinary() function
  */
+import envPathKey from 'env-path-key';
 import fs from 'fs';
 import path from 'path';
 import { homedir } from '../compat.ts';
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
 const nvuBinDir = path.join(homedir(), '.nvu', 'bin');
+const pathKey = envPathKey(); // PATH or Path or similar
+const pathDelimiter = path.delimiter ? path.delimiter : isWindows ? ';' : ':';
 
 /**
  * Check if two paths are equal (case-insensitive on Windows)
  */
 function pathsEqual(a: string, b: string): boolean {
-  if (isWindows) {
-    return a.toLowerCase() === b.toLowerCase();
-  }
+  if (isWindows) return a.toLowerCase() === b.toLowerCase();
   return a === b;
 }
 
@@ -36,9 +37,8 @@ function isInNvuBin(filePath: string): boolean {
  * Returns the full path to the binary, or null if not found
  */
 export function resolveSystemBinary(name: string): string | null {
-  const pathEnv = process.env.PATH || '';
-  const pathSep = isWindows ? ';' : ':';
-  const dirs = pathEnv.split(pathSep);
+  const pathEnv = process.env[pathKey] || '';
+  const dirs = pathEnv.split(pathDelimiter);
 
   for (let i = 0; i < dirs.length; i++) {
     const dir = dirs[i];
@@ -74,9 +74,8 @@ export function resolveSystemBinary(name: string): string | null {
  * Used to create an environment for spawning system commands
  */
 export function getPathWithoutNvuBin(): string {
-  const pathEnv = process.env.PATH || '';
-  const pathSep = isWindows ? ';' : ':';
-  const dirs = pathEnv.split(pathSep);
+  const pathEnv = process.env[pathKey] || '';
+  const dirs = pathEnv.split(pathDelimiter);
 
   const filtered: string[] = [];
   for (let i = 0; i < dirs.length; i++) {
@@ -87,5 +86,5 @@ export function getPathWithoutNvuBin(): string {
     filtered.push(dir);
   }
 
-  return filtered.join(pathSep);
+  return filtered.join(pathDelimiter);
 }

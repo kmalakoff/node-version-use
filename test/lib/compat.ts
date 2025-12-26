@@ -6,14 +6,16 @@
 import envPathKey from 'env-path-key';
 import fs from 'fs';
 import { safeRmSync } from 'fs-remove-compat';
+import Module from 'module';
 import os from 'os';
 import path from 'path';
 
-const hasCopyFileSync = typeof fs.copyFileSync === 'function';
-const hasRecursiveMkdir = +process.versions.node.split('.')[0] >= 10;
+// Use existing require in CJS, or createRequire in ESM (Node 12.2+)
+const _require = typeof require === 'undefined' ? Module.createRequire(import.meta.url) : require;
+
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
-const pathDelimiter = path.delimiter ? path.delimiter : isWindows ? ';' : ':';
 const pathKey = envPathKey(); // PATH or Path or similar
+const pathDelimiter = path.delimiter ? path.delimiter : isWindows ? ';' : ':';
 
 export function tmpdir(): string {
   return typeof os.tmpdir === 'function' ? os.tmpdir() : require('os-shim').tmpdir();
@@ -33,26 +35,22 @@ export function rmRecursive(dir: string): void {
  * Create a directory recursively.
  * Uses native fs.mkdirSync({recursive}) on Node 10.12+, falls back to mkdirp-classic.
  */
+const hasRecursiveMkdir = +process.versions.node.split('.')[0] >= 10;
 export function mkdirRecursive(dir: string): void {
-  if (hasRecursiveMkdir) {
-    fs.mkdirSync(dir, { recursive: true });
-  } else {
-    const mkdirp = require('mkdirp-classic');
-    mkdirp.sync(dir);
-  }
+  if (hasRecursiveMkdir) fs.mkdirSync(dir, { recursive: true }) as undefined as void;
+  const mkdirp = _require('mkdirp-classic');
+  mkdirp.sync(dir);
 }
 
 /**
  * Copy a file.
  * Uses native fs.copyFileSync on Node 8.5+, falls back to fs-copy-compat.
  */
+const hasCopyFileSync = typeof fs.copyFileSync === 'function';
 export function copyFileSync(src: string, dest: string): void {
-  if (hasCopyFileSync) {
-    fs.copyFileSync(src, dest);
-  } else {
-    const copy = require('fs-copy-compat');
-    copy.copyFileSync(src, dest);
-  }
+  if (hasCopyFileSync) return fs.copyFileSync(src, dest);
+  const copy = _require('fs-copy-compat');
+  copy.copyFileSync(src, dest);
 }
 
 /**
@@ -60,9 +58,7 @@ export function copyFileSync(src: string, dest: string): void {
  * Uses native Array.prototype.find on Node 4+, falls back to manual iteration.
  */
 export function arrayFind<T>(arr: T[], predicate: (item: T, index: number, arr: T[]) => boolean): T | undefined {
-  if (typeof arr.find === 'function') {
-    return arr.find(predicate);
-  }
+  if (typeof arr.find === 'function') return arr.find(predicate);
   for (let i = 0; i < arr.length; i++) {
     if (predicate(arr[i], i, arr)) return arr[i];
   }
