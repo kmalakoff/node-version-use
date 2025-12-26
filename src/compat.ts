@@ -3,12 +3,12 @@
  * Local to this package - contains only needed functions.
  */
 import fs from 'fs';
-import _Module from 'module';
+import Module from 'module';
 import os from 'os';
 import path from 'path';
 
 // Use existing require in CJS, or createRequire in ESM (Node 12.2+)
-const _require = typeof require === 'undefined' ? _Module.createRequire(import.meta.url) : require;
+const _require = typeof require === 'undefined' ? Module.createRequire(import.meta.url) : require;
 
 export function homedir(): string {
   return typeof os.homedir === 'function' ? os.homedir() : require('homedir-polyfill')();
@@ -25,9 +25,7 @@ export function tmpdir(): string {
  */
 const hasEndsWith = typeof String.prototype.endsWith === 'function';
 export function stringEndsWith(str: string, search: string, position?: number): boolean {
-  if (hasEndsWith) {
-    return str.endsWith(search, position);
-  }
+  if (hasEndsWith) return str.endsWith(search, position);
   const len = position === undefined ? str.length : position;
   return str.lastIndexOf(search) === len - search.length;
 }
@@ -73,4 +71,21 @@ export function readdirWithTypes(dir: string): DirEntry[] {
       isDirectory: () => stat.isDirectory(),
     };
   });
+}
+
+/**
+ * Object.assign wrapper for Node.js 0.8+
+ * - Uses native Object.assign on Node 4.0+
+ * - Falls back to manual property copy on Node 0.8-3.x
+ */
+const hasObjectAssign = typeof Object.assign === 'function';
+const _hasOwnProperty = Object.prototype.hasOwnProperty;
+
+export function objectAssign<T, U>(target: T, source: U): T & U {
+  if (hasObjectAssign) return Object.assign(target, source);
+
+  for (const key in source) {
+    if (_hasOwnProperty.call(source, key)) (target as Record<string, unknown>)[key] = source[key];
+  }
+  return target as T & U;
 }

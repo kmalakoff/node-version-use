@@ -15,6 +15,7 @@ import { getTestBinaryBin, getTestBinaryPath, hasTestBinaries, mkdirRecursive, r
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const TMP_DIR = path.join(__dirname, '..', '..', '.tmp', 'binary-test');
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const NODE = isWindows ? 'node.exe' : 'node';
 
 const OPTIONS = {
   encoding: 'utf8' as BufferEncoding,
@@ -26,13 +27,24 @@ const OPTIONS = {
 };
 
 function createFakeNodeVersion(version: string): void {
-  const versionDir = path.join(TMP_DIR, 'installed', version, 'bin');
-  mkdirRecursive(versionDir);
-  // Create a fake node script that just prints the version
-  const nodeScript = `#!/bin/sh\necho "v${version.replace('v', '')}"\n`;
-  const nodePath = path.join(versionDir, 'node');
-  fs.writeFileSync(nodePath, nodeScript);
-  fs.chmodSync(nodePath, 0o755);
+  const versionDir = path.join(TMP_DIR, 'installed', version);
+
+  if (isWindows) {
+    // On Windows, create a .cmd file at the root of the version directory
+    // The Go binary looks for <version>/node.cmd
+    mkdirRecursive(versionDir);
+    const nodeScript = `@echo off\r\necho v${version.replace('v', '')}\r\n`;
+    const nodePath = path.join(versionDir, 'node.cmd');
+    fs.writeFileSync(nodePath, nodeScript);
+  } else {
+    // On Unix/Linux/macOS, create a shell script in bin/ subdirectory
+    const binDir = path.join(versionDir, 'bin');
+    mkdirRecursive(binDir);
+    const nodeScript = `#!/bin/sh\necho "v${version.replace('v', '')}"\n`;
+    const nodePath = path.join(binDir, 'node');
+    fs.writeFileSync(nodePath, nodeScript);
+    fs.chmodSync(nodePath, 0o755);
+  }
 }
 
 describe('binary', () => {
@@ -44,9 +56,7 @@ describe('binary', () => {
     }
 
     // Clean and create test directory
-    if (fs.existsSync(TMP_DIR)) {
-      rmRecursive(TMP_DIR);
-    }
+    if (fs.existsSync(TMP_DIR)) rmRecursive(TMP_DIR);
     mkdirRecursive(TMP_DIR);
     mkdirRecursive(path.join(TMP_DIR, 'installed'));
   });
@@ -64,16 +74,10 @@ describe('binary', () => {
       // Create .nvmrc pointing to it
       fs.writeFileSync(path.join(TMP_DIR, '.nvmrc'), '20');
 
-      const binaryPath = path.join(getTestBinaryBin(), 'node');
-
       // Run the binary directly with --version (it should use our fake node)
-      spawn(binaryPath, ['--version'], { ...OPTIONS, cwd: TMP_DIR }, (err, res) => {
-        if (err) {
-          // Binary might fail if it can't find the version, which is expected
-          // since our fake node isn't a real binary the binary can exec
-          // Just verify the binary ran and tried to use NVU_HOME
-          assert.ok(res?.stderr?.includes('nvu') || res?.stdout?.includes('20') || err, 'Binary should attempt to use NVU_HOME');
-        }
+      const binaryPath = path.join(getTestBinaryBin(), NODE);
+      spawn(binaryPath, ['--version'], { ...OPTIONS, cwd: TMP_DIR }, (err, _res) => {
+        if (err) return done(err);
         done();
       });
     });

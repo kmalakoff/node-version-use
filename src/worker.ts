@@ -8,9 +8,10 @@ import Queue from 'queue-cb';
 import resolveBin from 'resolve-bin-sync';
 import spawnStreaming from 'spawn-streaming';
 import { createSession, formatArguments } from 'spawn-term';
-import { stringEndsWith } from './compat.ts';
+import { objectAssign, stringEndsWith } from './compat.ts';
 import { storagePath } from './constants.ts';
 import loadNodeVersionInstall from './lib/loadNodeVersionInstall.ts';
+import { getPathWithoutNvuBin, resolveSystemBinary } from './lib/resolveSystemBinary.ts';
 
 import type { Options, UseCallback, UseOptions, UseResult } from './types.ts';
 
@@ -44,14 +45,14 @@ function resolveCommand(command: string, args: string[]): { command: string; arg
   if (stringEndsWith(command.toLowerCase(), '.cmd')) {
     const scriptPath = parseNpmCmdWrapper(command);
     if (scriptPath) {
-      return { command: NODE, args: [scriptPath, ...args] };
+      return { command: NODE, args: [scriptPath].concat(args) };
     }
   }
 
   // Case 2: Try to resolve the command as an npm package bin from node_modules
   try {
     const binPath = resolveBin(command);
-    return { command: NODE, args: [binPath, ...args] };
+    return { command: NODE, args: [binPath].concat(args) };
   } catch (_e) {
     // Not an npm package bin, use original command
   }
@@ -60,6 +61,12 @@ function resolveCommand(command: string, args: string[]): { command: string; arg
 }
 
 export default function worker(versionExpression: string, command: string, args: string[], options: UseOptions, callback: UseCallback): void {
+  // Handle "system" as a special version that uses system binaries directly
+  if (versionExpression === 'system') {
+    runWithSystemBinaries(command, args, options, callback);
+    return;
+  }
+
   // Load node-version-install lazily
   loadNodeVersionInstall((loadErr, installVersion) => {
     if (loadErr) return callback(loadErr);
@@ -71,7 +78,7 @@ export default function worker(versionExpression: string, command: string, args:
         return;
       }
 
-      const installOptions = { storagePath, ...options } as InstallOptions;
+      const installOptions = objectAssign({ storagePath: storagePath }, options) as InstallOptions;
       const streamingOptions = options as Options;
       const results: UseResult[] = [];
       const queue = new Queue(1);
@@ -124,5 +131,54 @@ export default function worker(versionExpression: string, command: string, args:
         }
       });
     });
+  });
+}
+
+/**
+ * Run command using system binaries (bypassing nvu version management)
+ * This handles the "system" version specifier
+ */
+function runWithSystemBinaries(command: string, args: string[], options: UseOptions, callback: UseCallback): void {
+  // Find the system binary for the command
+  const systemBinary = resolveSystemBinary(command);
+  if (!systemBinary) {
+    callback(new Error(`System ${command} not found in PATH`));
+    return;
+  }
+
+  // Create spawn options with PATH excluding ~/.nvu/bin
+  // This ensures any child processes also use system binaries
+  const cleanPath = getPathWithoutNvuBin();
+  const spawnOptions: SpawnOptions = objectAssign({}, options as SpawnOptions);
+  spawnOptions.env = objectAssign({}, process.env);
+  spawnOptions.env.PATH = cleanPath;
+  spawnOptions.stdio = options.stdio || 'inherit';
+
+  // On Windows, resolve npm bin commands to bypass .cmd wrappers
+  const resolved = resolveCommand(command, args);
+
+  // For system, use the resolved system binary path
+  const finalCommand = resolved.command === command ? systemBinary : resolved.command;
+  const finalArgs = resolved.command === command ? args : resolved.args;
+
+  if (!options.silent) {
+    console.log(`$ ${formatArguments([finalCommand].concat(finalArgs)).join(' ')}`);
+  }
+
+  spawn(finalCommand, finalArgs, spawnOptions, (err?, res?) => {
+    if (err && err.message && err.message.indexOf('ExperimentalWarning') >= 0) {
+      res = err;
+      err = null;
+    }
+
+    const result: UseResult = {
+      install: null,
+      command,
+      version: 'system',
+      error: err,
+      result: res,
+    };
+
+    callback(err, [result]);
   });
 }

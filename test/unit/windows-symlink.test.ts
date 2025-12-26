@@ -127,12 +127,7 @@ describe('windows symlink', () => {
     // Run via nvu with Node 22 - the command should print v22.x, NOT v20.x
     // If the bug exists, it will print v20.x because the .cmd finds node.exe in its directory
     spawn(CLI, ['--silent', '--expanded', '22', cmdPath], OPTIONS, (err, res) => {
-      if (err) {
-        console.log('Error:', err.message);
-        console.log('stdout:', res?.stdout);
-        console.log('stderr:', res?.stderr);
-        return done(err);
-      }
+      if (err) return done(err);
 
       const output = (res.stdout as string).trim();
       console.log('Output:', output);

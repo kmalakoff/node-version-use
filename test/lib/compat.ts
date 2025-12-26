@@ -2,6 +2,8 @@
  * Test Compatibility Layer for Node.js 0.8+
  * Uses native fs functions when available, falls back to ponyfills for old Node.
  */
+
+import envPathKey from 'env-path-key';
 import fs from 'fs';
 import { safeRmSync } from 'fs-remove-compat';
 import os from 'os';
@@ -10,9 +12,14 @@ import path from 'path';
 const hasCopyFileSync = typeof fs.copyFileSync === 'function';
 const hasRecursiveMkdir = +process.versions.node.split('.')[0] >= 10;
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const pathDelimiter = path.delimiter ? path.delimiter : isWindows ? ';' : ':';
+const pathKey = envPathKey(); // PATH or Path or similar
 
 export function tmpdir(): string {
   return typeof os.tmpdir === 'function' ? os.tmpdir() : require('os-shim').tmpdir();
+}
+export function homedir() {
+  return typeof os.homedir === 'function' ? os.homedir() : require('homedir-polyfill')();
 }
 
 /**
@@ -66,23 +73,18 @@ export function arrayFind<T>(arr: T[], predicate: (item: T, index: number, arr: 
  * Check if a string starts with a search string.
  * Uses native String.prototype.startsWith on Node 4+, falls back to indexOf.
  */
+const hasStartsWith = typeof String.prototype.startsWith === 'function';
 export function stringStartsWith(str: string, search: string, position?: number): boolean {
-  if (typeof str.startsWith === 'function') {
-    return str.startsWith(search, position);
-  }
+  if (hasStartsWith) return str.startsWith(search, position);
   position = position || 0;
   return str.indexOf(search, position) === position;
 }
 
-/**
- * Get homedir (compatible with Node 0.8)
- */
-function getHomedir(): string {
-  if (typeof os.homedir === 'function') {
-    return os.homedir();
-  }
-  const homedirPolyfill = require('homedir-polyfill');
-  return homedirPolyfill();
+const hasEndsWith = typeof String.prototype.endsWith === 'function';
+export function stringEndsWith(str: string, search: string, position?: number): boolean {
+  if (hasEndsWith) return str.endsWith(search, position);
+  const len = position === undefined ? str.length : position;
+  return str.lastIndexOf(search) === len - search.length;
 }
 
 /**
@@ -90,7 +92,7 @@ function getHomedir(): string {
  * These are downloaded from GitHub releases by postinstall.
  */
 export function getTestBinaryBin(): string {
-  return path.join(getHomedir(), '.nvu', 'bin');
+  return path.join(homedir(), '.nvu', 'bin');
 }
 
 /**
@@ -106,21 +108,10 @@ export function hasTestBinaries(): boolean {
  * Use this for integration tests that need to run through the binary.
  */
 export function getTestBinaryPath(): string {
-  const binaryBin = getTestBinaryBin();
-  const filteredPath = (process.env.PATH || '')
-    .split(path.delimiter)
-    .filter((p) => p.indexOf('.nvu/bin') === -1)
-    .join(path.delimiter);
-  return binaryBin + path.delimiter + filteredPath;
-}
-
-/**
- * Get PATH with global binaries removed (bypass all binaries).
- * Use this for unit tests that should test CLI directly.
- */
-export function getFilteredPath(): string {
-  return (process.env.PATH || '')
-    .split(path.delimiter)
-    .filter((p) => p.indexOf('.nvu/bin') === -1)
-    .join(path.delimiter);
+  const nodeBinDir = path.dirname(process.execPath);
+  const filteredPath = (pathKey || '')
+    .split(pathDelimiter)
+    .filter((p) => stringEndsWith(p, '.nvu/bin'))
+    .join(pathDelimiter);
+  return nodeBinDir + pathDelimiter + filteredPath;
 }
