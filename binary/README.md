@@ -256,3 +256,49 @@ GOOS=windows GOARCH=amd64 go build -o nvu-win32-x64.exe .
 | Node bin location | `<version>/bin/node` | `<version>/node.exe` |
 | npm wrapper | symlink or script | `.cmd` file |
 | Process replacement | `syscall.Exec` | `exec.Command` + wait |
+
+## Shim Synchronization
+
+All shims in `~/.nvu/bin/` are copies of the same Go binary. When the binary version changes (package upgrade), all shims must be updated.
+
+### syncAllShims()
+
+A function that copies the "nvu" binary to all other files in `~/.nvu/bin/`:
+
+1. Source: `~/.nvu/bin/nvu`
+2. Destination: All other files in the directory (node, npm, npx, corepack, eslint, typescript, etc.)
+3. Skips: `nvu` itself (it's the source)
+4. Moves existing files out of the way first (Windows locks running executables)
+5. Makes files executable on Unix
+
+### When syncAllShims() Runs
+
+| Scenario | Action |
+|----------|--------|
+| **postinstall** (package install/upgrade) | `installBinaries()` → `syncAllShims()` |
+| **nvu setup** | `installBinaries()` → `syncAllShims()` |
+| **nvu default** (first time only) | Set default → `syncAllShims()` |
+
+### Flow
+
+```
+postinstall:
+  1. Download archive to ~/.nvu/cache/
+  2. Extract "nvu" binary to ~/.nvu/bin/
+  3. syncAllShims() → copies "nvu" to all other files
+
+setup:
+  1. Extract "nvu" binary to ~/.nvu/bin/
+  2. syncAllShims() → copies "nvu" to all other files
+
+nvu default:
+  1. Write version to ~/.nvu/default
+  2. syncAllShims() → first time only
+```
+
+### Why This Design
+
+- **Single source of truth**: All shims are identical copies
+- **Automatic upgrades**: Package upgrade automatically syncs all shims
+- **No missing shims**: `nvu default` first-time triggers sync
+- **Manual recovery**: `nvu setup` can be run anytime to resync

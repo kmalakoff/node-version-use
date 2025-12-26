@@ -33,6 +33,31 @@ func main() {
 	// Remove .exe suffix on Windows
 	execName = strings.TrimSuffix(execName, ".exe")
 
+	// Check for "system npm" command to bypass version routing
+	// Must check BEFORE runNvuCli() since execName == "nvu" triggers runNvuCli()
+	// Usage: nvu system npm install -g <package>
+	if len(os.Args) >= 3 && os.Args[1] == "system" && os.Args[2] == "npm" {
+		npmPath := findSystemBinary("npm")
+		if npmPath == "" {
+			fmt.Fprintf(os.Stderr, "nvu error: system npm not found\n")
+			os.Exit(1)
+		}
+		// Execute system npm with remaining args (skip "system npm")
+		args := os.Args[3:] // ["install", "-g", "node-version-use"]
+		cmd := exec.Command(npmPath, args...)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Env = os.Environ()
+		err := cmd.Run()
+		if err != nil {
+			if exitError, ok := err.(*exec.ExitError); ok {
+				os.Exit(exitError.ExitCode())
+			}
+		}
+		os.Exit(0)
+	}
+
 	// If this binary is named 'nvu', we need to find and run the actual nvu CLI
 	// This handles the case where an nvu shim was incorrectly created
 	if execName == "nvu" {
@@ -97,13 +122,27 @@ func main() {
 		}
 	}
 
+	// Handle "system" version - use system binary directly
+	if version == "system" {
+		systemBinary := findSystemBinary(execName)
+		if systemBinary == "" {
+			fmt.Fprintf(os.Stderr, "nvu error: system %s not found\n", execName)
+			os.Exit(1)
+		}
+		err = execBinary(systemBinary, os.Args)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "nvu error: failed to exec system %s: %s\n", execName, err)
+			os.Exit(1)
+		}
+		return // execBinary replaces the process on Unix
+	}
+
 	// Find the real binary path
 	binaryPath, err := findBinary(execName, version)
 	if err != nil {
-		// For non-core binaries (global packages), the binary might not exist
-		// in the current Node version - try to find it in any installed version
+		// For non-core binaries, route to default version's bin directory
 		if !isCoreNodeBinary {
-			binaryPath, err = findGlobalPackageBinary(execName)
+			binaryPath, err = routeToDefaultBinary(execName)
 		}
 		if err != nil {
 			if isCoreNodeBinary {
@@ -463,20 +502,27 @@ func isGlobalUninstall() bool {
 	return hasGlobal && hasUninstall
 }
 
-// findGlobalPackageBinary looks for a binary in the default Node version's bin directory
-func findGlobalPackageBinary(name string) (string, error) {
+// routeToDefaultBinary routes a binary name to the default Node version's bin directory
+// or to system binary if default is "system" or empty
+func routeToDefaultBinary(name string) (string, error) {
 	nvuHome, err := getNvuHome()
 	if err != nil {
 		return "", err
 	}
 
-	// Read default version
 	defaultPath := filepath.Join(nvuHome, "default")
-	defaultVersion, err := readVersionFile(defaultPath)
-	if err != nil || defaultVersion == "" {
-		return "", fmt.Errorf("no default version set")
+	defaultVersion, _ := readVersionFile(defaultPath)
+
+	// "system" or empty means use system binary
+	if defaultVersion == "" || defaultVersion == "system" {
+		systemPath := findSystemBinary(name)
+		if systemPath != "" {
+			return systemPath, nil
+		}
+		return "", fmt.Errorf("system binary not found: %s", name)
 	}
 
+	// Otherwise, use default version's bin directory
 	versionsDir := filepath.Join(nvuHome, "installed")
 	resolvedVersion, err := resolveInstalledVersion(versionsDir, defaultVersion)
 	if err != nil {
@@ -488,7 +534,10 @@ func findGlobalPackageBinary(name string) (string, error) {
 	if runtime.GOOS == "windows" {
 		binaryPath = filepath.Join(versionsDir, resolvedVersion, "bin", name+".exe")
 		if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
-			binaryPath = filepath.Join(versionsDir, resolvedVersion, name+".cmd")
+			binaryPath = filepath.Join(versionsDir, resolvedVersion, "bin", name+".cmd")
+		}
+		if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
+			binaryPath = filepath.Join(versionsDir, resolvedVersion, "bin", name+".bat")
 		}
 	} else {
 		binaryPath = filepath.Join(versionsDir, resolvedVersion, "bin", name)
@@ -515,7 +564,22 @@ func runNpmAndCreateShims(npmPath string, args []string) {
 	defaultVersion, _ := readVersionFile(defaultPath)
 
 	var nodeBinDir string
-	if defaultVersion != "" {
+	if defaultVersion == "system" {
+		// For system default, use system npm's prefix to find binaries
+		systemNpmPath := findSystemBinary("npm")
+		if systemNpmPath != "" {
+			cmd := exec.Command(systemNpmPath, "prefix", "-g")
+			output, err := cmd.Output()
+			if err == nil {
+				prefix := strings.TrimSpace(string(output))
+				if runtime.GOOS == "windows" {
+					nodeBinDir = prefix
+				} else {
+					nodeBinDir = filepath.Join(prefix, "bin")
+				}
+			}
+		}
+	} else if defaultVersion != "" {
 		versionsDir := filepath.Join(nvuHome, "installed")
 		if resolved, err := resolveInstalledVersion(versionsDir, defaultVersion); err == nil {
 			// On Windows, binaries are at root; on Unix, in bin/
@@ -536,12 +600,29 @@ func runNpmAndCreateShims(npmPath string, args []string) {
 		}
 	}
 
+	// Calculate npm prefix for the default version
+	// Don't set prefix for "system" - let npm use system prefix
+	npmPrefix := ""
+	if defaultVersion != "" && defaultVersion != "system" {
+		versionsDir := filepath.Join(nvuHome, "installed")
+		if resolved, err := resolveInstalledVersion(versionsDir, defaultVersion); err == nil {
+			// npm expects prefix to be the ROOT directory (not bin/)
+			// npm computes bin/ and lib/ from there
+			npmPrefix = filepath.Join(versionsDir, resolved)
+		}
+	}
+
 	// Run npm
 	cmd := exec.Command(npmPath, args[1:]...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	cmd.Env = os.Environ()
+	// Set npm_config_prefix to redirect symlinks to the default version's directory
+	if npmPrefix != "" {
+		cmd.Env = append(os.Environ(), "npm_config_prefix="+npmPrefix)
+	} else {
+		cmd.Env = os.Environ()
+	}
 
 	err = cmd.Run()
 	exitCode := 0
@@ -654,7 +735,22 @@ func runNpmAndRemoveShims(npmPath string, args []string) {
 	defaultVersion, _ := readVersionFile(defaultPath)
 
 	var nodeBinDir string
-	if defaultVersion != "" {
+	if defaultVersion == "system" {
+		// For system default, use system npm's prefix to find binaries
+		systemNpmPath := findSystemBinary("npm")
+		if systemNpmPath != "" {
+			cmd := exec.Command(systemNpmPath, "prefix", "-g")
+			output, err := cmd.Output()
+			if err == nil {
+				prefix := strings.TrimSpace(string(output))
+				if runtime.GOOS == "windows" {
+					nodeBinDir = prefix
+				} else {
+					nodeBinDir = filepath.Join(prefix, "bin")
+				}
+			}
+		}
+	} else if defaultVersion != "" {
 		versionsDir := filepath.Join(nvuHome, "installed")
 		if resolved, err := resolveInstalledVersion(versionsDir, defaultVersion); err == nil {
 			// On Windows, binaries are at root; on Unix, in bin/
@@ -675,12 +771,29 @@ func runNpmAndRemoveShims(npmPath string, args []string) {
 		}
 	}
 
+	// Calculate npm prefix for the default version
+	// Don't set prefix for "system" - let npm use system prefix
+	npmPrefix := ""
+	if defaultVersion != "" && defaultVersion != "system" {
+		versionsDir := filepath.Join(nvuHome, "installed")
+		if resolved, err := resolveInstalledVersion(versionsDir, defaultVersion); err == nil {
+			// npm expects prefix to be the ROOT directory (not bin/)
+			// npm computes bin/ and lib/ from there
+			npmPrefix = filepath.Join(versionsDir, resolved)
+		}
+	}
+
 	// Run npm
 	cmd := exec.Command(npmPath, args[1:]...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	cmd.Env = os.Environ()
+	// Set npm_config_prefix to redirect symlinks to the default version's directory
+	if npmPrefix != "" {
+		cmd.Env = append(os.Environ(), "npm_config_prefix="+npmPrefix)
+	} else {
+		cmd.Env = os.Environ()
+	}
 
 	err = cmd.Run()
 	exitCode := 0
@@ -873,11 +986,32 @@ func execWindowsWithEnv(binaryPath string, args []string, env []string) error {
 // runNvuCli handles the case where this binary is named 'nvu'
 // It finds the actual nvu CLI script and runs it via node
 func runNvuCli() {
-	// Find a node binary to use
-	nodePath, err := findNodeForNvu()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "nvu error: %s\n", err)
-		os.Exit(1)
+	// Check if default is "system" - if so, use system node
+	nvuHome, _ := getNvuHome()
+	defaultPath := filepath.Join(nvuHome, "default")
+	defaultVersion, _ := readVersionFile(defaultPath)
+
+	var nodePath string
+	var err error
+
+	if defaultVersion == "system" {
+		// Use system node for nvu CLI when default is system
+		nodePath = findSystemBinary("node")
+		if nodePath == "" {
+			fmt.Fprintf(os.Stderr, "nvu error: system node not found\n")
+			os.Exit(1)
+		}
+	} else {
+		// Find node in installed versions
+		nodePath, err = findNodeForNvu()
+		if err != nil {
+			// Fall back to system node
+			nodePath = findSystemBinary("node")
+			if nodePath == "" {
+				fmt.Fprintf(os.Stderr, "nvu error: %s\n", err)
+				os.Exit(1)
+			}
+		}
 	}
 
 	// Find the nvu CLI script
@@ -935,31 +1069,7 @@ func findNodeForNvu() (string, error) {
 
 // findNvuScript finds the nvu CLI script location
 func findNvuScript() (string, error) {
-	nvuHome, err := getNvuHome()
-	if err != nil {
-		return "", err
-	}
-
-	// First, check in nvu-managed Node versions
-	versionsDir := filepath.Join(nvuHome, "installed")
-	entries, err := os.ReadDir(versionsDir)
-	if err == nil {
-		for _, entry := range entries {
-			if entry.IsDir() {
-				var scriptPath string
-				if runtime.GOOS == "windows" {
-					scriptPath = filepath.Join(versionsDir, entry.Name(), "node_modules", "node-version-use", "bin", "cli.js")
-				} else {
-					scriptPath = filepath.Join(versionsDir, entry.Name(), "lib", "node_modules", "node-version-use", "bin", "cli.js")
-				}
-				if _, err := os.Stat(scriptPath); err == nil {
-					return scriptPath, nil
-				}
-			}
-		}
-	}
-
-	// Try to find nvu via system npm's global prefix
+	// First: try system npm's global prefix (escape hatch)
 	npmPath := findSystemBinary("npm")
 	if npmPath != "" {
 		cmd := exec.Command(npmPath, "prefix", "-g")
@@ -978,28 +1088,29 @@ func findNvuScript() (string, error) {
 		}
 	}
 
-	// Try common npm global locations
-	homeDir, _ := os.UserHomeDir()
-	possiblePaths := []string{}
-
-	if runtime.GOOS == "windows" {
-		possiblePaths = append(possiblePaths,
-			filepath.Join(os.Getenv("APPDATA"), "npm", "node_modules", "node-version-use", "bin", "cli.js"),
-			filepath.Join(homeDir, "AppData", "Roaming", "npm", "node_modules", "node-version-use", "bin", "cli.js"),
-		)
-	} else {
-		possiblePaths = append(possiblePaths,
-			filepath.Join(homeDir, ".npm-global", "lib", "node_modules", "node-version-use", "bin", "cli.js"),
-			"/usr/local/lib/node_modules/node-version-use/bin/cli.js",
-			"/usr/lib/node_modules/node-version-use/bin/cli.js",
-		)
+	// Fallback: check in nvu-managed Node versions
+	nvuHome, err := getNvuHome()
+	if err != nil {
+		return "", err
 	}
 
-	for _, p := range possiblePaths {
-		if _, err := os.Stat(p); err == nil {
-			return p, nil
+	versionsDir := filepath.Join(nvuHome, "installed")
+	entries, err := os.ReadDir(versionsDir)
+	if err == nil {
+		for _, entry := range entries {
+			if entry.IsDir() {
+				var scriptPath string
+				if runtime.GOOS == "windows" {
+					scriptPath = filepath.Join(versionsDir, entry.Name(), "node_modules", "node-version-use", "bin", "cli.js")
+				} else {
+					scriptPath = filepath.Join(versionsDir, entry.Name(), "lib", "node_modules", "node-version-use", "bin", "cli.js")
+				}
+				if _, err := os.Stat(scriptPath); err == nil {
+					return scriptPath, nil
+				}
+			}
 		}
 	}
 
-	return "", fmt.Errorf("nvu CLI script not found - reinstall with: npm install -g node-version-use")
+	return "", fmt.Errorf("nvu not installed - run 'nvu system npm install -g node-version-use' to reinstall")
 }
