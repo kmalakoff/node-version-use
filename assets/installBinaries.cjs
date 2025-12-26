@@ -37,21 +37,24 @@ function removeIfExistsSync(filePath) {
     }
 }
 /**
- * On Windows, rename a file out of the way instead of deleting.
- * This works even if the file is currently running.
+ * Move a file out of the way (works even if running on Windows)
+ * First tries to unlink; if that fails (Windows locked), rename to .old-timestamp
  */ function moveOutOfWay(filePath) {
     if (!fs.existsSync(filePath)) return;
+    // First try to unlink (works on Unix, fails on Windows if running)
+    try {
+        fs.unlinkSync(filePath);
+        return;
+    } catch (_e) {
+    // Unlink failed (likely Windows locked file), try rename
+    }
+    // Rename to .old-timestamp as fallback
     var timestamp = Date.now();
     var oldPath = "".concat(filePath, ".old-").concat(timestamp);
     try {
         fs.renameSync(filePath, oldPath);
-    } catch (_e) {
-        // If rename fails, try delete as fallback (works on Unix)
-        try {
-            fs.unlinkSync(filePath);
-        } catch (_e2) {
-        // ignore - will fail on atomic rename instead
-        }
+    } catch (_e2) {
+    // Both unlink and rename failed - will fail on atomic rename instead
     }
 }
 /**
@@ -114,6 +117,55 @@ function removeIfExistsSync(filePath) {
     var content = fs.readFileSync(src);
     fs.writeFileSync(dest, content);
 }
+/**
+ * Sync all shims by copying the nvu binary to all other files in the bin directory
+ * All shims (node, npm, npx, corepack, eslint, etc.) are copies of the same binary
+ */ module.exports.syncAllShims = function syncAllShims(binDir) {
+    var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+    var ext = isWindows ? '.exe' : '';
+    // Source: nvu binary
+    var nvuSource = path.join(binDir, "nvu".concat(ext));
+    if (!fs.existsSync(nvuSource)) return;
+    try {
+        var entries = fs.readdirSync(binDir);
+        var _iteratorNormalCompletion = true, _didIteratorError = false, _iteratorError = undefined;
+        try {
+            for(var _iterator = entries[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true){
+                var name = _step.value;
+                // Skip nvu itself and nvu.json
+                if (name === "nvu".concat(ext) || name === 'nvu.json') continue;
+                // On Windows, only process .exe files
+                if (isWindows && !name.endsWith('.exe')) continue;
+                var shimPath = path.join(binDir, name);
+                var stat = fs.statSync(shimPath);
+                if (!stat.isFile()) continue;
+                // Move existing file out of the way (Windows compatibility)
+                moveOutOfWay(shimPath);
+                // Copy nvu binary to shim
+                copyFileSync(nvuSource, shimPath);
+                // Make executable on Unix
+                if (!isWindows) {
+                    fs.chmodSync(shimPath, 493);
+                }
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally{
+            try {
+                if (!_iteratorNormalCompletion && _iterator.return != null) {
+                    _iterator.return();
+                }
+            } finally{
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
+        }
+    } catch (_e) {
+    // Ignore errors - shim sync is best effort
+    }
+};
 /**
  * Atomic rename with fallback to copy+delete for cross-device moves
  */ function atomicRename(src, dest, callback) {
@@ -296,38 +348,63 @@ function removeIfExistsSync(filePath) {
     }
     var extractedBinaryName = "".concat(archiveBaseName).concat(isWindows ? '.exe' : '');
     var binDir = path.join(storagePath, 'bin');
+    var nvuJsonPath = path.join(binDir, 'nvu.json');
     // check if we need to upgrade
     if (!options.force) {
         try {
-            // already installed
-            if (fs.statSync(binDir)) {
-                if (fs.readFileSync(path.join(binDir, 'version.txt'), 'utf8') === BINARY_VERSION) {
-                    callback(null, false);
-                    return;
-                }
+            // already installed - read nvu.json
+            var nvuJson = JSON.parse(fs.readFileSync(nvuJsonPath, 'utf8'));
+            if (nvuJson.binaryVersion === BINARY_VERSION) {
+                callback(null, false);
+                return;
             }
         } catch (_err) {}
     }
     // Create directories
     mkdirp.sync(storagePath);
     mkdirp.sync(binDir);
+    mkdirp.sync(path.join(storagePath, 'cache'));
     // Clean up old .old-* files from previous installs
     cleanupOldFiles(binDir);
     var downloadUrl = "https://github.com/".concat(GITHUB_REPO, "/releases/download/binary-v").concat(BINARY_VERSION, "/").concat(archiveBaseName).concat(isWindows ? '.zip' : '.tar.gz');
-    var tempPath = path.join(tmpdir(), "nvu-binary-".concat(Date.now()).concat(isWindows ? '.zip' : '.tar.gz'));
+    var cachePath = path.join(storagePath, 'cache', "".concat(archiveBaseName).concat(isWindows ? '.zip' : '.tar.gz'));
+    // Check cache first
+    if (fs.existsSync(cachePath)) {
+        console.log('Using cached binary...');
+        // Use cached file
+        extractAndInstall(cachePath, binDir, extractedBinaryName, function(err) {
+            if (err) return callback(err);
+            // save binary version for upgrade checks
+            fs.writeFileSync(nvuJsonPath, JSON.stringify({
+                binaryVersion: BINARY_VERSION
+            }, null, 2), 'utf8');
+            console.log('Binary installed successfully!');
+            callback(null, true);
+        });
+        return;
+    }
+    // Download to temp file
     console.log("Downloading binary for ".concat(process.platform, "-").concat(process.arch, "..."));
+    var tempPath = path.join(tmpdir(), "nvu-binary-".concat(Date.now()).concat(isWindows ? '.zip' : '.tar.gz'));
     getFile(downloadUrl, tempPath, function(err) {
         if (err) {
             removeIfExistsSync(tempPath);
             callback(new Error("No prebuilt binary available for ".concat(process.platform, "-").concat(process.arch, ". Download: ").concat(downloadUrl, ". Error: ").concat(err.message)));
             return;
         }
-        console.log('Extracting binary...');
+        // Copy to cache for future use
+        try {
+            copyFileSync(tempPath, cachePath);
+        } catch (_e) {
+        // Cache write failed, continue anyway
+        }
         extractAndInstall(tempPath, binDir, extractedBinaryName, function(err) {
             removeIfExistsSync(tempPath);
             if (err) return callback(err);
             // save binary version for upgrade checks
-            fs.writeFileSync(path.join(binDir, 'version.txt'), BINARY_VERSION, 'utf8');
+            fs.writeFileSync(nvuJsonPath, JSON.stringify({
+                binaryVersion: BINARY_VERSION
+            }, null, 2), 'utf8');
             console.log('Binary installed successfully!');
             callback(null, true);
         });

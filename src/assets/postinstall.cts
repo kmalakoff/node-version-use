@@ -44,6 +44,8 @@ function main(): void {
 
       printInstructions();
       console.log('postinstall: Binary installed successfully!');
+    } else {
+      console.log('postinstall: Binaries already up to date.');
     }
     exit(0);
   });
