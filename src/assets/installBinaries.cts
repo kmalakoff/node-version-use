@@ -125,6 +125,68 @@ function copyFileSync(src: string, dest: string): void {
 }
 
 /**
+ * Move a file out of the way (works even if running on Windows)
+ */
+function moveOutOfWay(filePath: string): void {
+  if (!fs.existsSync(filePath)) return;
+
+  const timestamp = Date.now();
+  const oldPath = `${filePath}.old-${timestamp}`;
+
+  try {
+    fs.renameSync(filePath, oldPath);
+  } catch (_e) {
+    // If rename fails, try delete as fallback (works on Unix)
+    try {
+      fs.unlinkSync(filePath);
+    } catch (_e2) {
+      // ignore - will fail on atomic rename instead
+    }
+  }
+}
+
+/**
+ * Sync all shims by copying the nvu binary to all other files in the bin directory
+ * All shims (node, npm, npx, corepack, eslint, etc.) are copies of the same binary
+ */
+module.exports.syncAllShims = function syncAllShims(binDir: string): void {
+  const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+  const ext = isWindows ? '.exe' : '';
+
+  // Source: nvu binary
+  const nvuSource = path.join(binDir, `nvu${ext}`);
+  if (!fs.existsSync(nvuSource)) return;
+
+  try {
+    const entries = fs.readdirSync(binDir);
+    for (const name of entries) {
+      // Skip nvu itself (it's the source)
+      if (name === `nvu${ext}`) continue;
+
+      // On Windows, only process .exe files
+      if (isWindows && !name.endsWith('.exe')) continue;
+
+      const shimPath = path.join(binDir, name);
+      const stat = fs.statSync(shimPath);
+      if (!stat.isFile()) continue;
+
+      // Move existing file out of the way (Windows compatibility)
+      moveOutOfWay(shimPath);
+
+      // Copy nvu binary to shim
+      copyFileSync(nvuSource, shimPath);
+
+      // Make executable on Unix
+      if (!isWindows) {
+        fs.chmodSync(shimPath, 0o755);
+      }
+    }
+  } catch (_e) {
+    // Ignore errors - shim sync is best effort
+  }
+};
+
+/**
  * Atomic rename with fallback to copy+delete for cross-device moves
  */
 function atomicRename(src: string, dest: string, callback: Callback) {

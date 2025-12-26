@@ -11,7 +11,19 @@
  */
 
 const exit = require('exit-compat');
-const { installBinaries, printInstructions } = require('./installBinaries.cjs');
+const path = require('path');
+const os = require('os');
+const { installBinaries, printInstructions, syncAllShims } = require('./installBinaries.cjs');
+
+const hasHomedir = typeof os.homedir === 'function';
+function homedir(): string {
+  if (hasHomedir) return os.homedir();
+  const home = require('homedir-polyfill');
+  return home();
+}
+
+// Allow NVU_HOME override for testing
+const storagePath = process.env.NVU_HOME || path.join(homedir(), '.nvu');
 
 /**
  * Main installation function
@@ -26,6 +38,10 @@ function main(): void {
     }
 
     if (installed) {
+      // Sync all shims to the new binary version
+      const binDir = path.join(storagePath, 'bin');
+      syncAllShims(binDir);
+
       printInstructions();
       console.log('postinstall: Binary installed successfully!');
     }

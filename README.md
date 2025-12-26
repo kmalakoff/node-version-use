@@ -1,135 +1,112 @@
 ## node-version-use
 
-Cross-platform solution for using multiple versions of Node.js. Useful for compatibility testing and transparent version switching.
+Cross-platform solution for using multiple versions of Node.js. Transparent version switching via command interception.
 
 ### Installation
 
 ```bash
 npm install -g node-version-use
-```
-
-On install, nvu automatically downloads platform-specific binaries to `~/.nvu/bin/`. To enable transparent Node version switching, add to your shell profile:
-
-```bash
-# For bash (~/.bashrc) or zsh (~/.zshrc):
-export PATH="$HOME/.nvu/bin:$PATH"
-
-# For fish (~/.config/fish/config.fish):
-set -gx PATH $HOME/.nvu/bin $PATH
+export PATH="$HOME/.nvu/bin:$PATH"  # Add to shell profile
 ```
 
 ### Quick Start
 
 ```bash
-# Set a global default Node version
-nvu default 20
-
-# Or set a project-specific version (creates .nvmrc)
-nvu local 18
-
-# Now 'node' and 'npm' use the configured version automatically
-node --version  # v20.x.x (or v18.x.x in project directory)
+nvu default 20           # Set global default
+nvu local 18             # Set project version (.nvmrc)
+node --version           # Uses v20 (or v18 in project)
 ```
 
 ### Commands
 
-#### Version Management
-
-```bash
-# Set global default version
-nvu default 20
-
-# Set local version for current directory (creates .nvmrc)
-nvu local 18
-
-# Install a Node version
-nvu install 22
-
-# Uninstall a Node version
-nvu uninstall 22
-
-# List installed versions
-nvu list
-
-# Show which version would be used
-nvu which
 ```
-
-#### Binary Management
-
-```bash
-# Install/reinstall binaries
-nvu setup
-
-# Remove binaries
-nvu teardown
-```
-
-#### Run Commands with Specific Versions
-
-```bash
-# Run with a specific version
-nvu 14.4.0 npm run test
-
-# Run with highest matching major version
-nvu 12 npm run test
-
-# Run with LTS version
-nvu lts npm run test
-
-# Run with multiple versions (comma-delimited)
-nvu 0.8,4,8,14 npm run test
-
-# Run with version expression
-nvu >=0.8 node --version
-
-# Use engines.node from package.json
-nvu engines node --version
+nvu default 20           # Global default
+nvu default system       # Use system Node
+nvu local 18             # Project version (.nvmrc)
+nvu install 22           # Install Node
+nvu uninstall 22         # Uninstall Node
+nvu list                 # List installed
+nvu 22 npm run test      # Run with specific version
 ```
 
 ### How It Works
 
-nvu uses lightweight binaries that intercept `node`, `npm`, and `npx` commands. When you run `node`, the binary:
+```
+~/.nvu/bin/              # Go binary shims (node, npm, npx, nvu, ...)
+  ↓
+~/.nvu/default          # Contains "22", "20", or "system"
+  ↓
+~/.nvu/installed/v22/   # Real Node.js installation
+  └── bin/node          # Actual Node binary
+```
 
-1. Checks for `.nvurc` in current/parent directories
-2. Checks for `.nvmrc` in current/parent directories
-3. Falls back to `~/.nvu/default`
-4. Executes the matching installed Node version
+**Key design decisions:**
 
-This works in all contexts: terminals, IDEs, CI, scripts - without shell integration.
+1. **Strict routing** - Each command routes to exactly one version (the default)
+2. **npm compatibility** - Uses `npm_config_prefix` so npm behaves normally
+3. **System escape hatch** - `nvu system npm ...` bypasses version routing
+4. **Version-specific packages** - Global npm packages live in the version's directory
 
-### Version Resolution
+### Frequently Asked Questions
 
-The binary resolves partial versions to installed versions:
-- `20` matches `v20.19.6`
-- `18.19` matches `v18.19.0`
-- `v22` matches `v22.0.0`
+#### How do I reinstall nvu if it's missing?
+
+```bash
+nvu system npm install -g node-version-use
+```
+
+This bypasses version routing entirely.
+
+#### Are global npm packages shared across versions?
+
+No. Each Node version has its own `lib/node_modules/`. Install separately:
+
+```bash
+nvu 22 npm install -g some-package
+nvu 20 npm install -g some-package
+```
+
+#### Can I use system Node?
+
+```bash
+nvu default system
+```
+
+Routes all commands to system binaries via PATH.
+
+#### Why not search all installed versions for binaries?
+
+Explicit is better than implicit. You know exactly which version runs. Use `nvu <version> <command>` for specific versions.
+
+### How nvu Differs from Other Version Managers
+
+| Feature | nvu | nvm | Volta |
+|---------|-----|-----|-------|
+| Command routing | Go binary shim | Shell function | npm shim |
+| Default version | Global or per-project | Global | Per-project (package.json) |
+| Global packages | Version-specific | Shared (via symlinks) | Pin to version |
+| System Node | `nvu default system` | `nvm use system` | `volta off` |
+| Recovery when broken | `nvu system npm ...` | Reinstall nvm | Reinstall volta |
+
+**nvu** uses a single Go binary that intercepts commands. Simple, predictable routing.
+
+**nvm** is a shell function that changes `$NODE_HOME` environment variable.
+
+**Volta** pins packages to specific Node versions in package.json and uses npm shims.
 
 ### JavaScript API
 
 ```javascript
 const nvu = require('node-version-use');
-
-// Run with callback
-nvu('>=0.8', 'node', ['--version'], { versions: '12', stdio: 'inherit' }, (err, results) => {
-  // results is an array per-version of form {version, error, result}
-});
-
-// Run with async/await
-const results = await nvu('engines', 'node', ['--version'], { stdio: 'inherit' });
+const results = await nvu('>=0.8', 'node', ['--version'], { stdio: 'inherit' });
 ```
 
-### Uninstalling
+### Uninstall
 
 ```bash
-# Remove binaries
-nvu teardown
-
-# Optionally remove all nvu data
-rm -rf ~/.nvu
+nvu teardown           # Remove ~/.nvu/bin
+rm -rf ~/.nvu          # Remove all data
 ```
-
-Then remove the PATH line from your shell profile.
 
 ### Compatibility
 
@@ -137,4 +114,4 @@ Then remove the PATH line from your shell profile.
 - Linux (arm64, x64)
 - Windows (arm64, x64)
 
-Compatible with `.nvmrc` files from nvm, fnm, and other version managers.
+Compatible with `.nvmrc` files from nvm, fnm, and other tools.
