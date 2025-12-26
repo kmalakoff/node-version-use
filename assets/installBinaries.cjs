@@ -8,6 +8,7 @@ var os = require('os');
 var path = require('path');
 var Queue = require('queue-cb');
 var moduleRoot = require('module-root-sync');
+var cpuArch = require('cpu-arch');
 var root = moduleRoot(__dirname);
 // Configuration
 var GITHUB_REPO = 'kmalakoff/node-version-use';
@@ -95,7 +96,8 @@ function removeIfExistsSync(filePath) {
 /**
  * Get the platform-specific archive base name (without extension)
  */ function getArchiveBaseName() {
-    var platform = process.platform, arch = process.arch;
+    var platform = process.platform;
+    var arch = cpuArch();
     var platformMap = {
         darwin: 'darwin',
         linux: 'linux',
@@ -384,12 +386,12 @@ function removeIfExistsSync(filePath) {
         return;
     }
     // Download to temp file
-    console.log("Downloading binary for ".concat(process.platform, "-").concat(process.arch, "..."));
+    console.log("Downloading binary for ".concat(archiveBaseName, "..."));
     var tempPath = path.join(tmpdir(), "nvu-binary-".concat(Date.now()).concat(isWindows ? '.zip' : '.tar.gz'));
     getFile(downloadUrl, tempPath, function(err) {
         if (err) {
             removeIfExistsSync(tempPath);
-            callback(new Error("No prebuilt binary available for ".concat(process.platform, "-").concat(process.arch, ". Download: ").concat(downloadUrl, ". Error: ").concat(err.message)));
+            callback(new Error("No prebuilt binary available for ".concat(archiveBaseName, ". Download: ").concat(downloadUrl, ". Error: ").concat(err.message)));
             return;
         }
         // Copy to cache for future use

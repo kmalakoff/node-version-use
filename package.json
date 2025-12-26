@@ -48,6 +48,7 @@
     "version": "tsds version"
   },
   "dependencies": {
+    "cpu-arch": "^1.1.1",
     "cross-spawn-cb": "^3.0.0",
     "exit-compat": "^1.0.0",
     "fs-remove-compat": "^1.0.0",
