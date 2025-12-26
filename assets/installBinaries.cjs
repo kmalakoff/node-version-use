@@ -226,6 +226,13 @@ function removeIfExistsSync(filePath) {
  * 2. Copy binary to temp files in destination directory
  * 3. Atomic rename temp files to final names
  */ function extractAndInstall(archivePath, destDir, binaryName, callback) {
+    var binaries = [
+        'nvu',
+        'node',
+        'npm',
+        'npx',
+        'corepack'
+    ];
     var ext = isWindows ? '.exe' : '';
     // Create temp extraction directory
     var tempExtractDir = path.join(tmpdir(), "nvu-extract-".concat(Date.now()));
@@ -243,12 +250,6 @@ function removeIfExistsSync(filePath) {
             return;
         }
         // Binary names to install
-        var binaries = [
-            'node',
-            'npm',
-            'npx',
-            'corepack'
-        ];
         var timestamp = Date.now();
         var installError = null;
         // Step 1: Copy extracted binary to temp files in destination directory
@@ -305,7 +306,7 @@ function removeIfExistsSync(filePath) {
  */ module.exports.printInstructions = function printInstructions() {
     var _nvuBinPath = path.join(storagePath, 'bin');
     console.log('nvu binaries installed in ~/.nvu/bin/');
-    var pathKey = envPathKey();
+    var pathKey = envPathKey(); // PATH or Path or similar
     var envPath = process.env[pathKey] || '';
     if (envPath.indexOf('.nvu/bin') >= 0) return; // path exists
     // provide instructions for path setup

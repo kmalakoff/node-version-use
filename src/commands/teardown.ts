@@ -13,8 +13,7 @@ const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process
  */
 export default function teardownCmd(_args: string[]): void {
   const binDir = path.join(storagePath, 'bin');
-
-  const binaries = ['node', 'npm', 'npx'];
+  const binaries = ['nvu', 'node', 'npm', 'npx', 'corepack'];
   const ext = isWindows ? '.exe' : '';
 
   let removed = 0;

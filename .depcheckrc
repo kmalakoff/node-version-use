@@ -1,2 +1,2 @@
-ignores: ["node-version-use", "ts-dev-stack", "tar-iterator", "zip-iterator"]
+ignores: ["node-version-use", "ts-dev-stack", "tar-iterator", "zip-iterator", "fs-copy-compat"]
 ignoreDirs: [".tmp"]
