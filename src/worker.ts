@@ -87,7 +87,7 @@ export default function worker(versionExpression: string, command: string, args:
       const interactive = options.interactive !== false;
       const session = versions.length >= 2 && process.stdout.isTTY && createSession && !streamingOptions.streaming ? createSession({ header: `${command} ${args.join(' ')}`, showStatusBar: true, interactive }) : null;
 
-      versions.forEach((version: string) =>
+      versions.forEach((version: string, index) =>
         queue.defer((cb) =>
           installVersion(version, installOptions, (err, installs) => {
             const install = installs && installs.length === 1 ? installs[0] : null;
@@ -113,7 +113,7 @@ export default function worker(versionExpression: string, command: string, args:
             const resolved = resolveCommand(command, args);
 
             // Show command when running single version (no terminal session, unless silent)
-            if (!session && !options.silent) console.log(version);
+            if (!session && !options.silent) console.log(`${index > 0 ? '\n' : ''}${version}`);
             if (!session && !options.silent) console.log('--------------');
             if (!session && !options.silent) console.log(`$ ${formatArguments([resolved.command].concat(resolved.args)).join(' ')}`);
 
