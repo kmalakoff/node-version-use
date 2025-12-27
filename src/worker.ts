@@ -85,10 +85,10 @@ export default function worker(versionExpression: string, command: string, args:
 
       // Create session once for all processes (only if multiple versions)
       const interactive = options.interactive !== false;
-      const session = versions.length >= 2 && createSession && !streamingOptions.streaming ? createSession({ header: `${command} ${args.join(' ')}`, showStatusBar: true, interactive }) : null;
+      const session = versions.length >= 2 && process.stdout.isTTY && createSession && !streamingOptions.streaming ? createSession({ header: `${command} ${args.join(' ')}`, showStatusBar: true, interactive }) : null;
 
-      versions.forEach((version: string) => {
-        queue.defer((cb) => {
+      versions.forEach((version: string) =>
+        queue.defer((cb) =>
           installVersion(version, installOptions, (err, installs) => {
             const install = installs && installs.length === 1 ? installs[0] : null;
             if (err || !install) {
@@ -100,6 +100,7 @@ export default function worker(versionExpression: string, command: string, args:
             const prefix = install.version;
 
             function next(err?, res?): void {
+              if (!session && !options.silent) console.log('==============');
               if (err && err.message.indexOf('ExperimentalWarning') >= 0) {
                 res = err;
                 err = null;
@@ -111,16 +112,17 @@ export default function worker(versionExpression: string, command: string, args:
             // On Windows, resolve npm bin commands to bypass .cmd wrappers
             const resolved = resolveCommand(command, args);
 
-            if (versions.length < 2) {
-              // Show command when running single version (no terminal session, unless silent)
-              if (!options.silent) console.log(`$ ${formatArguments([resolved.command].concat(resolved.args)).join(' ')}`);
-              return spawn(resolved.command, resolved.args, spawnOptions, next);
-            }
-            if (session) session.spawn(resolved.command, resolved.args, spawnOptions, { group: prefix, expanded: streamingOptions.expanded }, next);
-            else spawnStreaming(resolved.command, resolved.args, spawnOptions, { prefix }, next);
-          });
-        });
-      });
+            // Show command when running single version (no terminal session, unless silent)
+            if (!session && !options.silent) console.log(version);
+            if (!session && !options.silent) console.log('--------------');
+            if (!session && !options.silent) console.log(`$ ${formatArguments([resolved.command].concat(resolved.args)).join(' ')}`);
+
+            if (versions.length < 2) spawn(resolved.command, resolved.args, spawnOptions, next);
+            else if (session) session.spawn(resolved.command, resolved.args, spawnOptions, { group: prefix, expanded: streamingOptions.expanded }, next);
+            else spawnStreaming(resolved.command, resolved.args, spawnOptions, { prefix: process.stdout.isTTY ? prefix : undefined }, next);
+          })
+        )
+      );
       queue.await((err) => {
         if (session) {
           session.waitAndClose(() => {

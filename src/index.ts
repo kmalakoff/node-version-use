@@ -14,9 +14,5 @@ export default function nodeVersionUse(versionExpression: string, command: strin
   options = typeof options === 'function' ? {} : ((options || {}) as UseOptions);
 
   if (typeof callback === 'function') return worker(versionExpression, command, args, options, callback);
-  return new Promise((resolve, reject) =>
-    worker(versionExpression, command, args, options, (err, result) => {
-      err ? reject(err) : resolve(result);
-    })
-  );
+  return new Promise((resolve, reject) => worker(versionExpression, command, args, options, (err, result) => (err ? reject(err) : resolve(result))));
 }
