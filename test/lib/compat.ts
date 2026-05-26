@@ -13,7 +13,7 @@ import path from 'path';
 // Use existing require in CJS, or createRequire in ESM (Node 12.2+)
 const _require = typeof require === 'undefined' ? Module.createRequire(import.meta.url) : require;
 
-const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
 const pathKey = envPathKey(); // PATH or Path or similar
 const pathDelimiter = path.delimiter ? path.delimiter : isWindows ? ';' : ':';
 
@@ -80,7 +80,7 @@ const hasEndsWith = typeof String.prototype.endsWith === 'function';
 export function stringEndsWith(str: string, search: string, position?: number): boolean {
   if (hasEndsWith) return str.endsWith(search, position);
   const len = position === undefined ? str.length : position;
-  return str.lastIndexOf(search) === len - search.length;
+  return len >= search.length && str.lastIndexOf(search) === len - search.length;
 }
 
 /**

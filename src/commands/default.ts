@@ -154,7 +154,7 @@ function autoInstallAndSetDefault(version: string, versionsPath: string, default
  * First time is detected by checking if ~/.nvu/bin/nvu exists
  */
 function syncAllShimsIfNeeded(binDir: string): void {
-  const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+  const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
   const nvuPath = path.join(binDir, `nvu${isWindows ? '.exe' : ''}`);
 
   // Only sync if nvu binary exists (first time setup)

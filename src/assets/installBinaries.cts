@@ -15,7 +15,7 @@ const root = moduleRoot(__dirname);
 const GITHUB_REPO = 'kmalakoff/node-version-use';
 const BINARY_VERSION = require(path.join(root, 'package.json')).binaryVersion;
 
-const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
 
 type Callback = (err?: Error | null) => void;
 
@@ -135,7 +135,7 @@ function copyFileSync(src: string, dest: string): void {
  * All shims (node, npm, npx, corepack, eslint, etc.) are copies of the same binary
  */
 module.exports.syncAllShims = function syncAllShims(binDir: string): void {
-  const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+  const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
   const ext = isWindows ? '.exe' : '';
 
   // Source: nvu binary
@@ -175,7 +175,7 @@ module.exports.syncAllShims = function syncAllShims(binDir: string): void {
  * Atomic rename with fallback to copy+delete for cross-device moves
  */
 function atomicRename(src: string, dest: string, callback: Callback) {
-  fs.rename(src, dest, (err) => {
+  fs.rename(src, dest, (err: NodeJS.ErrnoException | null) => {
     if (!err) return callback(null);
 
     // Cross-device link error - fall back to copy + delete
@@ -203,9 +203,9 @@ function extractArchive(archivePath: string, dest: string, callback: Callback) {
   let iterator = new Iterator(stream);
 
   // one by one
-  const links = [];
+  const links: unknown[] = [];
   iterator.forEach(
-    (entry, callback) => {
+    (entry: { type: string; create: (dest: string, cb: Callback) => void }, callback: Callback) => {
       if (entry.type === 'link') {
         links.unshift(entry);
         callback();
@@ -215,14 +215,14 @@ function extractArchive(archivePath: string, dest: string, callback: Callback) {
       } else entry.create(dest, callback);
     },
     { callbacks: true, concurrency: 1 },
-    (_err) => {
+    (_err: unknown) => {
       // create links after directories and files
       const queue = new Queue();
       for (let index = 0; index < links.length; index++) {
-        const entry = links[index];
+        const entry = links[index] as { create: (dest: string, cb: Callback) => void };
         queue.defer(entry.create.bind(entry, dest));
       }
-      queue.await((err) => {
+      queue.await((err: Error | undefined) => {
         iterator.destroy();
         iterator = null;
         callback(err);
@@ -248,8 +248,7 @@ function extractAndInstall(archivePath: string, destDir: string, binaryName: str
   extractArchive(archivePath, tempExtractDir, (err) => {
     if (err) {
       safeRmSync(tempExtractDir);
-      callback(err);
-      return;
+      return callback(err);
     }
 
     const extractedPath = path.join(tempExtractDir, binaryName);
@@ -371,7 +370,7 @@ module.exports.printInstructions = function printInstructions(): void {
 /**
  * Main installation function
  */
-module.exports.installBinaries = function installBinaries(options, callback): void {
+module.exports.installBinaries = function installBinaries(options: { force?: boolean }, callback: (err: Error | null, installed?: boolean) => void): void {
   const archiveBaseName = getArchiveBaseName();
 
   if (!archiveBaseName) {
@@ -426,11 +425,10 @@ module.exports.installBinaries = function installBinaries(options, callback): vo
   console.log(`Downloading binary for ${archiveBaseName}...`);
   const tempPath = path.join(tmpdir(), `nvu-binary-${Date.now()}${isWindows ? '.zip' : '.tar.gz'}`);
 
-  getFile(downloadUrl, tempPath, (err) => {
+  getFile(downloadUrl, tempPath, (err: Error | null) => {
     if (err) {
       removeIfExistsSync(tempPath);
-      callback(new Error(`No prebuilt binary available for ${archiveBaseName}. Download: ${downloadUrl}. Error: ${err.message}`));
-      return;
+      return callback(new Error(`No prebuilt binary available for ${archiveBaseName}. Download: ${downloadUrl}. Error: ${err.message}`));
     }
 
     // Copy to cache for future use

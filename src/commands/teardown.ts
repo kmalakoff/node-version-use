@@ -4,7 +4,7 @@ import { rmSync } from 'fs-remove-compat';
 import path from 'path';
 import { storagePath } from '../constants.ts';
 
-const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
 
 /**
  * nvu teardown

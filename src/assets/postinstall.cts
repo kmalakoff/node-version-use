@@ -29,12 +29,11 @@ const storagePath = process.env.NVU_HOME || path.join(homedir(), '.nvu');
  * Main installation function
  */
 function main(): void {
-  installBinaries({}, (err, installed) => {
+  installBinaries({}, (err: Error | null, installed: boolean) => {
     if (err) {
       console.log(`postinstall warning: Failed to install binary: ${err.message || err}`);
       console.log('You can still use nvu with explicit versions: nvu 18 npm test');
-      exit(1);
-      return;
+      return exit(1);
     }
 
     if (installed) {
