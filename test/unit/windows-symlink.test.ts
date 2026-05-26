@@ -17,7 +17,7 @@ const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.js');
 const TMP_DIR = path.join(__dirname, '..', '..', '.tmp-symlink-test');
 const TEST_PKG_DIR = path.join(__dirname, '..', 'data', 'symlink-test-pkg');
 
-const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
 
 const OPTIONS = {
   encoding: 'utf8' as BufferEncoding,
@@ -129,7 +129,7 @@ describe('windows symlink', () => {
     spawn(CLI, ['--silent', '--expanded', '22', cmdPath], OPTIONS, (err, res) => {
       if (err) return done(err);
 
-      const output = (res.stdout as string).trim();
+      const output = ((res?.stdout ?? '') as string).trim();
       console.log('Output:', output);
 
       // The output should contain v22.x, indicating nvu correctly used Node 22

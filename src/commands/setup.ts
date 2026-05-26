@@ -12,11 +12,10 @@ const { installBinaries, printInstructions, syncAllShims } = _require('../assets
  * Install/reinstall nvu binaries to ~/.nvu/bin
  */
 export default function setupCmd(_args: string[]): void {
-  installBinaries({}, (err, installed) => {
+  installBinaries({}, (err: Error | null, installed: boolean) => {
     if (err) {
       console.error(`Setup failed: ${err.message || err}`);
-      exit(1);
-      return;
+      return exit(1);
     }
 
     // Sync all shims to the new binary

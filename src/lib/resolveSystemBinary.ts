@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { homedir } from '../compat.ts';
 
-const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
 const nvuBinDir = path.join(homedir(), '.nvu', 'bin');
 const nvuInstalledDir = path.join(homedir(), '.nvu', 'installed');
 const pathKey = envPathKey(); // PATH or Path or similar

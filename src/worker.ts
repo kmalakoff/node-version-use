@@ -15,7 +15,7 @@ import { getPathWithoutNvuBin, resolveSystemBinary } from './lib/resolveSystemBi
 
 import type { Options, UseCallback, UseOptions, UseResult } from './types.ts';
 
-const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
 const NODE = isWindows ? 'node.exe' : 'node';
 
 // Parse npm-generated .cmd wrapper to extract the JS script path
@@ -71,9 +71,10 @@ export default function worker(versionExpression: string, command: string, args:
   loadNodeVersionInstall((loadErr, installVersion) => {
     if (loadErr) return callback(loadErr);
 
-    resolveVersions(versionExpression, options as VersionOptions, (err?: Error, versions?: string[]) => {
+    resolveVersions(versionExpression, options as VersionOptions, (err?: Error, result?: string[] | import('node-resolve-versions').VersionResultRaw[]) => {
+      const versions = result as string[] | undefined;
       if (err) return callback(err);
-      if (!versions.length) {
+      if (!versions || !versions.length) {
         callback(new Error(`No versions found from expression: ${versionExpression}`));
         return;
       }
@@ -85,25 +86,25 @@ export default function worker(versionExpression: string, command: string, args:
 
       // Create session once for all processes (only if multiple versions)
       const interactive = options.interactive !== false;
-      const session = versions.length >= 2 && process.stdout.isTTY && createSession && !streamingOptions.streaming ? createSession({ header: `${command} ${args.join(' ')}`, showStatusBar: true, interactive }) : null;
+      const session = versions.length >= 2 && process.stdout.isTTY && typeof createSession === 'function' && !streamingOptions.streaming ? createSession({ header: `${command} ${args.join(' ')}`, showStatusBar: true, interactive }) : null;
 
       versions.forEach((version: string, index) =>
         queue.defer((cb) =>
-          installVersion(version, installOptions, (err, installs) => {
+          installVersion?.(version, installOptions, (err, installs) => {
             const install = installs && installs.length === 1 ? installs[0] : null;
             if (err || !install) {
               const error = err || new Error(`Unexpected version results for version ${version}. Install ${JSON.stringify(installs)}`);
-              results.push({ install, command, version, error, result: null });
+              results.push({ install, command, version, error, result: undefined });
               return cb();
             }
             const spawnOptions = createSpawnOptions(install.installPath, options as SpawnOptions);
             const prefix = install.version;
 
-            function next(err?, res?): void {
+            function next(err?: Error, res?: import('cross-spawn-cb').SpawnResult): void {
               if (!session && !options.silent) console.log('==============');
               if (err && err.message.indexOf('ExperimentalWarning') >= 0) {
-                res = err;
-                err = null;
+                res = err as unknown as import('cross-spawn-cb').SpawnResult;
+                err = undefined;
               }
               results.push({ install, command, version, error: err, result: res });
               cb();
@@ -117,7 +118,7 @@ export default function worker(versionExpression: string, command: string, args:
             if (!session && !options.silent) console.log('--------------');
             if (!session && !options.silent) console.log(`$ ${formatArguments([resolved.command].concat(resolved.args)).join(' ')}`);
 
-            if (versions.length < 2) spawn(resolved.command, resolved.args, spawnOptions, next);
+            if (versions?.length < 2) spawn(resolved.command, resolved.args, spawnOptions, next);
             else if (session) session.spawn(resolved.command, resolved.args, spawnOptions, { group: prefix, expanded: streamingOptions.expanded }, next);
             else spawnStreaming(resolved.command, resolved.args, spawnOptions, { prefix: process.stdout.isTTY ? prefix : undefined }, next);
           })
@@ -126,10 +127,10 @@ export default function worker(versionExpression: string, command: string, args:
       queue.await((err) => {
         if (session) {
           session.waitAndClose(() => {
-            err ? callback(err) : callback(null, results);
+            err ? callback(err) : callback(undefined, results);
           });
         } else {
-          err ? callback(err) : callback(null, results);
+          err ? callback(err) : callback(undefined, results);
         }
       });
     });
@@ -167,10 +168,10 @@ function runWithSystemBinaries(command: string, args: string[], options: UseOpti
     console.log(`$ ${formatArguments([finalCommand].concat(finalArgs)).join(' ')}`);
   }
 
-  spawn(finalCommand, finalArgs, spawnOptions, (err?, res?) => {
+  spawn(finalCommand, finalArgs, spawnOptions, (err?: import('cross-spawn-cb').SpawnError, res?: import('cross-spawn-cb').SpawnResult) => {
     if (err && err.message && err.message.indexOf('ExperimentalWarning') >= 0) {
-      res = err;
-      err = null;
+      res = err as unknown as import('cross-spawn-cb').SpawnResult;
+      err = undefined;
     }
 
     const result: UseResult = {

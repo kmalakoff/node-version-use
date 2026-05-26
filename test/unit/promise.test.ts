@@ -11,7 +11,7 @@ import url from 'url';
 
 import getLines from '../lib/getLines.ts';
 
-const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
 const NODE = isWindows ? 'node.exe' : 'node';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
@@ -44,36 +44,60 @@ describe('promise', () => {
       it('one version - 12', async () => {
         const results = await versionUse('12', NODE, ['--version'], OPTIONS);
         assert.ok(results.length > 0);
-        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(
+          getLines(results[0]?.result?.stdout ?? '')
+            .slice(-1)[0]
+            .indexOf('v12.') === 0
+        );
       });
 
       it('lts version - lts', async () => {
         const results = await versionUse('lts', NODE, ['--version'], OPTIONS);
         assert.ok(results.length > 0);
-        assert.ok(isVersion(getLines(results[0].result.stdout).slice(-1)[0], 'v'));
+        assert.ok(isVersion(getLines(results[0]?.result?.stdout ?? '').slice(-1)[0], 'v'));
       });
 
       it('multiple versions - 10,12,lts', async () => {
         const results = await versionUse('10,12,lts', NODE, ['--version'], OPTIONS);
         assert.ok(results.length > 0);
-        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
-        assert.ok(getLines(results[1].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
-        assert.ok(isVersion(getLines(results[1].result.stdout).slice(-1)[0], 'v'));
+        assert.ok(
+          getLines(results[0]?.result?.stdout ?? '')
+            .slice(-1)[0]
+            .indexOf('v10.') === 0
+        );
+        assert.ok(
+          getLines(results[1]?.result?.stdout ?? '')
+            .slice(-1)[0]
+            .indexOf('v12.') === 0
+        );
+        assert.ok(isVersion(getLines(results[1]?.result?.stdout ?? '').slice(-1)[0], 'v'));
       });
 
       it('multiple versions - 10,12,lts (sort -1)', async () => {
         const results = await versionUse('10,12,lts', NODE, ['--version'], { sort: -1, ...OPTIONS });
         assert.ok(results.length > 0);
-        assert.ok(isVersion(getLines(results[0].result.stdout).slice(-1)[0], 'v'));
-        assert.ok(getLines(results[1].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
-        assert.ok(getLines(results[2].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
+        assert.ok(isVersion(getLines(results[0]?.result?.stdout ?? '').slice(-1)[0], 'v'));
+        assert.ok(
+          getLines(results[1]?.result?.stdout ?? '')
+            .slice(-1)[0]
+            .indexOf('v12.') === 0
+        );
+        assert.ok(
+          getLines(results[2]?.result?.stdout ?? '')
+            .slice(-1)[0]
+            .indexOf('v10.') === 0
+        );
       });
 
       it('using engines', async () => {
         const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
         const results = await versionUse('engines', NODE, ['--version'], { cwd, ...OPTIONS });
         assert.ok(results.length > 0);
-        assert.ok(getLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
+        assert.ok(
+          getLines(results[0]?.result?.stdout ?? '')
+            .slice(-1)[0]
+            .indexOf('v12.') === 0
+        );
       });
     });
 
@@ -109,7 +133,7 @@ describe('promise', () => {
       it('engines node missing', async () => {
         const cwd = path.join(path.join(__dirname, '..', 'data', 'engines-node-missing'));
         try {
-          const use = versionUse as (...args) => void;
+          const use = versionUse as (...args: unknown[]) => void;
           await use(NODE, ['--version'], { cwd, ...OPTIONS });
           assert.ok(false);
         } catch (err) {

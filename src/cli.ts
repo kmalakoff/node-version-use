@@ -98,24 +98,26 @@ export default (argv: string[], name: string): void => {
   }
 
   options.stdio = 'inherit'; // pass through stdio
-  run(args[0], args[1], args.slice(2), options as unknown as UseOptions, (err: UseError, results: UseResult[]): void => {
-    if (err && !err.results) {
-      console.log(err.message);
+  run(args[0], args[1], args.slice(2), options as unknown as UseOptions, (err?: UseError | Error, results?: UseResult[]): void => {
+    const useErr = err as UseError | undefined;
+    if (useErr && !useErr.results) {
+      console.log(useErr.message);
       exit(ERROR_CODE);
       return;
     }
-    if (err) results = err.results;
-    const errors = results.filter((result) => !!result.error);
+    if (useErr) results = useErr.results;
+    const safeResults = results || [];
+    const errors = safeResults.filter((result) => !!result.error);
 
     if (!options.silent) {
       if (!createSession) {
         console.log('\n======================');
-        results.forEach((res) => {
+        safeResults.forEach((res) => {
           console.log(`${res.error ? figures.cross : figures.tick} ${res.version}${res.error ? ` Error: ${res.error.message}` : ''}`);
         });
         console.log('\n----------------------');
         console.log(`${name} ${formatArguments(args).join(' ')}`);
-        console.log(`${figures.tick} ${results.length - errors.length} succeeded`);
+        console.log(`${figures.tick} ${safeResults.length - errors.length} succeeded`);
         if (errors.length) console.log(`${figures.cross} ${errors.length} failed`);
       }
     }

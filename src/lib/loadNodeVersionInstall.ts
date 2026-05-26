@@ -12,31 +12,31 @@ type InstallVersionFn = (version: string, options: InstallOptions, callback: Ins
 
 let cached: InstallVersionFn | undefined;
 
-function loadModule(moduleName, callback) {
+function loadModule(moduleName: string, callback: (err: Error | null, mod: InstallVersionFn | null) => void) {
   if (typeof require === 'undefined') {
     import(moduleName)
       .then((mod) => {
         callback(null, mod?.default ?? null);
       })
-      .catch(callback);
+      .catch((err) => callback(err instanceof Error ? err : new Error(String(err)), null));
   } else {
     try {
       callback(null, require(moduleName));
     } catch (err) {
-      callback(err, null);
+      callback(err instanceof Error ? err : new Error(String(err)), null);
     }
   }
 }
 
-export default function loadNodeVersionInstall(callback: (err: Error | null, installVersion: InstallVersionFn) => void): void {
-  if (cached !== undefined) return callback(null, cached);
+export default function loadNodeVersionInstall(callback: (err?: Error, installVersion?: InstallVersionFn) => void): void {
+  if (cached !== undefined) return callback(undefined, cached);
 
   installModule(moduleName, nodeModules, {}, (err) => {
-    if (err) return callback(err, null);
-    loadModule(moduleName, (err, _cached: InstallVersionFn) => {
-      if (err) return callback(err, null);
-      cached = _cached;
-      callback(null, cached);
+    if (err) return callback(err);
+    loadModule(moduleName, (err, _cached) => {
+      if (err) return callback(err instanceof Error ? err : new Error(String(err)));
+      cached = _cached!;
+      callback(undefined, cached);
     });
   });
 }

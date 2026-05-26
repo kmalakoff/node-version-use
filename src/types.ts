@@ -3,7 +3,7 @@ import type { VersionOptions } from 'node-resolve-versions';
 import type { InstallOptions, InstallResult } from 'node-version-install';
 
 export interface UseResult {
-  install: InstallResult;
+  install: InstallResult | null;
   command: string;
   version: string;
   result?: SpawnResult;

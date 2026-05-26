@@ -13,7 +13,7 @@ import { getTestBinaryPath, hasTestBinaries, mkdirRecursive, rmRecursive } from 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.js');
 const TMP_DIR = path.join(__dirname, '..', '..', '.tmp', 'commands');
-const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
 
 const OPTIONS = {
   encoding: 'utf8' as BufferEncoding,
@@ -53,7 +53,7 @@ describe('commands', () => {
 
       spawn(CLI, ['default'], OPTIONS, (err, res) => {
         if (err) return done(err);
-        assert.ok(res.stdout.indexOf('20') >= 0);
+        assert.ok((res?.stdout ?? '').indexOf('20') >= 0);
         done();
       });
     });
@@ -72,7 +72,7 @@ describe('commands', () => {
 
       spawn(CLI, ['default', '18'], OPTIONS, (err, res) => {
         if (err) return done(err);
-        assert.ok(res.stdout.indexOf('v18.20.0') >= 0, 'Should resolve to highest matching version');
+        assert.ok((res?.stdout ?? '').indexOf('v18.20.0') >= 0, 'Should resolve to highest matching version');
         // Verify file contains exact version
         const content = fs.readFileSync(defaultPath, 'utf8').trim();
         assert.strictEqual(content, 'v18.20.0', 'Default file should contain exact version');
@@ -93,7 +93,7 @@ describe('commands', () => {
 
       spawn(CLI, ['default', '20'], OPTIONS, (err, res) => {
         if (err) return done(err);
-        assert.ok(res.stdout.indexOf('v20.10.0') >= 0, 'Should resolve to v20.10.0 (semver highest)');
+        assert.ok((res?.stdout ?? '').indexOf('v20.10.0') >= 0, 'Should resolve to v20.10.0 (semver highest)');
         const content = fs.readFileSync(defaultPath, 'utf8').trim();
         assert.strictEqual(content, 'v20.10.0', 'Default should be v20.10.0 not v20.9.0');
         // Cleanup
@@ -143,8 +143,8 @@ describe('commands', () => {
 
       spawn(CLI, ['list'], OPTIONS, (err, res) => {
         if (err) return done(err);
-        assert.ok(res && res.stdout && (res.stdout.indexOf('17.9.0') >= 0 || res.stdout.indexOf('v17') >= 0), 'Should list v17');
-        assert.ok(res && res.stdout && (res.stdout.indexOf('19.1.0') >= 0 || res.stdout.indexOf('v19') >= 0), 'Should list v19');
+        assert.ok(res && (res?.stdout ?? '') && ((res?.stdout ?? '').indexOf('17.9.0') >= 0 || (res?.stdout ?? '').indexOf('v17') >= 0), 'Should list v17');
+        assert.ok(res && (res?.stdout ?? '') && ((res?.stdout ?? '').indexOf('19.1.0') >= 0 || (res?.stdout ?? '').indexOf('v19') >= 0), 'Should list v19');
         // Cleanup
         rmRecursive(path.join(versionsDir, 'v17.9.0'));
         rmRecursive(path.join(versionsDir, 'v19.1.0'));
@@ -160,7 +160,7 @@ describe('commands', () => {
 
       spawn(CLI, ['list'], OPTIONS, (err, res) => {
         if (err) return done(err);
-        assert.ok(res.stdout.indexOf('No Node versions') >= 0 || res.stdout.indexOf('none') >= 0);
+        assert.ok((res?.stdout ?? '').indexOf('No Node versions') >= 0 || (res?.stdout ?? '').indexOf('none') >= 0);
         done();
       });
     });
@@ -190,7 +190,7 @@ describe('commands', () => {
 
       spawn(CLI, ['which'], { ...OPTIONS, cwd: testDir }, (err, res) => {
         if (err) return done(err);
-        assert.ok(res && res.stdout.indexOf('16') >= 0);
+        assert.ok(res && (res?.stdout ?? '').indexOf('16') >= 0);
         done();
       });
     });
@@ -208,8 +208,8 @@ describe('commands', () => {
 
       spawn(CLI, ['which'], { ...OPTIONS, cwd: testDir }, (err, res) => {
         if (err) return done(err);
-        assert.ok(res && res.stdout.indexOf('system') >= 0, 'Should show system version');
-        assert.ok(res && res.stdout.indexOf('Binary:') >= 0, 'Should show binary path');
+        assert.ok(res && (res?.stdout ?? '').indexOf('system') >= 0, 'Should show system version');
+        assert.ok(res && (res?.stdout ?? '').indexOf('Binary:') >= 0, 'Should show binary path');
         done();
       });
     });
