@@ -99,7 +99,7 @@ export default (argv: string[], name: string): void => {
 
   options.stdio = 'inherit'; // pass through stdio
   run(args[0], args[1], args.slice(2), options as unknown as UseOptions, (err?: UseError | Error, results?: UseResult[]): void => {
-    const useErr = err as UseError | undefined;
+    const useErr = err as UseError | null;
     if (useErr && !useErr.results) {
       console.log(useErr.message);
       exit(ERROR_CODE);

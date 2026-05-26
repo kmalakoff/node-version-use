@@ -7,7 +7,7 @@ const _dirname = path.dirname(typeof __filename === 'undefined' ? url.fileURLToP
 const nodeModules = path.join(_dirname, '..', '..', '..', 'node_modules');
 const moduleName = 'node-version-install';
 
-type InstallCallback = (err?: Error, results?: InstallResult[]) => void;
+type InstallCallback = (err?: Error | null, results?: InstallResult[]) => void;
 type InstallVersionFn = (version: string, options: InstallOptions, callback: InstallCallback) => void;
 
 let cached: InstallVersionFn | undefined;
@@ -28,14 +28,15 @@ function loadModule(moduleName: string, callback: (err: Error | null, mod: Insta
   }
 }
 
-export default function loadNodeVersionInstall(callback: (err?: Error, installVersion?: InstallVersionFn) => void): void {
+export default function loadNodeVersionInstall(callback: (err?: Error | null, installVersion?: InstallVersionFn) => void): void {
   if (cached !== undefined) return callback(undefined, cached);
 
   installModule(moduleName, nodeModules, {}, (err) => {
     if (err) return callback(err);
     loadModule(moduleName, (err, _cached) => {
       if (err) return callback(err instanceof Error ? err : new Error(String(err)));
-      cached = _cached!;
+      if (!_cached) return callback(new Error(`Failed to load ${moduleName}`));
+      cached = _cached;
       callback(undefined, cached);
     });
   });

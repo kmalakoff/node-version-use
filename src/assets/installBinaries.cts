@@ -222,7 +222,7 @@ function extractArchive(archivePath: string, dest: string, callback: Callback) {
         const entry = links[index] as { create: (dest: string, cb: Callback) => void };
         queue.defer(entry.create.bind(entry, dest));
       }
-      queue.await((err: Error | undefined) => {
+      queue.await((err: Error | null) => {
         iterator.destroy();
         iterator = null;
         callback(err);

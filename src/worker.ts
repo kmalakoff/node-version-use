@@ -71,7 +71,7 @@ export default function worker(versionExpression: string, command: string, args:
   loadNodeVersionInstall((loadErr, installVersion) => {
     if (loadErr) return callback(loadErr);
 
-    resolveVersions(versionExpression, options as VersionOptions, (err?: Error, result?: string[] | import('node-resolve-versions').VersionResultRaw[]) => {
+    resolveVersions(versionExpression, options as VersionOptions, (err?: Error | null, result?: string[] | import('node-resolve-versions').VersionResultRaw[]) => {
       const versions = result as string[] | undefined;
       if (err) return callback(err);
       if (!versions || !versions.length) {
@@ -100,13 +100,13 @@ export default function worker(versionExpression: string, command: string, args:
             const spawnOptions = createSpawnOptions(install.installPath, options as SpawnOptions);
             const prefix = install.version;
 
-            function next(err?: Error, res?: import('cross-spawn-cb').SpawnResult): void {
+            function next(err?: Error | null, res?: import('cross-spawn-cb').SpawnResult): void {
               if (!session && !options.silent) console.log('==============');
               if (err && err.message.indexOf('ExperimentalWarning') >= 0) {
                 res = err as unknown as import('cross-spawn-cb').SpawnResult;
                 err = undefined;
               }
-              results.push({ install, command, version, error: err, result: res });
+              results.push({ install, command, version, error: err ?? undefined, result: res });
               cb();
             }
 
