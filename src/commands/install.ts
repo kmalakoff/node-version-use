@@ -45,7 +45,7 @@ export default function installCmd(args: string[]): void {
       {
         installPath: versionsPath,
       },
-      (installErr?: Error, results?: { version: string; installPath: string }[]) => {
+      (installErr?: Error | null, results?: { version: string; installPath: string }[]) => {
         if (installErr) {
           console.error(`Failed to install Node ${version}:`, installErr.message);
           exit(1);

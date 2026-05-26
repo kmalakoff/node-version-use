@@ -64,7 +64,7 @@
     "queue-cb": "^1.0.0",
     "resolve-bin-sync": "^1.0.12",
     "spawn-streaming": "^1.1.15",
-    "spawn-term": "^3.3.5",
+    "spawn-term": "^3.5.9",
     "tar-iterator": "^3.1.11",
     "zip-iterator": "^3.0.18"
   },
