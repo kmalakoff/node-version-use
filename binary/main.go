@@ -839,9 +839,104 @@ func execWindowsWithEnv(binaryPath string, args []string, env []string) error {
 	return nil
 }
 
+// isConcreteVersion reports whether a version expression is a single plain
+// version like "22" or "v20.19.6", as opposed to a list ("22,20,18"), a range
+// (">=18", "18.x") or an alias ("engines", "lts") that only the CLI can resolve
+func isConcreteVersion(version string) bool {
+	version = strings.TrimPrefix(version, "v")
+	if version == "" {
+		return false
+	}
+	for _, part := range strings.Split(version, ".") {
+		if part == "" {
+			return false
+		}
+		for _, char := range part {
+			if char < '0' || char > '9' {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// runDirect handles 'nvu <version> <command> [args...]' without the CLI for the
+// cases this binary can already resolve on its own: "system", or a single
+// concrete version that is already installed. Everything else - subcommands,
+// flags, version lists, ranges, "engines", uninstalled versions - falls through
+// to the CLI. Returns false when the invocation is not eligible; on success the
+// process is replaced and this never returns.
+func runDirect() bool {
+	// need at least a version expression and a command
+	if len(os.Args) < 3 {
+		return false
+	}
+
+	version := os.Args[1]
+	if strings.HasPrefix(version, "-") {
+		return false // an option, not a version expression
+	}
+
+	command := os.Args[2]
+	commandArgs := os.Args[3:]
+
+	var binaryPath string
+	var nodeBinDir string
+
+	if version == "system" {
+		binaryPath = resolveSystemBinary(command)
+		if binaryPath == "" {
+			fmt.Fprintf(os.Stderr, "nvu error: system %s not found\n", command)
+			os.Exit(1)
+		}
+
+		// the command's children need to find the system node, not a shim
+		nodePath := resolveSystemBinary("node")
+		if nodePath == "" {
+			fmt.Fprintf(os.Stderr, "nvu error: system node not found\n")
+			os.Exit(1)
+		}
+		nodeBinDir = filepath.Dir(nodePath)
+	} else {
+		if !isConcreteVersion(version) {
+			return false
+		}
+
+		// not installed - let the CLI resolve and install it
+		nodePath, err := findBinary("node", version)
+		if err != nil {
+			return false
+		}
+		nodeBinDir = filepath.Dir(nodePath)
+
+		// command not provided by this version - let the CLI handle it
+		binaryPath, err = findBinary(command, version)
+		if err != nil {
+			return false
+		}
+	}
+
+	// put the resolved version's bin first and drop the shims so children of
+	// the command resolve to real binaries for that version
+	env := map[string]string{"PATH": getPathWithoutNvuBinWithPrepend(nodeBinDir)}
+
+	args := append([]string{binaryPath}, commandArgs...)
+	if err := execBinaryWithEnv(binaryPath, args, env); err != nil {
+		fmt.Fprintf(os.Stderr, "nvu error: failed to exec %s: %s\n", binaryPath, err)
+		os.Exit(1)
+	}
+	return true
+}
+
 // runNvuCli handles the case where this binary is named 'nvu'
 // It finds the actual nvu CLI script and runs it via the resolved version's node
 func runNvuCli() {
+	// commands that need no version resolution beyond what this binary already
+	// does are run directly, without depending on the CLI being installed
+	if runDirect() {
+		return
+	}
+
 	// Resolve the Node version to use (same logic as normal commands)
 	version, err := resolveVersion()
 	if err != nil {

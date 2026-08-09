@@ -86,5 +86,5 @@
   "engines": {
     "node": ">=0.8"
   },
-  "binaryVersion": "1.1.0"
+  "binaryVersion": "1.2.0"
 }

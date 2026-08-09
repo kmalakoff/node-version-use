@@ -403,7 +403,8 @@ module.exports.installBinaries = function installBinaries(options: { force?: boo
   cleanupOldFiles(binDir);
 
   const downloadUrl = `https://github.com/${GITHUB_REPO}/releases/download/binary-v${BINARY_VERSION}/${archiveBaseName}${isWindows ? '.zip' : '.tar.gz'}`;
-  const cachePath = path.join(storagePath, 'cache', `${archiveBaseName}${isWindows ? '.zip' : '.tar.gz'}`);
+  // the version must be part of the cache name or an upgrade re-extracts the previous binary
+  const cachePath = path.join(storagePath, 'cache', `${archiveBaseName}-${BINARY_VERSION}${isWindows ? '.zip' : '.tar.gz'}`);
 
   // Check cache first
   if (fs.existsSync(cachePath)) {
@@ -411,7 +412,11 @@ module.exports.installBinaries = function installBinaries(options: { force?: boo
 
     // Use cached file
     extractAndInstall(cachePath, binDir, extractedBinaryName, (err) => {
-      if (err) return callback(err);
+      // the cached archive is unusable - drop it so the next run downloads again
+      if (err) {
+        removeIfExistsSync(cachePath);
+        return callback(err);
+      }
 
       // save binary version for upgrade checks
       fs.writeFileSync(nvuJsonPath, JSON.stringify({ binaryVersion: BINARY_VERSION }, null, 2), 'utf8');
@@ -431,16 +436,20 @@ module.exports.installBinaries = function installBinaries(options: { force?: boo
       return callback(new Error(`No prebuilt binary available for ${archiveBaseName}. Download: ${downloadUrl}. Error: ${err.message}`));
     }
 
-    // Copy to cache for future use
-    try {
-      copyFileSync(tempPath, cachePath);
-    } catch (_e) {
-      // Cache write failed, continue anyway
-    }
-
     extractAndInstall(tempPath, binDir, extractedBinaryName, (err) => {
+      if (err) {
+        removeIfExistsSync(tempPath);
+        return callback(err);
+      }
+
+      // only cache what extracted cleanly - a failed download (a 404 body, a
+      // truncated file) would otherwise be cached and reused on every run
+      try {
+        copyFileSync(tempPath, cachePath);
+      } catch (_e) {
+        // Cache write failed, continue anyway
+      }
       removeIfExistsSync(tempPath);
-      if (err) return callback(err);
 
       // save binary version for upgrade checks
       fs.writeFileSync(nvuJsonPath, JSON.stringify({ binaryVersion: BINARY_VERSION }, null, 2), 'utf8');
