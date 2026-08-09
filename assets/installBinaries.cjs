@@ -1,4 +1,5 @@
 "use strict";
+var _process_env_OSTYPE;
 var envPathKey = require('env-path-key');
 var fs = require('fs');
 var safeRmSync = require('fs-remove-compat').safeRmSync;
@@ -13,7 +14,7 @@ var root = moduleRoot(__dirname);
 // Configuration
 var GITHUB_REPO = 'kmalakoff/node-version-use';
 var BINARY_VERSION = require(path.join(root, 'package.json')).binaryVersion;
-var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test((_process_env_OSTYPE = process.env.OSTYPE) !== null && _process_env_OSTYPE !== void 0 ? _process_env_OSTYPE : '');
 var hasHomedir = typeof os.homedir === 'function';
 function homedir() {
     if (hasHomedir) return os.homedir();
@@ -123,7 +124,8 @@ function removeIfExistsSync(filePath) {
  * Sync all shims by copying the nvu binary to all other files in the bin directory
  * All shims (node, npm, npx, corepack, eslint, etc.) are copies of the same binary
  */ module.exports.syncAllShims = function syncAllShims(binDir) {
-    var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE);
+    var _process_env_OSTYPE;
+    var isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test((_process_env_OSTYPE = process.env.OSTYPE) !== null && _process_env_OSTYPE !== void 0 ? _process_env_OSTYPE : '');
     var ext = isWindows ? '.exe' : '';
     // Source: nvu binary
     var nvuSource = path.join(binDir, "nvu".concat(ext));
@@ -240,8 +242,7 @@ function removeIfExistsSync(filePath) {
     extractArchive(archivePath, tempExtractDir, function(err) {
         if (err) {
             safeRmSync(tempExtractDir);
-            callback(err);
-            return;
+            return callback(err);
         }
         var extractedPath = path.join(tempExtractDir, binaryName);
         if (!fs.existsSync(extractedPath)) {
@@ -370,13 +371,18 @@ function removeIfExistsSync(filePath) {
     // Clean up old .old-* files from previous installs
     cleanupOldFiles(binDir);
     var downloadUrl = "https://github.com/".concat(GITHUB_REPO, "/releases/download/binary-v").concat(BINARY_VERSION, "/").concat(archiveBaseName).concat(isWindows ? '.zip' : '.tar.gz');
-    var cachePath = path.join(storagePath, 'cache', "".concat(archiveBaseName).concat(isWindows ? '.zip' : '.tar.gz'));
+    // the version must be part of the cache name or an upgrade re-extracts the previous binary
+    var cachePath = path.join(storagePath, 'cache', "".concat(archiveBaseName, "-").concat(BINARY_VERSION).concat(isWindows ? '.zip' : '.tar.gz'));
     // Check cache first
     if (fs.existsSync(cachePath)) {
         console.log('Using cached binary...');
         // Use cached file
         extractAndInstall(cachePath, binDir, extractedBinaryName, function(err) {
-            if (err) return callback(err);
+            // the cached archive is unusable - drop it so the next run downloads again
+            if (err) {
+                removeIfExistsSync(cachePath);
+                return callback(err);
+            }
             // save binary version for upgrade checks
             fs.writeFileSync(nvuJsonPath, JSON.stringify({
                 binaryVersion: BINARY_VERSION
@@ -392,18 +398,21 @@ function removeIfExistsSync(filePath) {
     getFile(downloadUrl, tempPath, function(err) {
         if (err) {
             removeIfExistsSync(tempPath);
-            callback(new Error("No prebuilt binary available for ".concat(archiveBaseName, ". Download: ").concat(downloadUrl, ". Error: ").concat(err.message)));
-            return;
-        }
-        // Copy to cache for future use
-        try {
-            copyFileSync(tempPath, cachePath);
-        } catch (_e) {
-        // Cache write failed, continue anyway
+            return callback(new Error("No prebuilt binary available for ".concat(archiveBaseName, ". Download: ").concat(downloadUrl, ". Error: ").concat(err.message)));
         }
         extractAndInstall(tempPath, binDir, extractedBinaryName, function(err) {
+            if (err) {
+                removeIfExistsSync(tempPath);
+                return callback(err);
+            }
+            // only cache what extracted cleanly - a failed download (a 404 body, a
+            // truncated file) would otherwise be cached and reused on every run
+            try {
+                copyFileSync(tempPath, cachePath);
+            } catch (_e) {
+            // Cache write failed, continue anyway
+            }
             removeIfExistsSync(tempPath);
-            if (err) return callback(err);
             // save binary version for upgrade checks
             fs.writeFileSync(nvuJsonPath, JSON.stringify({
                 binaryVersion: BINARY_VERSION

@@ -28,8 +28,7 @@ var storagePath = process.env.NVU_HOME || path.join(homedir(), '.nvu');
         if (err) {
             console.log("postinstall warning: Failed to install binary: ".concat(err.message || err));
             console.log('You can still use nvu with explicit versions: nvu 18 npm test');
-            exit(1);
-            return;
+            return exit(1);
         }
         if (installed) {
             // Sync all shims to the new binary version
