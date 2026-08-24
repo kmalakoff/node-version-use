@@ -32,7 +32,6 @@
     "nvu": "bin/cli.js"
   },
   "files": [
-    "bin",
     "dist",
     "assets"
   ],
