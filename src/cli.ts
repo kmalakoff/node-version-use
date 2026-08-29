@@ -1,13 +1,13 @@
 import exit from 'exit-compat';
 import fs from 'fs';
 import getopts from 'getopts-compat';
+import Module from 'module';
 import path from 'path';
-import { createSession, figures, formatArguments } from 'spawn-term';
 import url from 'url';
 import { isCommand, runCommand } from './commands/index.ts';
-import run from './index.ts';
 import type { UseError, UseOptions, UseResult } from './types.ts';
 
+const _require = typeof require === 'undefined' ? Module.createRequire(import.meta.url) : require;
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 
 const ERROR_CODE = 13;
@@ -28,6 +28,7 @@ function printHelp(name: string): void {
   console.log('Run commands with specific Node.js versions');
   console.log('');
   console.log('Subcommands:');
+  console.log('  version            Print version number');
   console.log('  default [version]  Set or display the global default Node version');
   console.log('  local [version]    Set or display the local Node version (.nvmrc)');
   console.log('  install <version>  Download and install a Node version');
@@ -98,7 +99,7 @@ export default (argv: string[], name: string): void => {
   }
 
   options.stdio = 'inherit'; // pass through stdio
-  run(args[0], args[1], args.slice(2), options as unknown as UseOptions, (err?: UseError | Error, results?: UseResult[]): void => {
+  const report = (err?: UseError | Error | null, results?: UseResult[]): void => {
     const useErr = err as UseError | null;
     if (useErr && !useErr.results) {
       console.log(useErr.message);
@@ -110,6 +111,8 @@ export default (argv: string[], name: string): void => {
     const errors = safeResults.filter((result) => !!result.error);
 
     if (!options.silent) {
+      // deferred: spawn-term's session/formatting helpers are only needed to report run results
+      const { createSession, figures, formatArguments } = _require('spawn-term');
       if (!createSession) {
         console.log('\n======================');
         safeResults.forEach((res) => {
@@ -122,5 +125,25 @@ export default (argv: string[], name: string): void => {
       }
     }
     exit(err || errors.length ? ERROR_CODE : 0);
-  });
+  };
+  // deferred: index.ts pulls the whole spawn/resolve pipeline. require() cannot load this ESM
+  // sibling below Node 20.19 (require(esm)), so the ESM half needs a real dynamic import; the CJS
+  // half's sibling is genuine CommonJS, so a plain synchronous require avoids depending on
+  // Promise, which isn't global before Node 0.12.
+  loadIndex((err, run) => (err || !run ? report(err) : run(args[0], args[1], args.slice(2), options as unknown as UseOptions, report)));
 };
+
+type RunFn = (versionExpression: string, command: string, args: string[], options: UseOptions, callback: (err?: UseError | Error, results?: UseResult[]) => void) => void;
+
+function loadIndex(callback: (err: Error | null, run?: RunFn) => void): void {
+  if (typeof require === 'undefined') {
+    import('./index.js').then((mod) => callback(null, mod.default || mod)).catch((err) => callback(err instanceof Error ? err : new Error(String(err))));
+  } else {
+    try {
+      const mod = require('./index.js');
+      callback(null, mod.default || mod);
+    } catch (err) {
+      callback(err instanceof Error ? err : new Error(String(err)));
+    }
+  }
+}
