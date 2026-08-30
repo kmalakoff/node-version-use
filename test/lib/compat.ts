@@ -9,16 +9,20 @@ import { safeRmSync } from 'fs-remove-compat';
 import Module from 'module';
 import os from 'os';
 import path from 'path';
+import url from 'url';
 
 // Use existing require in CJS, or createRequire in ESM (Node 12.2+)
 const _require = typeof require === 'undefined' ? Module.createRequire(import.meta.url) : require;
+
+const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
+const packageRoot = path.join(__dirname, '..', '..');
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
 const pathKey = envPathKey(); // PATH or Path or similar
 const pathDelimiter = path.delimiter ? path.delimiter : isWindows ? ';' : ':';
 
 export function tmpdir(): string {
-  return typeof os.tmpdir === 'function' ? os.tmpdir() : require('os-shim').tmpdir();
+  return path.join(packageRoot, '.tmp');
 }
 export function homedir() {
   return typeof os.homedir === 'function' ? os.homedir() : require('homedir-polyfill')();

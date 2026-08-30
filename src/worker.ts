@@ -92,8 +92,8 @@ export default function worker(versionExpression: string, command: string, args:
         queue.defer((cb) =>
           installVersion?.(version, installOptions, (err, installs) => {
             const install = installs && installs.length === 1 ? installs[0] : null;
-            if (err || !install) {
-              const error = err || new Error(`Unexpected version results for version ${version}. Install ${JSON.stringify(installs)}`);
+            if (err || !install || install.error) {
+              const error = err || install?.error || new Error(`Unexpected version results for version ${version}. Install ${JSON.stringify(installs)}`);
               results.push({ install, command, version, error, result: undefined });
               return cb();
             }
