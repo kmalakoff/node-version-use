@@ -2,6 +2,7 @@
 delete process.env.NODE_OPTIONS;
 
 import assert from 'assert';
+import fs from 'fs';
 import { safeRm } from 'fs-remove-compat';
 import isVersion from 'is-version';
 import versionUse, { type UseOptions } from 'node-version-use';
@@ -148,6 +149,23 @@ describe('callback', () => {
       const use = versionUse as (...args: unknown[]) => void;
       use(NODE, ['--version'], { cwd, ...OPTIONS }, (err: unknown) => {
         assert.ok(!!err);
+        done();
+      });
+    });
+
+    it('install failure does not silently fall through to another node binary', (done) => {
+      // a regular file where a directory is expected forces node-install-release to fail
+      // with a real ENOTDIR, regardless of platform, network, or build toolchain availability
+      const blockerFile = path.join(TMP_DIR, 'blocker');
+      fs.mkdirSync(TMP_DIR, { recursive: true });
+      fs.writeFileSync(blockerFile, '');
+      const storagePath = path.join(blockerFile, 'nested');
+
+      versionUse('12', NODE, ['--version'], { ...OPTIONS, storagePath }, (err, results) => {
+        if (err) return done(err);
+        if (!results || results.length !== 1) return done(new Error(`expected exactly one result, got ${JSON.stringify(results)}`));
+        assert.ok(results[0]?.error, 'a broken install must surface as a result error');
+        assert.strictEqual(results[0]?.result, undefined, 'a broken install must not spawn the command at all');
         done();
       });
     });

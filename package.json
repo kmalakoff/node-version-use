@@ -23,6 +23,7 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     },
+    "./bin/cli.js": "./bin/cli.js",
     "./package.json": "./package.json"
   },
   "main": "dist/cjs/index.js",

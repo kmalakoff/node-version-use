@@ -28,7 +28,6 @@ function printHelp(name: string): void {
   console.log('Run commands with specific Node.js versions');
   console.log('');
   console.log('Subcommands:');
-  console.log('  version            Print version number');
   console.log('  default [version]  Set or display the global default Node version');
   console.log('  local [version]    Set or display the local Node version (.nvmrc)');
   console.log('  install <version>  Download and install a Node version');

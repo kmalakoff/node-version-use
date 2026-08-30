@@ -53,13 +53,9 @@ function cleanup() {
   }
 }
 
-describe('windows symlink', () => {
-  // Skip on non-Windows platforms
-  if (!isWindows) {
-    it.skip('skipped on non-Windows platforms', () => {});
-    return;
-  }
+const suite = isWindows ? describe : describe.skip;
 
+suite('windows symlink', () => {
   before(function (done) {
     this.timeout(120000); // Allow time for Node installation
     cleanup();
