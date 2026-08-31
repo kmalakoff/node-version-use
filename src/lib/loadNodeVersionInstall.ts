@@ -1,4 +1,4 @@
-import installModule from 'install-module-linked';
+import installModule from 'install-module-linked-compat';
 import type { InstallOptions, InstallResult } from 'node-version-install';
 import path from 'path';
 import url from 'url';

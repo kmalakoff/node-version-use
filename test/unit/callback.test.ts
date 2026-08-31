@@ -8,6 +8,7 @@ import isVersion from 'is-version';
 import versionUse, { type UseOptions } from 'node-version-use';
 import path from 'path';
 import url from 'url';
+import { mkdirRecursive } from '../lib/compat.ts';
 import getLines from '../lib/getLines.ts';
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
@@ -157,7 +158,7 @@ describe('callback', () => {
       // a regular file where a directory is expected forces node-install-release to fail
       // with a real ENOTDIR, regardless of platform, network, or build toolchain availability
       const blockerFile = path.join(TMP_DIR, 'blocker');
-      fs.mkdirSync(TMP_DIR, { recursive: true });
+      mkdirRecursive(TMP_DIR);
       fs.writeFileSync(blockerFile, '');
       const storagePath = path.join(blockerFile, 'nested');
 
