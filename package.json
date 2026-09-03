@@ -58,7 +58,7 @@
     "install-module-linked-compat": "^0.2.2",
     "mkdirp-classic": "^0.5.2",
     "module-root-sync": "^2.0.2",
-    "node-resolve-versions": "^1.0.0",
+    "node-resolve-versions": "^1.6.0",
     "node-version-install": "^1.0.5",
     "node-version-utils": "^1.0.2",
     "queue-cb": "^1.0.0",
