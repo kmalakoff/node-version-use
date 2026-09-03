@@ -27,7 +27,7 @@ const OPTIONS = {
 describe('commands', () => {
   before(function () {
     if (!hasTestBinaries()) {
-      console.log('Binaries not found. Run: npm install (postinstall downloads from releases)');
+      console.log('Binaries not found. Run: npm run build:binary (requires Go)');
       this.skip();
       return;
     }

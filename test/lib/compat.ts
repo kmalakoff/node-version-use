@@ -3,11 +3,9 @@
  * Uses native fs functions when available, falls back to ponyfills for old Node.
  */
 
-import envPathKey from 'env-path-key';
 import fs from 'fs';
 import { safeRmSync } from 'fs-remove-compat';
 import Module from 'module';
-import os from 'os';
 import path from 'path';
 import url from 'url';
 
@@ -18,14 +16,9 @@ const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : 
 const packageRoot = path.join(__dirname, '..', '..');
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
-const pathKey = envPathKey(); // PATH or Path or similar
-const pathDelimiter = path.delimiter ? path.delimiter : isWindows ? ';' : ':';
 
 export function tmpdir(): string {
   return path.join(packageRoot, '.tmp');
-}
-export function homedir() {
-  return typeof os.homedir === 'function' ? os.homedir() : require('homedir-polyfill')();
 }
 
 /**
@@ -88,15 +81,15 @@ export function stringEndsWith(str: string, search: string, position?: number): 
 }
 
 /**
- * Get path to binaries directory (~/.nvu/bin).
- * These are downloaded from GitHub releases by postinstall.
+ * Get path to the shim directory the binary suites run against.
+ * Populated by `npm run build:binary`, never the user's own ~/.nvu/bin.
  */
 export function getTestBinaryBin(): string {
-  return path.join(homedir(), '.nvu', 'bin');
+  return path.join(packageRoot, '.tmp', 'binary', 'bin');
 }
 
 /**
- * Check if binaries are available (downloaded by postinstall).
+ * Check if binaries are available (built by `npm run build:binary`).
  */
 export function hasTestBinaries(): boolean {
   const binaryName = isWindows ? 'node.exe' : 'node';
@@ -104,14 +97,10 @@ export function hasTestBinaries(): boolean {
 }
 
 /**
- * Get PATH with nvu binaries prepended.
- * Use this for integration tests that need to run through the binary.
+ * Get the PATH the binary suites spawn with: this node and nothing else.
+ * The shims are addressed by absolute path, and leaving the real PATH out keeps a
+ * developer's own ~/.nvu/bin from answering instead of the freshly built binary.
  */
 export function getTestBinaryPath(): string {
-  const nodeBinDir = path.dirname(process.execPath);
-  const filteredPath = (pathKey || '')
-    .split(pathDelimiter)
-    .filter((p) => stringEndsWith(p, '.nvu/bin'))
-    .join(pathDelimiter);
-  return nodeBinDir + pathDelimiter + filteredPath;
+  return path.dirname(process.execPath);
 }

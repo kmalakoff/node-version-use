@@ -16,9 +16,13 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 26
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
       - run: git config --global user.name "Github Actions"
       - run: git config --global user.email "actions@users.noreply.github.com"
       - run: npm ci
+      - run: npm run build:binary
       - run: npm run prepublishOnly
       - run: npm run test
       - run: npm run test:engines

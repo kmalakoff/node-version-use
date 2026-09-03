@@ -1,30 +1,31 @@
 import exit from 'exit-compat';
-import Module from 'module';
+import getopts from 'getopts-compat';
 import path from 'path';
 import { storagePath } from '../constants.ts';
-
-const _require = typeof require === 'undefined' ? Module.createRequire(import.meta.url) : require;
-const { installBinaries, printInstructions, syncAllShims } = _require('../assets/installBinaries.cjs');
+import { installBinaries, printInstructions, syncAllShims } from '../lib/installBinaries.ts';
 
 /**
- * nvu setup
+ * nvu setup [--force]
  *
  * Install/reinstall nvu binaries to ~/.nvu/bin
  */
-export default function setupCmd(_args: string[]): void {
-  installBinaries({}, (err: Error | null, installed: boolean) => {
-    if (err) {
-      console.error(`Setup failed: ${err.message || err}`);
-      return exit(1);
-    }
+export default function setupCmd(args: string[]): void {
+  const options = getopts(args, { boolean: ['force'] });
 
-    // Sync all shims to the new binary
-    const binDir = path.join(storagePath, 'bin');
-    syncAllShims(binDir);
+  let installed: boolean;
+  try {
+    installed = installBinaries({ force: options.force });
+  } catch (err) {
+    console.error(`Setup failed: ${(err as Error).message || err}`);
+    return exit(1);
+  }
 
-    printInstructions();
-    if (!installed) console.log('Use --force to reinstall binaries.');
+  // Sync all shims to the new binary
+  const binDir = path.join(storagePath, 'bin');
+  syncAllShims(binDir);
 
-    exit(0);
-  });
+  printInstructions();
+  if (!installed) console.log('Use --force to reinstall binaries.');
+
+  exit(0);
 }

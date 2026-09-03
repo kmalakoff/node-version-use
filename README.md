@@ -6,8 +6,13 @@ Cross-platform solution for using multiple versions of Node.js. Transparent vers
 
 ```bash
 npm install -g node-version-use
+nvu setup                           # Copy the shims into ~/.nvu/bin
 export PATH="$HOME/.nvu/bin:$PATH"  # Add to shell profile
 ```
+
+The Go binary ships in a per-platform package (`nvu-darwin-arm64`, `nvu-linux-x64`, ...) that npm
+selects by `os` and `cpu` and installs as an optional dependency. Nothing is downloaded and no
+install script runs, so consumers need no `allowScripts` entry for this package.
 
 ### Quick Start
 
@@ -26,6 +31,7 @@ nvu local 18             # Project version (.nvmrc)
 nvu install 22           # Install Node
 nvu uninstall 22         # Uninstall Node
 nvu list                 # List installed
+nvu setup                # Install/refresh the ~/.nvu/bin shims
 nvu 22 npm run test      # Run with specific version
 ```
 

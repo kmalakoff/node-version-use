@@ -77,16 +77,19 @@ brew install node
 # 2. Install nvu globally
 #    - Installs to /opt/homebrew/lib/node_modules/node-version-use/
 #    - Creates symlink /opt/homebrew/bin/nvu -> ../lib/node_modules/.../cli.js
-#    - postinstall downloads Go shims to ~/.nvu/bin/
+#    - npm installs the matching nvu-<platform>-<arch> package with the Go binary
 npm install -g node-version-use
 
-# 3. Add shims to PATH (in ~/.zshrc or ~/.bashrc)
+# 3. Copy the shims into ~/.nvu/bin
+nvu setup
+
+# 4. Add shims to PATH (in ~/.zshrc or ~/.bashrc)
 #    MUST be before /opt/homebrew/bin so shims take precedence
 export PATH="$HOME/.nvu/bin:$PATH"
 
-# 4. Restart terminal or source profile
+# 5. Restart terminal or source profile
 
-# 5. Install and set default Node version
+# 6. Install and set default Node version
 nvu install 20
 nvu default 20
 ```
@@ -103,16 +106,19 @@ nvu default 20
 # 2. Install nvu globally
 #    - Installs to %APPDATA%\npm\node_modules\node-version-use\
 #    - Creates %APPDATA%\npm\nvu.cmd wrapper
-#    - postinstall downloads Go shims to ~/.nvu/bin/
+#    - npm installs the matching nvu-<platform>-<arch> package with the Go binary
 npm install -g node-version-use
 
-# 3. Add to PowerShell profile ($PROFILE)
+# 3. Copy the shims into ~/.nvu/bin
+nvu setup
+
+# 4. Add to PowerShell profile ($PROFILE)
 #    Need BOTH paths: shims AND npm global bin
 $env:PATH = "$HOME\.nvu\bin;$env:APPDATA\npm;$env:PATH"
 
-# 4. Restart terminal
+# 5. Restart terminal
 
-# 5. Install and set default Node version
+# 6. Install and set default Node version
 nvu install 20
 nvu default 20
 ```
@@ -276,21 +282,16 @@ A function that copies the "nvu" binary to all other files in `~/.nvu/bin/`:
 
 | Scenario | Action |
 |----------|--------|
-| **postinstall** (package install/upgrade) | `installBinaries()` → `syncAllShims()` |
 | **nvu setup** | `installBinaries()` → `syncAllShims()` |
 | **nvu default** (first time only) | Set default → `syncAllShims()` |
 
 ### Flow
 
 ```
-postinstall:
-  1. Download archive to ~/.nvu/cache/
-  2. Extract "nvu" binary to ~/.nvu/bin/
-  3. syncAllShims() → copies "nvu" to all other files
-
 setup:
-  1. Extract "nvu" binary to ~/.nvu/bin/
-  2. syncAllShims() → copies "nvu" to all other files
+  1. Resolve nvu-<platform>-<arch>/bin/nvu from node_modules
+  2. Copy it to ~/.nvu/bin/
+  3. syncAllShims() → copies "nvu" to all other files
 
 nvu default:
   1. Write version to ~/.nvu/default
