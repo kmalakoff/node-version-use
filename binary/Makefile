@@ -10,7 +10,7 @@ LDFLAGS := -s -w -X main.version=$(VERSION)
 # Test build directory (relative to binary/, outputs to project .tmp/)
 TEST_BIN_DIR := ../.tmp/binary/bin
 
-.PHONY: all clean darwin-arm64 darwin-x64 linux-x64 linux-arm64 windows-x64 windows-arm64 local install release build-test install-test clean-test
+.PHONY: all clean darwin-arm64 darwin-x64 linux-x64 linux-arm64 windows-x64 windows-arm64 local install build-test install-test clean-test
 
 all: darwin-arm64 darwin-x64 linux-x64 linux-arm64 windows-x64 windows-arm64
 
@@ -50,15 +50,6 @@ install: local
 
 clean:
 	rm -rf $(BUILD_DIR)
-
-# Create release archives
-release: all
-	cd $(BUILD_DIR) && tar -czf $(BINARY_NAME)-darwin-arm64.tar.gz $(BINARY_NAME)-darwin-arm64
-	cd $(BUILD_DIR) && tar -czf $(BINARY_NAME)-darwin-x64.tar.gz $(BINARY_NAME)-darwin-x64
-	cd $(BUILD_DIR) && tar -czf $(BINARY_NAME)-linux-x64.tar.gz $(BINARY_NAME)-linux-x64
-	cd $(BUILD_DIR) && tar -czf $(BINARY_NAME)-linux-arm64.tar.gz $(BINARY_NAME)-linux-arm64
-	cd $(BUILD_DIR) && zip $(BINARY_NAME)-win32-x64.zip $(BINARY_NAME)-win32-x64.exe
-	cd $(BUILD_DIR) && zip $(BINARY_NAME)-win32-arm64.zip $(BINARY_NAME)-win32-arm64.exe
 
 # Build for current platform (test use)
 build-test: $(BUILD_DIR)

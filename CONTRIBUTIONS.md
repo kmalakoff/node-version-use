@@ -4,34 +4,50 @@ Internal documentation for maintainers.
 
 ## Publishing
 
-The npm package version and Go binary version are tracked separately in `package.json`:
-- `version`: npm package version
-- `binaryVersion`: Go binary version
+The Go binary ships in six per-platform packages, `nvu-<platform>-<arch>`, listed as
+`optionalDependencies` of this package. npm selects one by `os`/`cpu` and installs it with no
+lifecycle script, which is why consumers need no `allowScripts` entry for node-version-use.
+
+All seven packages share one version: the platform packages are generated with the parent's
+version and the parent pins them exactly, so they are published together, every release.
 
 ### Release Process
 
 1. Ensure all tests pass:
    ```bash
    npm test
+   npm run test:engines
    ```
 
-2. Bump npm package version:
+2. Bump the version. The `version` lifecycle re-pins `optionalDependencies` to the new version
+   before npm writes the version commit, so the tag never carries stale pins:
    ```bash
    npm version patch  # or minor, major
    ```
 
-3. If binary changes are needed, bump `binaryVersion` in `package.json` and push a tag:
+3. Build the binaries and the platform packages:
    ```bash
-   git tag binary-v1.0.1 && git push origin binary-v1.0.1
+   make -C binary all
+   npm run build:platform-packages
    ```
-   GitHub Actions automatically builds and publishes binaries for all platforms.
 
-4. Publish to npm:
+4. Publish the platform packages. The bare command previews and writes nothing; `--execute`
+   publishes, then confirms all six resolve on the registry and refuses to green-light the
+   parent if any does not:
+   ```bash
+   npm run publish:platform-packages
+   npm run publish:platform-packages -- --execute
+   ```
+   A failed publish leaves the ones before it published. Re-run to continue from where it stopped.
+
+5. Publish the parent, last, and only if step 4 ended with "Publish the parent next". The parent
+   pins the six exactly, so publishing it against a version that does not resolve - a failed
+   publish, a rescinded version - gives every consumer on that platform an install with no binary:
    ```bash
    npm publish
    ```
 
-5. Push version tag:
+6. Push the version tag:
    ```bash
    git push --follow-tags
    ```
@@ -40,19 +56,20 @@ The npm package version and Go binary version are tracked separately in `package
 
 ### Testing
 
-Binaries are downloaded from GitHub releases during `npm install`:
+The binary and commands suites run against a locally built binary (requires Go). Without it they
+skip, so build it first:
 
 ```bash
-npm install       # Downloads binaries to ~/.nvu/bin/
-npm test          # Runs all tests using downloaded binaries
-npm run clean     # Clear all temp files
+npm run build:binary   # builds the shims into .tmp/binary/bin
+npm test               # runs all tests
+npm run clean          # clear all temp files
 ```
 
 ### Test Isolation
 
-Tests use `NVU_HOME` environment variable for isolation:
+Tests use the `NVU_HOME` environment variable for isolation and never touch your own `~/.nvu`:
 
-- **Binaries:** `~/.nvu/bin/` (downloaded from releases)
+- **Binaries:** `.tmp/binary/bin/` (built by `npm run build:binary`)
 - **Test NVU_HOME:** `.tmp/commands/` or `.tmp/binary-test/`
 
 ### Binary Development (requires Go)
@@ -64,7 +81,7 @@ For local Go binary development:
 cd binary && make local
 
 # Build all platforms
-cd binary && make release
+cd binary && make all
 
 # Install to ~/.nvu/bin
 cd binary && make install
@@ -73,10 +90,9 @@ cd binary && make install
 ### Binary Development Workflow
 
 1. Make changes to `binary/main.go`
-2. Build locally: `cd binary && make local`
-3. Install: `cd binary && make install`
-4. Run tests: `npm test`
-5. When ready, bump `binaryVersion` in package.json and push tag
+2. Build the test shims: `npm run build:binary`
+3. Run tests: `npm test`
+4. The binary ships with the next release; it has no version of its own
 
 ## Pre-Release Smoke Test Checklist
 
@@ -106,13 +122,14 @@ nvu engines tsds test:node --no-timeouts
 - [ ] Tests pass on Node 4+
 - [ ] No `startsWith`/`includes` errors (use `indexOf` instead)
 
-### 4. Postinstall Compatibility
+### 4. Platform Packages
 ```bash
-nvu engines node assets/postinstall.cjs
+make -C binary all && npm run build:platform-packages
+npm run publish:platform-packages
 ```
-- [ ] Runs without syntax errors
-- [ ] Gracefully handles 404 (binaries not published)
-- [ ] Shows helpful instructions
+- [ ] All 6 package directories written under `.tmp/npm/`
+- [ ] Each pinned at the parent's version
+- [ ] Preview lists exactly what is unpublished
 
 ### 5. Binary Build
 ```bash
@@ -176,4 +193,5 @@ grep -r "shim" --include="*.ts" --include="*.js" --include="*.cjs" --include="*.
 
 3. **Binary naming**: Binaries in `~/.nvu/bin/` are named `node`, `npm`, `npx` (not `nvu-binary`).
 
-4. **Version fields**: `version` is npm package version, `binaryVersion` is Go binary version. Update both as needed.
+4. **Version fields**: one `version` covers the parent and all six platform packages. Re-run
+   `npm run build:platform-packages` after a bump so the `optionalDependencies` pins follow.

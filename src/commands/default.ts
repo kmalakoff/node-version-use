@@ -1,14 +1,11 @@
 import exit from 'exit-compat';
 import fs from 'fs';
-import Module from 'module';
 import path from 'path';
 import { mkdirpSync } from '../compat.ts';
 import { storagePath } from '../constants.ts';
 import { findInstalledVersions } from '../lib/findInstalledVersions.ts';
+import { syncAllShims } from '../lib/installBinaries.ts';
 import loadNodeVersionInstall from '../lib/loadNodeVersionInstall.ts';
-
-const _require = typeof require === 'undefined' ? Module.createRequire(import.meta.url) : require;
-const { syncAllShims } = _require('../assets/installBinaries.cjs');
 
 /**
  * nvu default [version]

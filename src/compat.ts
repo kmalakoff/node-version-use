@@ -14,10 +14,6 @@ export function homedir(): string {
   return typeof os.homedir === 'function' ? os.homedir() : require('homedir-polyfill')();
 }
 
-export function tmpdir(): string {
-  return typeof os.tmpdir === 'function' ? os.tmpdir() : require('os-shim').tmpdir();
-}
-
 /**
  * String.prototype.endsWith wrapper for Node.js 0.8+
  * - Uses native endsWith on Node 4.0+ / ES2015+
