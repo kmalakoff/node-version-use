@@ -71,7 +71,7 @@ export default function worker(versionExpression: string, command: string, args:
   loadNodeVersionInstall((loadErr, installVersion) => {
     if (loadErr) return callback(loadErr);
 
-    resolveVersions(versionExpression, options as VersionOptions, (err?: Error | null, result?: string[] | import('node-resolve-versions').VersionResultRaw[]) => {
+    resolveVersions(versionExpression, options as VersionOptions, (err?: Error | null, result?: string[] | import('node-resolve-versions').VersionRecord[]) => {
       const versions = result as string[] | undefined;
       if (err) return callback(err);
       if (!versions || !versions.length) {
