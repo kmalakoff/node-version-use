@@ -1,6 +1,6 @@
 {
   "name": "node-version-use",
-  "version": "2.5.7",
+  "version": "2.5.8",
   "description": "Cross-platform solution for using multiple versions of node. Useful for compatibility testing",
   "keywords": [
     "node",
@@ -41,6 +41,7 @@
     "build:platform-packages": "node scripts/generate-platform-packages.mjs",
     "clean": "rm -rf .tmp dist",
     "format": "tsds format",
+    "pin:platform-packages": "node scripts/pin-platform-packages.mjs",
     "prepublishOnly": "tsds validate",
     "publish:platform-packages": "node scripts/publish-platform-packages.mjs",
     "test": "tsds test:node --no-timeouts",
@@ -82,14 +83,10 @@
     "nvu-linux-arm64": "2.5.7",
     "nvu-linux-x64": "2.5.7",
     "nvu-win32-arm64": "2.5.7",
+    "nvu-win32-ia32": "2.5.7",
     "nvu-win32-x64": "2.5.7"
   },
   "engines": {
     "node": ">=0.8"
-  },
-  "allowScripts": {
-    "node-filename-to-dist-paths": true,
-    "node-semvers": true,
-    "thread-sleep-compat": true
   }
 }
