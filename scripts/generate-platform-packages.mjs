@@ -6,23 +6,21 @@
  * Usage: npm run build:platform-packages
  *
  * Writes .tmp/npm/nvu-<platform>-<arch>/ for every entry in platforms.json. Binaries come from
- * binary/build, produced by `make -C binary all`; the parent's optionalDependencies are pinned
- * by the version lifecycle, and this refuses to build packages the parent does not declare.
+ * binary/build, produced by `make -C binary all`. Packages take the version the parent pins them
+ * at, which is independent of the parent's own version, and this refuses to build unless every
+ * platform is declared at one agreed version.
  */
 
 import fs from 'fs';
 import path from 'path';
-import url from 'url';
+import { packageName, readPackage, readPlatforms, requireBinaryVersion, root } from './lib/binaryVersion.mjs';
 
-const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-const root = path.join(__dirname, '..');
 const buildDir = path.join(root, 'binary', 'build');
 const outDir = path.join(root, '.tmp', 'npm');
 
-const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-const platforms = JSON.parse(fs.readFileSync(path.join(__dirname, 'platforms.json'), 'utf8'));
-
-const packageName = (platform, arch) => `nvu-${platform}-${arch}`;
+const pkg = readPackage();
+const platforms = readPlatforms();
+const binaryVersion = requireBinaryVersion(pkg, platforms);
 
 function sourceBinary(platform, arch) {
   return path.join(buildDir, `nvu-binary-${platform}-${arch}${platform === 'win32' ? '.exe' : ''}`);
@@ -38,14 +36,6 @@ function readme(name, platform, arch) {
     'is not meant to be depended on directly. It contains no code, only the binary.',
     '',
   ].join('\n');
-}
-
-const declared = pkg.optionalDependencies || {};
-const unpinned = platforms.map((entry) => packageName(entry.platform, entry.arch)).filter((name) => declared[name] !== pkg.version);
-if (unpinned.length || Object.keys(declared).length !== platforms.length) {
-  console.error(`optionalDependencies do not pin every platform at ${pkg.version}.`);
-  console.error('Fix them with: node scripts/pin-platform-packages.mjs');
-  process.exit(1);
 }
 
 const missing = platforms.map((entry) => sourceBinary(entry.platform, entry.arch)).filter((file) => !fs.existsSync(file));
@@ -70,7 +60,7 @@ for (const { platform, arch } of platforms) {
   // No bin field: npm would install a `nvu` shim that collides with the parent's own.
   const manifest = {
     name,
-    version: pkg.version,
+    version: binaryVersion,
     description: `The ${platform}-${arch} binary for node-version-use`,
     repository: pkg.repository,
     license: pkg.license,
@@ -84,7 +74,7 @@ for (const { platform, arch } of platforms) {
   fs.writeFileSync(path.join(dir, 'README.md'), readme(name, platform, arch));
   fs.writeFileSync(path.join(dir, 'LICENSE'), fs.readFileSync(path.join(root, 'LICENSE')));
 
-  console.log(`${name}@${pkg.version} -> ${path.relative(root, dir)}`);
+  console.log(`${name}@${binaryVersion} -> ${path.relative(root, dir)}`);
 }
 
-console.log(`Wrote ${platforms.length} packages at ${pkg.version}`);
+console.log(`Wrote ${platforms.length} packages at ${binaryVersion}`);

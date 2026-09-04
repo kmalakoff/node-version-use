@@ -14,17 +14,16 @@
 import { spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import url from 'url';
 import { parseArgs } from 'util';
+import { readPackage, readPlatforms, requireBinaryVersion, root } from './lib/binaryVersion.mjs';
 
-const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-const root = path.join(__dirname, '..');
 const outDir = path.join(root, '.tmp', 'npm');
 
 const { values } = parseArgs({ options: { execute: { type: 'boolean', default: false } } });
 
-const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-const platforms = JSON.parse(fs.readFileSync(path.join(__dirname, 'platforms.json'), 'utf8'));
+const pkg = readPackage();
+const platforms = readPlatforms();
+const binaryVersion = requireBinaryVersion(pkg, platforms);
 
 function isPublished(name, version) {
   const result = spawnSync('npm', ['view', `${name}@${version}`, 'version'], { encoding: 'utf8' });
@@ -54,13 +53,13 @@ if (missing.length) {
   process.exit(1);
 }
 
-for (const target of targets) target.published = isPublished(target.name, pkg.version);
+for (const target of targets) target.published = isPublished(target.name, binaryVersion);
 
 const pending = targets.filter((target) => !target.published);
-for (const target of targets) console.log(`${target.published ? 'skip   ' : 'publish'} ${target.name}@${pkg.version}`);
+for (const target of targets) console.log(`${target.published ? 'skip   ' : 'publish'} ${target.name}@${binaryVersion}`);
 
 if (!pending.length) {
-  console.log(`\nAll ${targets.length} packages are already published at ${pkg.version}.`);
+  console.log(`\nAll ${targets.length} packages are already published at ${binaryVersion}.`);
   process.exit(0);
 }
 
@@ -70,25 +69,25 @@ if (!values.execute) {
 }
 
 for (const target of pending) {
-  console.log(`\npublishing ${target.name}@${pkg.version}`);
+  console.log(`\npublishing ${target.name}@${binaryVersion}`);
   const result = spawnSync('npm', ['publish', target.dir, '--access', 'public'], { stdio: 'inherit' });
   if (result.status !== 0) {
-    console.error(`\nFailed to publish ${target.name}@${pkg.version}. Packages published before it stay published; re-run to continue from here.`);
+    console.error(`\nFailed to publish ${target.name}@${binaryVersion}. Packages published before it stay published; re-run to continue from here.`);
     process.exit(result.status ?? 1);
   }
 }
 
-console.log(`\nPublished ${pending.length} packages at ${pkg.version}. Confirming all ${targets.length} resolve...`);
+console.log(`\nPublished ${pending.length} packages at ${binaryVersion}. Confirming all ${targets.length} resolve...`);
 
 // The parent pins these exactly. If one is missing - a failed publish, a rescinded version - a
 // parent published against it installs with no binary on that platform.
-const unresolved = targets.filter((target) => !resolvesOnRegistry(target.name, pkg.version));
+const unresolved = targets.filter((target) => !resolvesOnRegistry(target.name, binaryVersion));
 if (unresolved.length) {
-  console.error(`\n${unresolved.length} of ${targets.length} do not resolve at ${pkg.version}:`);
+  console.error(`\n${unresolved.length} of ${targets.length} do not resolve at ${binaryVersion}:`);
   for (const target of unresolved) console.error(`  ${target.name}`);
   console.error('Do NOT publish the parent. Its optionalDependencies would pin a version that does not resolve,');
   console.error('and every consumer on that platform would install with no binary.');
   process.exit(1);
 }
 
-console.log(`All ${targets.length} resolve at ${pkg.version}. Publish the parent next: npm publish`);
+console.log(`All ${targets.length} resolve at ${binaryVersion}. Publish the parent next: npm publish`);

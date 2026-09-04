@@ -10,9 +10,9 @@ LDFLAGS := -s -w -X main.version=$(VERSION)
 # Test build directory (relative to binary/, outputs to project .tmp/)
 TEST_BIN_DIR := ../.tmp/binary/bin
 
-.PHONY: all clean darwin-arm64 darwin-x64 linux-x64 linux-arm64 windows-x64 windows-arm64 local install build-test install-test clean-test
+.PHONY: all clean darwin-arm64 darwin-x64 linux-x64 linux-arm64 windows-x64 windows-arm64 windows-ia32 local install build-test install-test clean-test
 
-all: darwin-arm64 darwin-x64 linux-x64 linux-arm64 windows-x64 windows-arm64
+all: darwin-arm64 darwin-x64 linux-x64 linux-arm64 windows-x64 windows-arm64 windows-ia32
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -34,6 +34,10 @@ windows-x64: $(BUILD_DIR)
 
 windows-arm64: $(BUILD_DIR)
 	GOOS=windows GOARCH=arm64 go build -ldflags="$(LDFLAGS)" -o $(BUILD_DIR)/$(BINARY_NAME)-win32-arm64.exe .
+
+# Node reports 32-bit Windows builds (0.8-0.12 on CI) as ia32; Go calls the same target 386.
+windows-ia32: $(BUILD_DIR)
+	GOOS=windows GOARCH=386 go build -ldflags="$(LDFLAGS)" -o $(BUILD_DIR)/$(BINARY_NAME)-win32-ia32.exe .
 
 # Build for current platform (for local testing)
 local: $(BUILD_DIR)

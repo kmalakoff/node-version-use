@@ -10,10 +10,13 @@ const platforms = JSON.parse(fs.readFileSync(path.join(root, 'scripts', 'platfor
 const names = platforms.map((entry) => `nvu-${entry.platform}-${entry.arch}`);
 
 describe('platform packages', () => {
-  it('declares every matrix platform, pinned at the parent version', () => {
+  it('declares every matrix platform at one binary version', () => {
+    // The binary version is deliberately independent of the parent's: the Go binary changes far
+    // less often, so most releases re-pin nothing and publish no binary packages.
     assert.deepEqual(Object.keys(pkg.optionalDependencies).sort(), names.slice().sort());
+    const pinned = pkg.optionalDependencies[names[0]];
     for (let i = 0; i < names.length; i++) {
-      assert.strictEqual(pkg.optionalDependencies[names[i]], pkg.version, `${names[i]} drifted from ${pkg.version}; run npm run build:platform-packages`);
+      assert.strictEqual(pkg.optionalDependencies[names[i]], pinned, `${names[i]} pinned at ${pkg.optionalDependencies[names[i]]}, not ${pinned}; run npm run pin:platform-packages`);
     }
   });
 

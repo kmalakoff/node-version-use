@@ -4,12 +4,19 @@ Internal documentation for maintainers.
 
 ## Publishing
 
-The Go binary ships in six per-platform packages, `nvu-<platform>-<arch>`, listed as
+The Go binary ships in one per-platform package each, `nvu-<platform>-<arch>`, listed as
 `optionalDependencies` of this package. npm selects one by `os`/`cpu` and installs it with no
 lifecycle script, which is why consumers need no `allowScripts` entry for node-version-use.
 
-All seven packages share one version: the platform packages are generated with the parent's
-version and the parent pins them exactly, so they are published together, every release.
+**The binary version is independent of this package's.** The Go binary changes far less often than
+the package, so an ordinary release re-pins nothing and publishes no platform packages: the parent
+keeps pinning the binary version it already pins. Publishing platform packages is a separate,
+deliberate step, taken only when the binary itself changes or a platform is added.
+
+The pins in `optionalDependencies` are the single source of truth for which binary release is
+current. `npm run pin:platform-packages` repairs them (adds a platform new to `platforms.json`,
+drops one removed) without moving the version; `-- --set-version <version>` moves it, which is what
+declares a new binary release.
 
 ### Release Process
 
@@ -19,35 +26,44 @@ version and the parent pins them exactly, so they are published together, every 
    npm run test:engines
    ```
 
-2. Bump the version. The `version` lifecycle re-pins `optionalDependencies` to the new version
-   before npm writes the version commit, so the tag never carries stale pins:
+2. **Only if the binary changed or a platform was added**, declare a new binary version. Skip this
+   for an ordinary release; the parent keeps pinning the binary version it already pins:
+   ```bash
+   npm run pin:platform-packages -- --set-version <version>
+   ```
+
+3. Bump the package version. The `version` lifecycle repairs the pins without moving them, so the
+   tag can never carry a platform the parent does not declare:
    ```bash
    npm version patch  # or minor, major
    ```
 
-3. Build the binaries and the platform packages:
+4. **Only if step 2 applied**, build the binaries and the platform packages. They are written at
+   the pinned binary version, not the parent's:
    ```bash
    make -C binary all
    npm run build:platform-packages
    ```
 
-4. Publish the platform packages. The bare command previews and writes nothing; `--execute`
-   publishes, then confirms all six resolve on the registry and refuses to green-light the
-   parent if any does not:
+5. **Only if step 2 applied**, publish the platform packages. The bare command previews and writes
+   nothing; `--execute` publishes. Anything already on the registry at that version is skipped, so
+   an unchanged platform is never republished. It then confirms every platform resolves and refuses
+   to green-light the parent if any does not:
    ```bash
    npm run publish:platform-packages
    npm run publish:platform-packages -- --execute
    ```
    A failed publish leaves the ones before it published. Re-run to continue from where it stopped.
 
-5. Publish the parent, last, and only if step 4 ended with "Publish the parent next". The parent
-   pins the six exactly, so publishing it against a version that does not resolve - a failed
-   publish, a rescinded version - gives every consumer on that platform an install with no binary:
+6. Publish the parent, last. If step 5 ran, do this only once it ended with "Publish the parent
+   next". The parent pins the platform packages exactly, so publishing it against a version that
+   does not resolve - a failed publish, a rescinded version - gives every consumer on that platform
+   an install with no binary:
    ```bash
    npm publish
    ```
 
-6. Push the version tag:
+7. Push the version tag:
    ```bash
    git push --follow-tags
    ```
@@ -127,9 +143,9 @@ nvu engines tsds test:node --no-timeouts
 make -C binary all && npm run build:platform-packages
 npm run publish:platform-packages
 ```
-- [ ] All 6 package directories written under `.tmp/npm/`
-- [ ] Each pinned at the parent's version
-- [ ] Preview lists exactly what is unpublished
+- [ ] One package directory per `platforms.json` entry written under `.tmp/npm/`
+- [ ] Each at the pinned binary version, which is not necessarily the parent's
+- [ ] Preview lists exactly what is unpublished, and skips every unchanged platform
 
 ### 5. Binary Build
 ```bash
@@ -193,5 +209,6 @@ grep -r "shim" --include="*.ts" --include="*.js" --include="*.cjs" --include="*.
 
 3. **Binary naming**: Binaries in `~/.nvu/bin/` are named `node`, `npm`, `npx` (not `nvu-binary`).
 
-4. **Version fields**: one `version` covers the parent and all six platform packages. Re-run
-   `npm run build:platform-packages` after a bump so the `optionalDependencies` pins follow.
+4. **Version fields**: the platform packages carry their own version, independent of the parent's.
+   A parent bump does not move it. Move it with `npm run pin:platform-packages -- --set-version
+   <version>`, and only when the binary changed.

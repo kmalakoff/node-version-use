@@ -1,30 +1,46 @@
 #!/usr/bin/env node
 
 /**
- * Pins optionalDependencies to one nvu-<platform>-<arch> package per platforms.json entry, each
- * at this package's own version.
+ * Keeps optionalDependencies listing one nvu-<platform>-<arch> package per platforms.json entry,
+ * all at one binary version.
  *
- * Runs from the version lifecycle, before npm writes the version commit, so a bump can never
- * leave the pins behind. Needs no binaries, so a bump works without a Go toolchain.
+ * Usage: npm run pin:platform-packages                       # repair: add/remove platforms, keep the version
+ *        npm run pin:platform-packages -- --set-version 2.6.0  # deliberate bump, when the binary changed
+ *
+ * Runs from the version lifecycle, where it must NOT move the version: the binary changes far less
+ * often than the package, so an ordinary release keeps the pins it has and publishes no binary
+ * packages. Moving them is a separate, deliberate act.
  */
 
 import fs from 'fs';
 import path from 'path';
-import url from 'url';
+import { parseArgs } from 'util';
+import { inspectPins, platformNames, readPackage, readPlatforms, root } from './lib/binaryVersion.mjs';
 
-const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-const packagePath = path.join(__dirname, '..', 'package.json');
+const { values } = parseArgs({ options: { 'set-version': { type: 'string' } } });
 
-const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-const platforms = JSON.parse(fs.readFileSync(path.join(__dirname, 'platforms.json'), 'utf8'));
+const pkg = readPackage();
+const platforms = readPlatforms();
+const names = platformNames(platforms);
+const pins = inspectPins(pkg, platforms);
 
-const pins = {};
-for (const { platform, arch } of platforms) pins[`nvu-${platform}-${arch}`] = pkg.version;
+const version = values['set-version'] || pins.version || pins.disagreeing[0];
+if (!version) {
+  console.error('No binary version to pin: optionalDependencies declares no platform package.');
+  console.error('Set one with: npm run pin:platform-packages -- --set-version <version>');
+  process.exit(1);
+}
 
-if (JSON.stringify(pkg.optionalDependencies) === JSON.stringify(pins)) {
-  console.log(`optionalDependencies already pinned at ${pkg.version}`);
+const pinned = {};
+for (const name of names) pinned[name] = version;
+
+if (JSON.stringify(pkg.optionalDependencies) === JSON.stringify(pinned)) {
+  console.log(`optionalDependencies already pinned: ${names.length} platforms at ${version}`);
 } else {
-  pkg.optionalDependencies = pins;
-  fs.writeFileSync(packagePath, `${JSON.stringify(pkg, null, 2)}\n`);
-  console.log(`optionalDependencies pinned at ${pkg.version}: ${Object.keys(pins).join(', ')}`);
+  const added = pins.missing;
+  pkg.optionalDependencies = pinned;
+  fs.writeFileSync(path.join(root, 'package.json'), `${JSON.stringify(pkg, null, 2)}\n`);
+  console.log(`optionalDependencies pinned: ${names.length} platforms at ${version}`);
+  if (added.length) console.log(`  added: ${added.join(', ')} — publish these before the parent`);
+  if (pins.extra.length) console.log(`  removed: ${pins.extra.join(', ')}`);
 }
