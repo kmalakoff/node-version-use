@@ -6,9 +6,12 @@ Cross-platform solution for using multiple versions of Node.js. Transparent vers
 
 ```bash
 npm install -g node-version-use
-nvu setup                           # Copy the shims into ~/.nvu/bin
-export PATH="$HOME/.nvu/bin:$PATH"  # Add to shell profile
+nvu setup
 ```
+
+`nvu setup` prints the PATH change for your shell. On macOS and Linux, add `export PATH="$HOME/.nvu/bin:$PATH"` to your shell profile. On Windows PowerShell, add `$env:PATH = "$HOME\\.nvu\\bin;$env:APPDATA\\npm;$env:PATH"` to `$PROFILE`, then restart the shell.
+
+You need Node.js and npm to install nvu. The package installs the platform-specific nvu binary selected by npm; it does not download a Node version during package installation.
 
 The Go binary ships in a per-platform package (`nvu-darwin-arm64`, `nvu-linux-x64`, ...) that npm
 selects by `os` and `cpu` and installs as an optional dependency. Nothing is downloaded and no
@@ -17,8 +20,10 @@ install script runs, so consumers need no `allowScripts` entry for this package.
 ### Quick Start
 
 ```bash
-nvu default 20           # Set global default
-nvu local 18             # Set project version (.nvmrc)
+nvu install 20           # Download and install Node 20
+nvu install 18           # Download and install Node 18
+nvu default 20           # Set the global default
+nvu local 18             # Write this project's .nvmrc
 node --version           # Uses v20 (or v18 in project)
 ```
 
@@ -104,15 +109,22 @@ Explicit is better than implicit. You know exactly which version runs. Use `nvu 
 
 ```javascript
 const nvu = require('node-version-use');
-const results = await nvu('>=0.8', 'node', ['--version'], { stdio: 'inherit' });
+
+(async () => {
+  const results = await nvu('>=0.8', 'node', ['--version'], { stdio: 'inherit' });
+  console.log(results);
+})().catch(console.error);
 ```
 
 ### Uninstall
 
 ```bash
 nvu teardown           # Remove ~/.nvu/bin
-rm -rf ~/.nvu          # Remove all data
+rm -rf ~/.nvu          # macOS/Linux: remove nvu-managed versions and settings
+# PowerShell: Remove-Item -Recurse -Force "$HOME\\.nvu"
 ```
+
+`teardown` removes nvu's shims. Removing `~/.nvu` also removes every Node version and setting managed by nvu; it does not remove system Node installations.
 
 ### Compatibility
 
