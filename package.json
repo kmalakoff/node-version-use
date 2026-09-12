@@ -19,28 +19,30 @@
   "license": "MIT",
   "main": "index.js",
   "bin": {
-    "nvu": "./bin/node-version-use"
+    "nvu": "./bin/node-version-use.js"
   },
   "scripts": {
-    "format": "eslint . --fix",
+    "format": "prettier --write .",
     "lint": "eslint .",
     "test": "mocha-compat test/spec/**/*.test.js --no-timeouts"
   },
   "dependencies": {
-    "cross-spawn-cb": "^0.2.4",
+    "cross-spawn-cb": "^0.3.1",
     "end-with": "^1.0.2",
-    "get-remote": "^0.4.8",
+    "exit": "^0.1.2",
     "getopts-compat": "^2.2.5",
+    "isarray": "^2.0.5",
     "lodash.filter": "^4.6.0",
     "lodash.keys": "^4.2.0",
-    "node-install-release": "^0.1.11",
-    "node-semvers": "^0.4.12",
+    "node-install-release": "^0.1.18",
+    "node-semvers": "^0.4.15",
     "object-assign": "^4.1.1",
     "osenv": "^0.1.5"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
-    "eslint": "^7.1.0",
+    "cr": "^0.1.0",
+    "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-plugin-import": "^2.20.2",
@@ -49,7 +51,8 @@
     "eslint-plugin-standard": "^4.0.1",
     "is-version": "^0.2.0",
     "mocha-compat": "^3.5.5",
-    "prettier": "^2.0.5"
+    "prettier": "^2.0.5",
+    "rimraf": "^2.7.1"
   },
   "engines": {
     "node": ">0.12"
