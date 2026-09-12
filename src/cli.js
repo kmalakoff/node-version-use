@@ -26,7 +26,8 @@ export default (argv, name) => {
     return exit(ERROR_CODE);
   }
 
-  const next = (err, results) => {
+  options.stdio = 'inherit'; // pass through stdio
+  return run(args[0], args[1], args.slice(2), options, (err, results) => {
     if (err) {
       console.log(err.message);
       return exit(ERROR_CODE);
@@ -42,18 +43,5 @@ export default (argv, name) => {
       if (errors.length) console.log(`${figures.cross} ${errors.length} failed`);
     }
     exit(err || errors.length ? ERROR_CODE : 0);
-  };
-
-  // DEBUG MODE
-  if (typeof process.env.DEBUG !== 'undefined') {
-    options.encoding = 'utf8';
-    return run(args[0], args[1], args.slice(2), options, (err, results) => {
-      if (err) console.log(JSON.stringify({ err }));
-      (results || err.results || []).forEach(({ error, result }) => console.log((error || result).stdout));
-      next(err, results);
-    });
-  }
-
-  options.stdio = 'inherit'; // pass through stdio
-  return run(args[0], args[1], args.slice(2), options, next);
+  });
 };

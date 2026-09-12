@@ -9,14 +9,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: ['lts/Jod']
         os: [ubuntu-latest, windows-latest]
         # os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 'lts/Jod'
       - run: git config --global user.name "Github Actions"
       - run: git config --global user.email "actions@users.noreply.github.com"
       - run: npm install ts-dev-stack node-version-use depcheck @biomejs/biome -g -f
@@ -24,6 +23,5 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: tsds validate
-      - run: npm install cross-env -g
-      - run: cross-env DEBUG=true npm run test
-      - run: cross-env DEBUG=true npm run test:engines
+      - run: npm run test
+      - run: npm run test:engines

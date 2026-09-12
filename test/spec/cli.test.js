@@ -21,8 +21,6 @@ describe('cli', () => {
     it('one version - 12', (done) => {
       spawn(CLI, ['12', '--silent', 'npm', '--version'], OPTIONS, (err, res) => {
         if (err) return done(err.message);
-        console.log('res.stdout', res.stdout);
-        console.log('getLines(res.stdout)', getLines(res.stdout));
         assert.ok(isVersion(getLines(res.stdout).slice(-1)[0]));
         done();
       });
@@ -86,7 +84,6 @@ describe('cli', () => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
       spawn(CLI, ['>=8', '--silent', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
         if (err) return done(err.message);
-        console.log(res.stdout, getLines(res.stdout));
         assert.ok(getLines(res.stdout).slice(0)[0].indexOf('v8.') === 0);
         done();
       });
