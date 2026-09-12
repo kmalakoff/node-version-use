@@ -31,7 +31,7 @@ describe('callback', () => {
   describe('happy path', () => {
     it('one version - 12', (done) => {
       versionUse('12', NODE, ['--version'], OPTIONS, (err, results) => {
-        assert.ok(!err);
+        assert.ok(!err, err ? err.message : '');
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
@@ -40,7 +40,7 @@ describe('callback', () => {
 
     it('lts version - lts/erbium', (done) => {
       versionUse('lts/erbium', NODE, ['--version'], OPTIONS, (err, results) => {
-        assert.ok(!err);
+        assert.ok(!err, err ? err.message : '');
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
@@ -49,7 +49,7 @@ describe('callback', () => {
 
     it('lts/argon version - lts/argon', (done) => {
       versionUse('lts/argon', NODE, ['--version'], OPTIONS, (err, results) => {
-        assert.ok(!err);
+        assert.ok(!err, err ? err.message : '');
         assert.ok(results.length > 0);
         assert.equal(versionLines(results[0].result.stdout).slice(-1)[0], 'v4.9.1');
         done();
@@ -58,7 +58,7 @@ describe('callback', () => {
 
     it('multiple versions - 10,12,lts/erbium', (done) => {
       versionUse('10,12,lts/erbium', NODE, ['--version'], OPTIONS, (err, results) => {
-        assert.ok(!err);
+        assert.ok(!err, err ? err.message : '');
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
         assert.ok(versionLines(results[1].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
@@ -68,7 +68,7 @@ describe('callback', () => {
 
     it('multiple versions - 10,12,lts/erbium (sort -1)', (done) => {
       versionUse('10,12,lts/erbium', NODE, ['--version'], Object.assign({ sort: -1 }, OPTIONS), (err, results) => {
-        assert.ok(!err);
+        assert.ok(!err, err ? err.message : '');
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
         assert.ok(versionLines(results[1].result.stdout).slice(-1)[0].indexOf('v10.') === 0);
@@ -79,7 +79,7 @@ describe('callback', () => {
     it('using engines - 12', (done) => {
       const cwd = path.resolve(path.join(__dirname, '..', 'data', 'engines'));
       versionUse('engines', NODE, ['--version'], Object.assign({ cwd: cwd }, OPTIONS), (err, results) => {
-        assert.ok(!err);
+        assert.ok(!err, err ? err.message : '');
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v12.') === 0);
         done();
@@ -88,7 +88,7 @@ describe('callback', () => {
 
     it('>=8', (done) => {
       versionUse('>=8', NODE, ['--version'], Object.assign({ range: 'major,even' }, OPTIONS), (err, results) => {
-        assert.ok(!err);
+        assert.ok(!err, err ? err.message : '');
         assert.ok(results.length > 0);
         assert.ok(versionLines(results[0].result.stdout).slice(-1)[0].indexOf('v8.') === 0);
         done();
