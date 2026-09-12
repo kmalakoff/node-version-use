@@ -7,6 +7,7 @@ const os = require('os');
 const path = require('path');
 const Queue = require('queue-cb');
 const moduleRoot = require('module-root-sync');
+const cpuArch = require('cpu-arch');
 
 const root = moduleRoot(__dirname);
 
@@ -99,7 +100,8 @@ function cleanupOldFiles(dir: string): void {
  * Get the platform-specific archive base name (without extension)
  */
 function getArchiveBaseName(): string | null {
-  const { platform, arch } = process;
+  const { platform } = process;
+  const arch = cpuArch();
 
   const platformMap: PlatformMap = {
     darwin: 'darwin',
@@ -421,13 +423,13 @@ module.exports.installBinaries = function installBinaries(options, callback): vo
   }
 
   // Download to temp file
-  console.log(`Downloading binary for ${process.platform}-${process.arch}...`);
+  console.log(`Downloading binary for ${archiveBaseName}...`);
   const tempPath = path.join(tmpdir(), `nvu-binary-${Date.now()}${isWindows ? '.zip' : '.tar.gz'}`);
 
   getFile(downloadUrl, tempPath, (err) => {
     if (err) {
       removeIfExistsSync(tempPath);
-      callback(new Error(`No prebuilt binary available for ${process.platform}-${process.arch}. Download: ${downloadUrl}. Error: ${err.message}`));
+      callback(new Error(`No prebuilt binary available for ${archiveBaseName}. Download: ${downloadUrl}. Error: ${err.message}`));
       return;
     }
 
