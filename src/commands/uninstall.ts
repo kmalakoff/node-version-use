@@ -19,7 +19,7 @@ export default function uninstallCmd(args: string[]): void {
   }
 
   var version = args[0].trim();
-  var versionsPath = path.join(storagePath, 'versions');
+  var versionsPath = path.join(storagePath, 'installed');
 
   // Find all matching installed versions
   var matches = findInstalledVersions(versionsPath, version);

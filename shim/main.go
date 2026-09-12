@@ -137,7 +137,7 @@ func findBinary(name string, version string) (string, error) {
 		return "", fmt.Errorf("failed to get home directory: %w", err)
 	}
 
-	versionsDir := filepath.Join(homeDir, ".nvu", "versions")
+	versionsDir := filepath.Join(homeDir, ".nvu", "installed")
 
 	// Resolve version to an installed version directory
 	resolvedVersion, err := resolveInstalledVersion(versionsDir, version)
@@ -145,7 +145,7 @@ func findBinary(name string, version string) (string, error) {
 		return "", err
 	}
 
-	// The binary should be at ~/.nvu/versions/<version>/bin/<name>
+	// The binary should be at ~/.nvu/installed/<version>/bin/<name>
 	var binaryPath string
 	if runtime.GOOS == "windows" {
 		// On Windows, look for .exe or .cmd
@@ -278,7 +278,7 @@ func findAnyInstalledVersion() (string, error) {
 		return "", err
 	}
 
-	versionsDir := filepath.Join(homeDir, ".nvu", "versions")
+	versionsDir := filepath.Join(homeDir, ".nvu", "installed")
 	entries, err := os.ReadDir(versionsDir)
 	if err != nil {
 		return "", err
