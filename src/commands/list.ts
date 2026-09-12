@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { readdirWithTypes } from '../compat.ts';
 import { storagePath } from '../constants.ts';
+import compareVersions from '../lib/compareVersions.ts';
 
 /**
  * nvu list
@@ -38,19 +39,8 @@ export default function listCmd(_args: string[]): void {
     defaultVersion = fs.readFileSync(defaultFilePath, 'utf8').trim();
   }
 
-  // Sort versions (simple string sort, could be improved with semver)
-  versions.sort((a, b) => {
-    const aParts = a.split('.').map((n) => parseInt(n, 10) || 0);
-    const bParts = b.split('.').map((n) => parseInt(n, 10) || 0);
-    for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
-      const aVal = aParts[i] || 0;
-      const bVal = bParts[i] || 0;
-      if (aVal !== bVal) return bVal - aVal; // Descending order
-    }
-    return 0;
-  });
-
   console.log('Installed Node versions:');
+  versions.sort(compareVersions);
   for (let i = 0; i < versions.length; i++) {
     const version = versions[i];
     const isDefault = version === defaultVersion || `v${version}` === defaultVersion || version === `v${defaultVersion}`;
