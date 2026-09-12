@@ -2,6 +2,7 @@ var assert = require('assert');
 var path = require('path');
 var rimraf = require('rimraf');
 var assign = require('object-assign');
+var isVersion = require('is-version');
 
 var nvu = require('../..');
 
@@ -22,11 +23,11 @@ describe('versions', function () {
   });
 
   describe('happy path', function () {
-    it('npm whoami', function (done) {
-      nvu('12', 'npm', ['whoami'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
+    it('npm --version', function (done) {
+      nvu('12', 'npm', ['--version'], assign({ stdout: 'string', now: now }, OPTIONS), function (err, res) {
         assert.ok(!err);
         assert.equal(res.code, 0);
-        assert.ok(res.stdout.split(EOL).slice(-2, -1)[0].length > 1);
+        assert.ok(isVersion(res.stdout.split(EOL).slice(-2, -1)[0]));
         done();
       });
     });
