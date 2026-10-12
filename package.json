@@ -55,7 +55,7 @@
     "fs-remove-compat": "^1.0.0",
     "getopts-compat": "^2.2.6",
     "homedir-polyfill": "^1.0.3",
-    "install-module-linked-compat": "^0.2.2",
+    "install-module-linked-compat": "^1.0.0",
     "mkdirp-classic": "^0.5.2",
     "node-resolve-versions": "^1.6.0",
     "node-version-install": "^1.0.5",
