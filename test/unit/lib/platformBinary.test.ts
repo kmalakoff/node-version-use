@@ -1,4 +1,5 @@
 import assert from 'assert';
+import cpuArch from 'cpu-arch';
 import fs from 'fs';
 import path from 'path';
 import url from 'url';
@@ -27,5 +28,19 @@ describe('lib/platformBinary', () => {
 
     assert.ok(fs.existsSync(binary.path), `${binary.path} does not exist`);
     assert.strictEqual(binary.version, pkg.optionalDependencies[platformPackageName]);
+  });
+
+  it('falls back to the machine arch package when the run arch has none', () => {
+    // The machine's arch, not process.arch: an old node on Windows x64 reports ia32.
+    const binary = resolvePlatformBinary('no-such-arch');
+    assert.ok(fs.existsSync(binary.path), `${binary.path} does not exist`);
+    assert.strictEqual(binary.version, pkg.optionalDependencies[`nvu-${process.platform}-${cpuArch()}`]);
+  });
+
+  it('names both packages when neither arch has one', () => {
+    assert.throws(
+      () => resolvePlatformBinary('no-such-arch', 'other-arch'),
+      (err: Error) => err.message.indexOf(`nvu-${process.platform}-no-such-arch`) >= 0 && err.message.indexOf(`npm install nvu-${process.platform}-other-arch`) >= 0 && err.message.indexOf(`nvu-${process.platform}-other-arch`) >= 0
+    );
   });
 });

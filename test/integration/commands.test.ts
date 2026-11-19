@@ -275,6 +275,47 @@ describe('commands', () => {
     });
   });
 
+  describe('setup', () => {
+    // A failed setup reports its own output and the child node's arch and path, which the bare exit code hides.
+    function failWithOutput(err: Error & { stdout?: string | Buffer; stderr?: string | Buffer }, done: (err?: Error) => void): void {
+      spawn('node', ['-p', 'process.arch + " " + process.execPath'], OPTIONS, (_nodeErr, res) => {
+        done(new Error(`${err.message}\nstdout: ${err.stdout}\nstderr: ${err.stderr}\nchild node: ${res && res.stdout}`));
+      });
+    }
+
+    it('leaves only the shims and a complete marker in bin', (done) => {
+      const binDir = path.join(TMP_DIR, 'bin');
+      const ext = isWindows ? '.exe' : '';
+
+      spawn(CLI, ['setup', '--force'], OPTIONS, (err) => {
+        if (err) return failWithOutput(err, done);
+        const names = fs.readdirSync(binDir).sort();
+        const expected = ['nvu', 'node', 'npm', 'npx', 'corepack'].map((name) => `${name}${ext}`).concat('nvu.json');
+        assert.deepEqual(names, expected.sort());
+        assert.ok(JSON.parse(fs.readFileSync(path.join(binDir, 'nvu.json'), 'utf8')).binaryVersion);
+        done();
+      });
+    });
+
+    it('leaves a crashed install staging files untouched when syncing shims', (done) => {
+      const binDir = path.join(TMP_DIR, 'bin');
+      const ext = isWindows ? '.exe' : '';
+      const stagedShim = path.join(binDir, `node.tmp-1234567890${ext}`);
+      const stagedMarker = path.join(binDir, 'nvu.json.tmp-1234567890');
+      fs.writeFileSync(stagedShim, 'partial');
+      fs.writeFileSync(stagedMarker, 'partial');
+
+      spawn(CLI, ['setup'], OPTIONS, (err) => {
+        if (err) return failWithOutput(err, done);
+        assert.equal(fs.readFileSync(stagedShim, 'utf8'), 'partial');
+        assert.equal(fs.readFileSync(stagedMarker, 'utf8'), 'partial');
+        fs.unlinkSync(stagedShim);
+        fs.unlinkSync(stagedMarker);
+        done();
+      });
+    });
+  });
+
   describe('teardown', () => {
     it('removes binaries', (done) => {
       // Create fake binaries with correct extension for platform

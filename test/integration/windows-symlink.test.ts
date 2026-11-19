@@ -14,7 +14,7 @@ import { arrayFind, copyFileSync, mkdirRecursive, rmRecursive, stringStartsWith 
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.js');
-const TMP_DIR = path.join(__dirname, '..', '..', '.tmp-symlink-test');
+const TMP_DIR = path.join(__dirname, '..', '..', '.tmp', 'symlink-test');
 const TEST_PKG_DIR = path.join(__dirname, '..', 'data', 'symlink-test-pkg');
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');

@@ -1,6 +1,7 @@
 import envPathKey from 'env-path-key';
 import fs from 'fs';
 import path from 'path';
+import tempSuffix from 'temp-suffix';
 import { mkdirpSync, stringEndsWith } from '../compat.ts';
 import { storagePath } from '../constants.ts';
 import { resolvePlatformBinary } from './platformBinary.ts';
@@ -15,6 +16,9 @@ const SHIMS = ['nvu', 'node', 'npm', 'npx', 'corepack'];
 function copyFileSync(src: string, dest: string): void {
   fs.writeFileSync(dest, fs.readFileSync(src));
 }
+
+// A staging file left by a crashed install: `<name>.tmp-<digits>`, with the platform extension on shims.
+const STAGING_NAME = /\.tmp-\d+(\.exe)?$/;
 
 function removeIfExistsSync(filePath: string): void {
   if (!fs.existsSync(filePath)) return;
@@ -68,7 +72,7 @@ export function syncAllShims(binDir: string): void {
     const entries = fs.readdirSync(binDir);
     for (let i = 0; i < entries.length; i++) {
       const name = entries[i];
-      if (name === `nvu${ext}` || name === 'nvu.json') continue;
+      if (name === `nvu${ext}` || name === 'nvu.json' || STAGING_NAME.test(name)) continue;
       if (isWindows && !stringEndsWith(name, '.exe')) continue;
 
       const shimPath = path.join(binDir, name);
@@ -145,8 +149,7 @@ export function installBinaries(options: { force?: boolean }): boolean {
   cleanupOldFiles(binDir);
 
   // Stage beside the destination so each rename lands on the same filesystem.
-  const timestamp = Date.now();
-  const staged = SHIMS.map((name) => path.join(binDir, `${name}.tmp-${timestamp}${ext}`));
+  const staged = SHIMS.map((name) => path.join(binDir, `${name}.${tempSuffix('tmp')}${ext}`));
   try {
     for (let i = 0; i < SHIMS.length; i++) {
       copyFileSync(binary.path, staged[i]);
@@ -163,6 +166,13 @@ export function installBinaries(options: { force?: boolean }): boolean {
     fs.renameSync(staged[i], finalPath);
   }
 
-  fs.writeFileSync(nvuJsonPath, `${JSON.stringify({ binaryVersion: binary.version }, null, 2)}\n`, 'utf8');
+  const stagedMarker = `${nvuJsonPath}.${tempSuffix('tmp')}`;
+  try {
+    fs.writeFileSync(stagedMarker, `${JSON.stringify({ binaryVersion: binary.version }, null, 2)}\n`, 'utf8');
+    fs.renameSync(stagedMarker, nvuJsonPath);
+  } catch (err) {
+    removeIfExistsSync(stagedMarker);
+    throw err;
+  }
   return true;
 }

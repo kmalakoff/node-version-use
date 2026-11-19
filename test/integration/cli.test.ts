@@ -3,21 +3,32 @@ delete process.env.NODE_OPTIONS;
 
 import assert from 'assert';
 import spawn from 'cross-spawn-cb';
+import fs from 'fs';
+import { safeRm } from 'fs-remove-compat';
 import isVersion from 'is-version';
 import path from 'path';
 import url from 'url';
+import { CACHE_PATH } from '../lib/constants.ts';
 import getLines from '../lib/getLines.ts';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const CLI = path.join(__dirname, '..', '..', 'bin', 'cli.js');
+const TMP_DIR = path.join(__dirname, '..', '..', '.tmp', 'cli');
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
 const NODE = isWindows ? 'node.exe' : 'node';
 
+// the CLI reads its storage folder from NVU_HOME and passes unknown flags through as install options
+const ENV = { ...process.env, NVU_HOME: TMP_DIR };
 const OPTIONS = {
   encoding: 'utf8' as BufferEncoding,
+  env: ENV,
 };
+const CACHE_ARGS = ['--cachePath', CACHE_PATH];
 
 describe('cli', () => {
+  before((cb) => safeRm(TMP_DIR, cb));
+  after((cb) => safeRm(TMP_DIR, cb));
+
   describe('version and help', () => {
     it('--version', (done) => {
       spawn(CLI, ['--version'], OPTIONS, (err, res) => {
@@ -61,12 +72,15 @@ describe('cli', () => {
       spawn(CLI, ['--silent', '--expanded', '12', NODE, '--version'], OPTIONS, (err, res) => {
         if (err) return done(err);
         assert.ok((res?.stdout ?? '').indexOf('v12.') >= 0);
+        assert.ok(fs.readdirSync(path.join(TMP_DIR, 'installed')).some((name) => name.indexOf('v12.') === 0));
+        // no --cachePath on this call: the default <storage>/cache downloads cold every run
+        assert.ok(fs.readdirSync(path.join(TMP_DIR, 'cache')).some((name) => name.indexOf('node-v12.') === 0));
         done();
       });
     });
 
     it('multiple versions - 22,12', (done) => {
-      spawn(CLI, ['--silent', '--expanded', '22,12', NODE, '--version'], OPTIONS, (err, res) => {
+      spawn(CLI, [...CACHE_ARGS, '--silent', '--expanded', '22,12', NODE, '--version'], OPTIONS, (err, res) => {
         if (err) return done(err);
         assert.ok((res?.stdout ?? '').indexOf('v22.') >= 0);
         assert.ok((res?.stdout ?? '').indexOf('v12.') >= 0);
@@ -75,7 +89,7 @@ describe('cli', () => {
     });
 
     it('one version with options - 22', (done) => {
-      spawn(CLI, ['--silent', '--expanded', '22', NODE, '--version'], OPTIONS, (err, res) => {
+      spawn(CLI, [...CACHE_ARGS, '--silent', '--expanded', '22', NODE, '--version'], OPTIONS, (err, res) => {
         if (err) return done(err);
         assert.ok(isVersion(getLines(res?.stdout ?? '').slice(-1)[0], 'v'));
         done();
@@ -83,7 +97,7 @@ describe('cli', () => {
     });
 
     it('multiple versions with options - 10,12,22', (done) => {
-      spawn(CLI, ['--silent', '--expanded', '10,12,22', NODE, '--version'], OPTIONS, (err, res) => {
+      spawn(CLI, [...CACHE_ARGS, '--silent', '--expanded', '10,12,22', NODE, '--version'], OPTIONS, (err, res) => {
         if (err) return done(err);
         assert.ok((res?.stdout ?? '').indexOf('v10.') >= 0);
         assert.ok((res?.stdout ?? '').indexOf('v12.') >= 0);
@@ -93,7 +107,7 @@ describe('cli', () => {
     });
 
     it('multiple versions with options - 10,12,22 (sort desc)', (done) => {
-      spawn(CLI, ['--silent', '--expanded', '--desc', '10,12,22', NODE, '--version'], OPTIONS, (err, res) => {
+      spawn(CLI, [...CACHE_ARGS, '--silent', '--expanded', '--desc', '10,12,22', NODE, '--version'], OPTIONS, (err, res) => {
         if (err) return done(err);
         assert.ok((res?.stdout ?? '').indexOf('v10.') >= 0);
         assert.ok((res?.stdout ?? '').indexOf('v12.') >= 0);
@@ -104,7 +118,7 @@ describe('cli', () => {
 
     it('using engines', (done) => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
-      spawn(CLI, ['--silent', '--expanded', 'engines', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
+      spawn(CLI, [...CACHE_ARGS, '--silent', '--expanded', 'engines', NODE, '--version'], { ...OPTIONS, cwd }, (err, res) => {
         if (err) return done(err);
         assert.ok(
           getLines(res?.stdout ?? '')
@@ -117,7 +131,7 @@ describe('cli', () => {
 
     it('>=8', (done) => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines'));
-      spawn(CLI, ['--silent', '--expanded', '>=8', NODE, '--version'], { encoding: 'utf8', cwd }, (err, res) => {
+      spawn(CLI, [...CACHE_ARGS, '--silent', '--expanded', '>=8', NODE, '--version'], { ...OPTIONS, cwd }, (err, res) => {
         if (err) return done(err);
         assert.ok((res?.stdout ?? '').indexOf('v6.') < 0);
         assert.ok((res?.stdout ?? '').indexOf('v8.') >= 0);
@@ -157,7 +171,7 @@ describe('cli', () => {
 
     it('engines missing', (done) => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines-missing'));
-      spawn(CLI, ['engines', NODE, '--version'], { encoding: 'utf8', cwd }, (err, _res) => {
+      spawn(CLI, ['engines', NODE, '--version'], { ...OPTIONS, cwd }, (err, _res) => {
         assert.ok(!!err);
         done();
       });
@@ -165,7 +179,7 @@ describe('cli', () => {
 
     it('engines node missing', (done) => {
       const cwd = path.join(path.join(__dirname, '..', 'data', 'engines-node-missing'));
-      spawn(CLI, ['engines', NODE, '--version'], { encoding: 'utf8', cwd }, (err, _res) => {
+      spawn(CLI, ['engines', NODE, '--version'], { ...OPTIONS, cwd }, (err, _res) => {
         assert.ok(!!err);
         done();
       });

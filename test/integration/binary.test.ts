@@ -10,7 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import url from 'url';
 
-import { getTestBinaryBin, getTestBinaryPath, hasTestBinaries, mkdirRecursive, rmRecursive, tmpdir } from '../lib/compat.ts';
+import { getTestBinaryBin, getTestBinaryPath, hasTestBinaries, mkdirRecursive, mkdtempSystem, rmRecursive } from '../lib/compat.ts';
 
 const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : url.fileURLToPath(import.meta.url));
 const TMP_DIR = path.join(__dirname, '..', '..', '.tmp', 'binary-test');
@@ -67,6 +67,12 @@ describe('binary', () => {
     }
   });
 
+  // Made by the system-fallback test; removed here so a failing assertion in its callback leaves nothing behind.
+  let systemFallbackDir: string | undefined;
+  after(() => {
+    if (systemFallbackDir) rmRecursive(systemFallbackDir);
+  });
+
   describe('NVU_HOME', () => {
     it('respects NVU_HOME environment variable', (done) => {
       // Create a version in the test NVU_HOME
@@ -120,9 +126,10 @@ describe('binary', () => {
 
   describe('system fallback', () => {
     it('falls back to system node when no config exists', (done) => {
-      // Use a directory outside the project tree to avoid inheriting .nvmrc
-      const testDir = path.join(tmpdir(), `nvu-binary-test-${Date.now()}`);
-      mkdirRecursive(testDir);
+      // Outside the repository on purpose: the binary walks up from its cwd looking for .nvmrc/.nvurc, so a folder
+      // under the repo (or any ancestor holding one) would inherit a version and this test would not reach the system fallback.
+      const testDir = mkdtempSystem('nvu-binary-test-');
+      systemFallbackDir = testDir;
 
       // Use empty NVU_HOME with no default
       const emptyNvuHome = path.join(testDir, 'empty-nvu');
@@ -143,9 +150,6 @@ describe('binary', () => {
           },
         },
         (err, res) => {
-          // Cleanup
-          rmRecursive(testDir);
-
           // Should either:
           // 1. Successfully run system node and return a version
           // 2. Error that no version is configured

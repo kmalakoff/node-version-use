@@ -49,6 +49,7 @@
     "version": "node scripts/pin-platform-packages.mjs && tsds version"
   },
   "dependencies": {
+    "cpu-arch": "^1.1.4",
     "cross-spawn-cb": "^3.0.0",
     "env-path-key": "^1.1.8",
     "exit-compat": "^1.0.0",
@@ -63,7 +64,8 @@
     "queue-cb": "^1.0.0",
     "resolve-bin-sync": "^1.0.12",
     "spawn-streaming": "^1.1.15",
-    "spawn-term": "^3.5.9"
+    "spawn-term": "^3.5.9",
+    "temp-suffix": "^1.0.10"
   },
   "devDependencies": {
     "@types/mocha": "*",

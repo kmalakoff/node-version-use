@@ -9,6 +9,7 @@ import versionUse, { type UseOptions } from 'node-version-use';
 import path from 'path';
 import url from 'url';
 import { mkdirRecursive } from '../lib/compat.ts';
+import { CACHE_PATH } from '../lib/constants.ts';
 import getLines from '../lib/getLines.ts';
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
@@ -18,6 +19,7 @@ const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : 
 const TMP_DIR = path.join(__dirname, '..', '..', '.tmp', 'callbacks');
 const OPTIONS = {
   storagePath: TMP_DIR,
+  cachePath: CACHE_PATH,
   encoding: 'utf8' as BufferEncoding,
   silent: true,
   interactive: false,
@@ -162,7 +164,7 @@ describe('callback', () => {
       fs.writeFileSync(blockerFile, '');
       const storagePath = path.join(blockerFile, 'nested');
 
-      versionUse('12', NODE, ['--version'], { ...OPTIONS, storagePath }, (err, results) => {
+      versionUse('12', NODE, ['--version'], { ...OPTIONS, storagePath, cachePath: path.join(storagePath, 'cache') }, (err, results) => {
         if (err) return done(err);
         if (!results || results.length !== 1) return done(new Error(`expected exactly one result, got ${JSON.stringify(results)}`));
         assert.ok(results[0]?.error, 'a broken install must surface as a result error');

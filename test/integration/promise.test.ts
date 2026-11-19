@@ -9,6 +9,7 @@ import path from 'path';
 import Pinkie from 'pinkie-promise';
 import url from 'url';
 
+import { CACHE_PATH } from '../lib/constants.ts';
 import getLines from '../lib/getLines.ts';
 
 const isWindows = process.platform === 'win32' || /^(msys|cygwin)$/.test(process.env.OSTYPE ?? '');
@@ -18,6 +19,7 @@ const __dirname = path.dirname(typeof __filename !== 'undefined' ? __filename : 
 const TMP_DIR = path.join(__dirname, '..', '..', '.tmp', 'promise');
 const OPTIONS = {
   storagePath: TMP_DIR,
+  cachePath: CACHE_PATH,
   encoding: 'utf8' as BufferEncoding,
   silent: true,
   interactive: false,
