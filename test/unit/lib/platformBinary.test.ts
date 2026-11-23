@@ -19,15 +19,16 @@ describe('lib/platformBinary', () => {
     try {
       binary = resolvePlatformBinary();
     } catch (err) {
-      // The message is the contract: it has to name the package to install.
+      // The message is the contract: it names the package tried and the machine's package to install
+      // (they differ for a 32-bit node on a 64-bit machine).
       const message = (err as Error).message;
       assert.ok(message.indexOf(platformPackageName) >= 0, message);
-      assert.ok(message.indexOf(`npm install ${platformPackageName}`) >= 0, message);
+      assert.ok(message.indexOf(`npm install nvu-${process.platform}-${cpuArch()}`) >= 0, message);
       return;
     }
 
     assert.ok(fs.existsSync(binary.path), `${binary.path} does not exist`);
-    assert.strictEqual(binary.version, pkg.optionalDependencies[platformPackageName]);
+    assert.strictEqual(binary.version, pkg.optionalDependencies[platformPackageName] || pkg.optionalDependencies[`nvu-${process.platform}-${cpuArch()}`]);
   });
 
   it('falls back to the machine arch package when the run arch has none', () => {
